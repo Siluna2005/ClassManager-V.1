@@ -1,0 +1,2998 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="theme-color" content="#2563EB">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <title>Class Manager</title>
+    <style>
+        * {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    -webkit-tap-highlight-color: transparent;
+}
+
+body {
+    min-height: 100vh;
+    background: linear-gradient(135deg, #0f4c75, #3282b8, #bbe1fa);
+    background-attachment: fixed;
+}
+
+/* Splash Screen */
+#splash {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100vh;
+    background: linear-gradient(135deg, #0f4c75, #3282b8, #bbe1fa);
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    z-index: 10000;
+    transition: opacity 0.5s;
+}
+
+#splash.hide {
+    opacity: 0;
+    pointer-events: none;
+}
+
+.splash-logo {
+    width: 100px;
+    height: 100px;
+    background: rgba(255, 255, 255, 0.25);
+    backdrop-filter: blur(18px);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 50px;
+    margin-bottom: 20px;
+    box-shadow: 0 30px 50px rgba(0, 0, 0, 0.25);
+}
+
+.splash-title {
+    font-size: 32px;
+    font-weight: bold;
+    color: white;
+    margin-bottom: 10px;
+}
+
+.splash-subtitle {
+    font-size: 16px;
+    color: rgba(255, 255, 255, 0.85);
+}
+
+.loader {
+    margin-top: 30px;
+    width: 40px;
+    height: 40px;
+    border: 4px solid rgba(255, 255, 255, 0.3);
+    border-top-color: white;
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+    to { transform: rotate(360deg); }
+}
+
+/* Container */
+.container {
+    display: none;
+}
+
+.container.active {
+    display: block;
+}
+
+/* Navbar */
+.navbar {
+    background: rgba(255, 255, 255, 0.15);
+    backdrop-filter: blur(18px);
+    padding: 16px 20px;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.15);
+    position: sticky;
+    top: 0;
+    z-index: 100;
+}
+
+.navbar-content {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    max-width: 1200px;
+    margin: 0 auto;
+}
+
+.navbar-brand {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.navbar-logo {
+    width: 40px;
+    height: 40px;
+    background: rgba(255, 255, 255, 0.25);
+    backdrop-filter: blur(10px);
+    border-radius: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 20px;
+}
+
+.navbar-title {
+    font-size: 20px;
+    font-weight: 700;
+    color: white;
+}
+
+.menu-btn {
+    background: rgba(255, 255, 255, 0.25);
+    backdrop-filter: blur(10px);
+    border: none;
+    font-size: 24px;
+    cursor: pointer;
+    padding: 8px 12px;
+    border-radius: 8px;
+    color: white;
+    transition: all 0.3s;
+}
+
+.menu-btn:hover {
+    background: rgba(255, 255, 255, 0.35);
+}
+
+/* Sidebar */
+.sidebar {
+    position: fixed;
+    top: 0;
+    right: -300px;
+    width: 280px;
+    height: 100vh;
+    background: rgba(255, 255, 255, 0.15);
+    backdrop-filter: blur(18px);
+    box-shadow: -4px 0 32px rgba(0, 0, 0, 0.2);
+    transition: right 0.3s;
+    z-index: 1000;
+    overflow-y: auto;
+}
+
+.sidebar.active {
+    right: 0;
+}
+
+.sidebar-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100vh;
+    background: rgba(0, 0, 0, 0.5);
+    backdrop-filter: blur(4px);
+    display: none;
+    z-index: 999;
+}
+
+.sidebar-overlay.active {
+    display: block;
+}
+
+.sidebar-header {
+    padding: 20px;
+    background: rgba(27, 108, 168, 0.4);
+    color: white;
+}
+
+.sidebar-header h3 {
+    font-size: 18px;
+    margin-bottom: 5px;
+}
+
+.sidebar-header p {
+    font-size: 14px;
+    opacity: 0.9;
+}
+
+.sidebar-menu {
+    padding: 10px 0;
+}
+
+.menu-item {
+    padding: 14px 20px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    cursor: pointer;
+    transition: all 0.2s;
+    border-left: 4px solid transparent;
+    color: white;
+}
+
+.menu-item:hover {
+    background: rgba(255, 255, 255, 0.15);
+}
+
+.menu-item.active {
+    background: rgba(27, 108, 168, 0.3);
+    border-left-color: white;
+    font-weight: 600;
+}
+
+/* Content */
+.content {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 20px;
+}
+
+.screen {
+    display: none;
+}
+
+.screen.active {
+    display: block;
+}
+
+.screen-header {
+    margin-bottom: 24px;
+}
+
+.screen-title {
+    font-size: 28px;
+    font-weight: bold;
+    color: white;
+    margin-bottom: 8px;
+    text-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
+}
+
+.screen-subtitle {
+    font-size: 14px;
+    color: rgba(255, 255, 255, 0.85);
+}
+
+/* Cards */
+.card {
+    background: rgba(255, 255, 255, 0.15);
+    backdrop-filter: blur(18px);
+    border-radius: 18px;
+    padding: 24px;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.15);
+    margin-bottom: 20px;
+    border: 1px solid rgba(255, 255, 255, 0.18);
+}
+
+.card-title {
+    font-size: 18px;
+    font-weight: 600;
+    color: white;
+    margin-bottom: 16px;
+}
+
+/* Stat Cards */
+.stats-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+    gap: 16px;
+    margin-bottom: 24px;
+}
+
+.stat-card {
+    background: rgba(255, 255, 255, 0.15);
+    backdrop-filter: blur(18px);
+    padding: 20px;
+    border-radius: 15px;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.15);
+    border: 1px solid rgba(255, 255, 255, 0.18);
+}
+
+.stat-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: 12px;
+}
+
+.stat-info p {
+    font-size: 12px;
+    color: rgba(255, 255, 255, 0.85);
+    margin-bottom: 4px;
+}
+
+.stat-info h3 {
+    font-size: 28px;
+    font-weight: bold;
+    color: white;
+}
+
+.stat-icon {
+    width: 48px;
+    height: 48px;
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 24px;
+    background: rgba(255, 255, 255, 0.2);
+}
+
+/* Form Elements */
+.form-group {
+    margin-bottom: 20px;
+}
+
+label {
+    display: block;
+    font-size: 14px;
+    font-weight: 600;
+    color: white;
+    margin-bottom: 8px;
+}
+
+input, select, textarea {
+    width: 100%;
+    padding: 14px;
+    border: none;
+    border-radius: 12px;
+    font-size: 14px;
+    background: rgba(255, 255, 255, 0.2);
+    color: white;
+    backdrop-filter: blur(10px);
+    transition: all 0.3s;
+}
+
+input::placeholder, textarea::placeholder {
+    color: rgba(255, 255, 255, 0.7);
+}
+
+input:focus, select:focus, textarea:focus {
+    outline: none;
+    background: rgba(255, 255, 255, 0.25);
+    box-shadow: 0 0 0 3px rgba(255, 255, 255, 0.15);
+}
+
+input:disabled {
+    background: rgba(255, 255, 255, 0.1);
+    cursor: not-allowed;
+}
+
+/* Buttons */
+.btn {
+    width: 100%;
+    padding: 14px;
+    border: none;
+    border-radius: 12px;
+    font-size: 15px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+}
+
+.btn-primary {
+    background: #1b6ca8;
+    color: white;
+}
+
+.btn-primary:hover {
+    background: #145b8c;
+    transform: translateY(-2px);
+    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.25);
+}
+
+.btn-secondary {
+    background: rgba(255, 255, 255, 0.2);
+    color: white;
+    backdrop-filter: blur(10px);
+}
+
+.btn-secondary:hover {
+    background: rgba(255, 255, 255, 0.3);
+}
+
+.btn-success {
+    background: #10B981;
+    color: white;
+}
+
+.btn-success:hover {
+    background: #059669;
+    transform: translateY(-2px);
+    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.25);
+}
+
+.btn-danger {
+    background: #EF4444;
+    color: white;
+}
+
+.btn-danger:hover {
+    background: #DC2626;
+    transform: translateY(-2px);
+    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.25);
+}
+
+/* Tables */
+table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+thead {
+    background: rgba(255, 255, 255, 0.1);
+}
+
+th {
+    padding: 12px;
+    text-align: left;
+    font-size: 14px;
+    font-weight: 600;
+    color: white;
+}
+
+td {
+    padding: 12px;
+    border-top: 1px solid rgba(255, 255, 255, 0.1);
+    font-size: 14px;
+    color: rgba(255, 255, 255, 0.95);
+}
+
+/* Badges */
+.badge {
+    display: inline-block;
+    padding: 4px 12px;
+    border-radius: 12px;
+    font-size: 12px;
+    font-weight: 600;
+}
+
+.badge-green {
+    background: rgba(16, 185, 129, 0.3);
+    color: #D1FAE5;
+}
+
+.badge-red {
+    background: rgba(239, 68, 68, 0.3);
+    color: #FEE2E2;
+}
+
+.badge-blue {
+    background: rgba(59, 130, 246, 0.3);
+    color: #DBEAFE;
+}
+
+.badge-amber {
+    background: rgba(245, 158, 11, 0.3);
+    color: #FEF3C7;
+}
+
+/* Grade Tabs */
+.grade-tab {
+    padding: 8px 16px;
+    border: 2px solid rgba(255, 255, 255, 0.3);
+    background: rgba(255, 255, 255, 0.1);
+    backdrop-filter: blur(10px);
+    border-radius: 8px;
+    cursor: pointer;
+    font-weight: 600;
+    color: white;
+    transition: all 0.2s;
+}
+
+.grade-tab:hover {
+    background: rgba(255, 255, 255, 0.2);
+}
+
+.grade-tab.active {
+    background: #1b6ca8;
+    border-color: #1b6ca8;
+}
+
+/* Student Cards */
+.student-card {
+    padding: 16px;
+    background: rgba(255, 255, 255, 0.1);
+    backdrop-filter: blur(10px);
+    border-radius: 12px;
+    margin-bottom: 12px;
+    cursor: pointer;
+    border: 2px solid transparent;
+    transition: all 0.2s;
+}
+
+.student-card:hover {
+    background: rgba(255, 255, 255, 0.15);
+}
+
+.student-card.selected {
+    background: rgba(27, 108, 168, 0.3);
+    border-color: white;
+}
+
+.student-card-name {
+    font-weight: 600;
+    color: white;
+    margin-bottom: 4px;
+}
+
+.student-card-details {
+    font-size: 13px;
+    color: rgba(255, 255, 255, 0.85);
+    line-height: 1.6;
+}
+
+/* Attendance Items */
+.attendance-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 16px;
+    background: rgba(255, 255, 255, 0.1);
+    backdrop-filter: blur(10px);
+    border-radius: 12px;
+    margin-bottom: 12px;
+    border: 2px solid transparent;
+    transition: all 0.3s;
+}
+
+.attendance-item.present {
+    background: rgba(16, 185, 129, 0.2);
+    border-color: rgba(16, 185, 129, 0.5);
+}
+
+.attendance-info {
+    flex: 1;
+}
+
+.attendance-name {
+    font-weight: 600;
+    color: white;
+    margin-bottom: 4px;
+    font-size: 16px;
+}
+
+.attendance-id {
+    font-size: 14px;
+    color: rgba(255, 255, 255, 0.85);
+}
+
+.attendance-toggle {
+    min-width: 120px;
+    padding: 12px 20px;
+    border-radius: 10px;
+    border: none;
+    cursor: pointer;
+    font-size: 16px;
+    font-weight: 600;
+    transition: all 0.3s;
+}
+
+.attendance-toggle.present {
+    background: #10B981;
+    color: white;
+}
+
+.attendance-toggle.present:hover {
+    background: #059669;
+    transform: scale(1.05);
+}
+
+.attendance-toggle.absent {
+    background: rgba(239, 68, 68, 0.3);
+    color: white;
+    backdrop-filter: blur(10px);
+}
+
+.attendance-toggle.absent:hover {
+    background: #EF4444;
+    transform: scale(1.05);
+}
+
+/* Modal */
+.modal {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100vh;
+    background: rgba(0, 0, 0, 0.5);
+    backdrop-filter: blur(8px);
+    display: none;
+    align-items: center;
+    justify-content: center;
+    z-index: 2000;
+    padding: 20px;
+}
+
+.modal.active {
+    display: flex;
+}
+
+.modal-content {
+    background: rgba(255, 255, 255, 0.15);
+    backdrop-filter: blur(18px);
+    border-radius: 18px;
+    padding: 24px;
+    max-width: 500px;
+    width: 100%;
+    max-height: 90vh;
+    overflow-y: auto;
+    box-shadow: 0 30px 60px rgba(0, 0, 0, 0.3);
+    border: 1px solid rgba(255, 255, 255, 0.18);
+}
+
+.modal-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+}
+
+.modal-title {
+    font-size: 20px;
+    font-weight: bold;
+    color: white;
+}
+
+.close-btn {
+    background: rgba(255, 255, 255, 0.2);
+    border: none;
+    font-size: 20px;
+    cursor: pointer;
+    padding: 6px 12px;
+    color: white;
+    border-radius: 8px;
+    transition: all 0.3s;
+}
+
+.close-btn:hover {
+    background: rgba(255, 255, 255, 0.3);
+}
+
+/* Grid */
+.grid-2 {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 16px;
+}
+
+@media (max-width: 768px) {
+    .grid-2 {
+        grid-template-columns: 1fr;
+    }
+}
+
+/* List Items */
+.list-item {
+    padding: 16px;
+    background: rgba(255, 255, 255, 0.1);
+    backdrop-filter: blur(10px);
+    border-radius: 12px;
+    margin-bottom: 12px;
+    cursor: pointer;
+    transition: all 0.2s;
+    border: 2px solid transparent;
+}
+
+.list-item:active {
+    transform: scale(0.98);
+}
+
+.list-item.selected {
+    background: rgba(27, 108, 168, 0.3);
+    border-color: white;
+}
+
+.list-item-title {
+    font-weight: 600;
+    color: white;
+    margin-bottom: 4px;
+}
+
+.list-item-subtitle {
+    font-size: 14px;
+    color: rgba(255, 255, 255, 0.85);
+}
+
+/* QR Container */
+.qr-container {
+    border: 2px dashed rgba(255, 255, 255, 0.3);
+    border-radius: 12px;
+    padding: 30px;
+    text-align: center;
+    background: rgba(255, 255, 255, 0.05);
+}
+
+.qr-icon {
+    font-size: 64px;
+    opacity: 0.5;
+    margin-bottom: 12px;
+}
+
+/* Icon Buttons */
+.icon-btn {
+    padding: 8px 12px;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 14px;
+    font-weight: 600;
+    transition: all 0.2s;
+}
+
+.icon-btn-blue {
+    background: rgba(37, 99, 235, 0.3);
+    color: white;
+    backdrop-filter: blur(10px);
+}
+
+.icon-btn-blue:hover {
+    background: #2563EB;
+}
+
+.icon-btn-red {
+    background: rgba(239, 68, 68, 0.3);
+    color: white;
+    backdrop-filter: blur(10px);
+}
+
+.icon-btn-red:hover {
+    background: #EF4444;
+}
+
+    </style>
+    <script src="https://unpkg.com/html5-qrcode@2.3.8/html5-qrcode.min.js"></script>
+    <script src="https://cdn.sheetjs.com/xlsx-0.20.1/package/dist/xlsx.full.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+</head>
+<body>
+
+    <div id="app" class="container">
+        <nav class="navbar">
+            <div class="navbar-content">
+                <div class="navbar-brand">
+                    <div class="navbar-logo">📚</div>
+                    <span class="navbar-title">Class Manager</span>
+                </div>
+                <button class="menu-btn" onclick="toggleSidebar()">☰</button>
+            </div>
+        </nav>
+
+        <div class="sidebar-overlay" id="sidebarOverlay" onclick="toggleSidebar()"></div>
+
+        <div class="sidebar" id="sidebar">
+            <div class="sidebar-header">
+                <h3>Teacher Portal</h3>
+                <p>Welcome back!</p>
+            </div>
+            <div class="sidebar-menu">
+                <div class="menu-item active" data-screen="dashboard" onclick="navigateTo('dashboard')">
+                    <span>📊</span><span>Dashboard</span>
+                </div>
+                <div class="menu-item" data-screen="students" onclick="navigateTo('students')">
+                    <span>👥</span><span>Students</span>
+                </div>
+                <div class="menu-item" data-screen="timetable" onclick="navigateTo('timetable')">
+                    <span>📅</span><span>Timetable</span>
+                </div>
+                <div class="menu-item" data-screen="attendance" onclick="navigateTo('attendance')">
+                    <span>✅</span><span>Attendance</span>
+                </div>
+                <div class="menu-item" data-screen="payments" onclick="navigateTo('payments')">
+                    <span>💰</span><span>Payments</span>
+                </div>
+                <div class="menu-item" data-screen="reports" onclick="navigateTo('reports')">
+                    <span>📄</span><span>Reports</span>
+                </div>
+                <div class="menu-item" data-screen="settings" onclick="navigateTo('settings')">
+                    <span>⚙️</span><span>Settings</span>
+                </div>
+                
+            </div>
+        </div>
+
+        <div class="content">
+            <!-- Dashboard Screen -->
+            <div id="dashboard" class="screen active">
+                <div class="screen-header">
+                    <h1 class="screen-title">Dashboard</h1>
+                    <p class="screen-subtitle">Welcome back! Here's your overview</p>
+                </div>
+                <div class="form-group" style="max-width: 300px;">
+                    <label>Filter by Grade</label>
+                    <select id="gradeFilter" onchange="updateDashboard()">
+                        <option value="all">All Grades</option>
+                    </select>
+                </div>
+                <div class="stats-grid">
+                    <div class="stat-card">
+                        <div class="stat-header">
+                            <div class="stat-info">
+                                <p>Total Students</p>
+                                <h3 id="totalStudents">0</h3>
+                            </div>
+                            <div class="stat-icon blue">👥</div>
+                        </div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-header">
+                            <div class="stat-info">
+                                <p>Today's Classes</p>
+                                <h3 id="todayClasses">0</h3>
+                            </div>
+                            <div class="stat-icon green">📅</div>
+                        </div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-header">
+                            <div class="stat-info">
+                                <p>Pending Payments</p>
+                                <h3 id="pendingPayments">0</h3>
+                            </div>
+                            <div class="stat-icon amber">⚠️</div>
+                        </div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-header">
+                            <div class="stat-info">
+                                <p>Attendance Rate</p>
+                                <h3 id="attendanceRate">0%</h3>
+                            </div>
+                            <div class="stat-icon purple">✅</div>
+                        </div>
+                    </div>
+                </div>
+                <div class="grid-2">
+                    <div class="card">
+                        <h3 class="card-title">Quick Actions</h3>
+                        <button class="btn btn-primary" onclick="navigateTo('attendance')" style="margin-bottom: 12px;">✅ Mark Attendance</button>
+                        <button class="btn btn-success" onclick="navigateTo('payments')" style="margin-bottom: 12px;">💰 Record Payment</button>
+                        <button class="btn btn-secondary" onclick="navigateTo('reports')">📄 Generate Report</button>
+                    </div>
+                    <div class="card">
+                        <h3 class="card-title">Today's Classes</h3>
+                        <div id="todayClassesList"></div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Students Screen -->
+            <div id="students" class="screen">
+                <div class="screen-header">
+                    <h1 class="screen-title">Student Management</h1>
+                    <p class="screen-subtitle">Manage all students</p>
+                </div>
+
+                <div class="grid-2">
+                    <!-- Left Side - Student List by Grade Tabs -->
+                    <div class="card">
+                        <h3 class="card-title">Students by Grade</h3>
+                        
+                        <!-- Grade Tabs -->
+                        <div style="display: flex; gap: 8px; margin-bottom: 20px; flex-wrap: wrap;">
+                            <button class="grade-tab active" data-grade="all" onclick="switchGradeTab('all')">
+                                All
+                            </button>
+                            <div id="gradeTabs"></div>
+                        </div>
+
+                        <!-- Search -->
+                        <div class="form-group">
+                            <input type="text" id="studentSearchBox" placeholder="Search by name, ID, or phone..." oninput="filterStudentsByTab()">
+                        </div>
+
+                        <!-- Student List -->
+                        <div id="studentListByGrade" style="max-height: 500px; overflow-y: auto;"></div>
+                    </div>
+
+                    <!-- Right Side - Student Form -->
+                    <div class="card">
+                        <h3 class="card-title" id="studentFormTitle">Add New Student</h3>
+                        
+                        <div class="form-group">
+                            <label>Name *</label>
+                            <input type="text" id="studentNameInput" placeholder="Enter student name">
+                        </div>
+
+                        <div class="form-group">
+                            <label>Birthday *</label>
+                            <input type="date" id="studentBirthdayInput">
+                        </div>
+
+                        <div class="form-group">
+                            <label>Gender *</label>
+                            <select id="studentGenderInput">
+                                <option value="">Select Gender</option>
+                                <option value="Male">Male</option>
+                                <option value="Female">Female</option>
+                                <option value="Other">Other</option>
+                            </select>
+                        </div>
+
+                        <div class="form-group">
+                            <label>Class *</label>
+                            <select id="studentClassInput">
+                                <option value="">Select Class</option>
+                                <option value="A">A</option>
+                                <option value="B">B</option>
+                                <option value="C">C</option>
+                                <option value="D">D</option>
+                                <option value="E">E</option>
+                            </select>
+                        </div>
+
+                        <div class="form-group">
+                            <label>Grade *</label>
+                            <select id="studentGradeInput"></select>
+                        </div>
+
+                        <div class="form-group">
+                            <label>Student's Phone Number</label>
+                            <input type="tel" id="studentPhoneInput" placeholder="e.g., 0771234567">
+                        </div>
+
+                        <div class="form-group">
+                            <label>Parent's Phone Number *</label>
+                            <input type="tel" id="parentPhoneInput" placeholder="e.g., 0771234567">
+                        </div>
+
+                        <div id="studentIdDisplaySection" style="display: none;">
+    
+                            <div class="form-group">        
+                                <label>Student ID</label>        
+                                <input type="text" id="studentIdDisplay" disabled style="background: #F3F4F6; font-weight: 600;">   
+                            </div>
+        
+                            <div style="text-align: center; padding: 20px; background: #F3F4F6; border-radius: 12px; border: 2px dashed #D1D5DB;">        
+                                <div style="font-size: 48px; margin-bottom: 12px;">📱</div>    
+                                <p style="font-weight: 600; color: #374151; margin-bottom: 8px;">QR Code Ready</p>
+                                <p style="font-size: 14px; color: #6B7280; margin-bottom: 16px;" id="qrCodeText"></p>        
+        
+                                <button type="button" class="btn btn-primary" onclick="showQRCodeForCurrentStudent()">            
+                                    🎫 View & Download QR Code        
+                                </button>    
+                            </div>
+                        </div>
+
+                        <!-- Action Buttons -->
+                        <div class="grid-2" style="gap: 12px; margin-top: 20px;">
+                            <button class="btn btn-primary" id="addStudentBtn" onclick="addNewStudent()">
+                                ➕ Add
+                            </button>
+                            <button class="btn btn-success" id="updateStudentBtn" style="display: none;" onclick="updateExistingStudent()">
+                                💾 Update
+                            </button>
+                            <button class="btn btn-danger" id="deleteStudentBtn" style="display: none;" onclick="deleteExistingStudent()">
+                                🗑️ Delete
+                            </button>
+                            <button class="btn btn-secondary" id="clearStudentBtn" onclick="clearStudentForm()">
+                                ✖️ Clear
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Timetable Screen -->
+            <div id="timetable" class="screen">
+                <div class="screen-header">
+                    <h1 class="screen-title">Timetable</h1>
+                    <p class="screen-subtitle" id="subjectDisplay">Subject: Mathematics</p>
+                </div>
+                <button class="btn btn-primary" onclick="showAddTimetable()" style="margin-bottom: 20px;">➕ Add Class</button>
+                <div class="card">
+                    <div class="table-container">
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>Day</th>
+                                    <th>Time</th>
+                                    <th>Grade</th>
+                                    <th>Notes</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody id="timetableTableBody">
+                                <tr><td colspan="5" style="text-align: center; padding: 40px; color: #6B7280;">No classes scheduled</td></tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Attendance Screen -->
+            <div id="attendance" class="screen">  
+                <div style="max-width: 1000px; margin: 0 auto; padding: 20px;">      
+                    <div class="screen-header">            
+                        <h1 class="screen-title">Mark Attendance</h1>         
+                        <p class="screen-subtitle">Track student attendance</p>     
+                        </div>
+
+                        <!-- Step 1 & 2: Select Class and Date -->     
+                        <div class="card">           
+                            <h3 class="card-title">Step 1 & 2: Select Class and Date</h3>           
+            
+                            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-bottom: 20px;">
+                                <div class="form-group">
+                                    <label>Select Class *</label>                    
+                                    <select id="attendanceClassSelect" style="width: 100%; padding: 12px; border: 1px solid #D1D5DB; border-radius: 8px; font-size: 16px;">                       
+                                        <option value="">Choose a class</option>        
+                                        <option value="06">Grade 06</option>                        
+                                        <option value="07">Grade 07</option>                        
+                                        <option value="08">Grade 08</option>                        
+                                        <option value="09">Grade 09</option>                        
+                                        <option value="10">Grade 10</option>                       
+                                        <option value="11">Grade 11</option>                       
+                                        <option value="12">Grade 12</option>
+                                    </select>
+                            </div>
+                            <div class="form-group">
+                                <label>Select Date *</label>                 
+                                <input type="date" id="attendanceDateSelect" style="width: 100%; padding: 12px; border: 1px solid #D1D5DB; border-radius: 8px; font-size: 16px;">
+                            </div>
+                        </div>
+            
+                        <div style="display: flex; gap: 12px;">
+                
+                            <div style="display: flex; gap: 12px;">    
+                                <button class="btn btn-primary" onclick="openQRScanner('attendance')" style="flex: 1;">        
+                                    📷 Scan QR    
+                                </button>    
+                                <button class="btn btn-secondary" onclick="manualQRInput('attendance')">        
+                                    ⌨️ Manual Entry    
+                                </button>
+                            </div>           
+                        </div>        
+                    </div>
+
+                    <!-- Step 4: Mark Present/Absent -->
+                    <div class="card" id="attendanceStudentCard" style="display: none;">
+                        <h3 class="card-title">Step 4: Mark Attendance</h3>
+            
+                    <!-- Stats -->           
+                    <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 15px; margin-bottom: 25px;">                
+                        <div style="background: #F3F4F6; padding: 15px; border-radius: 10px; text-align: center;">                    
+                            <p style="font-size: 14px; color: #6B7280; margin-bottom: 5px;">Total Students</p>                    
+                            <h3 style="font-size: 28px; font-weight: bold; color: #1F2937;" id="attendanceTotalCount">0</h3>                
+                        </div>                
+                        <div style="background: #D1FAE5; padding: 15px; border-radius: 10px; text-align: center;">                    
+                            <p style="font-size: 14px; color: #065F46; margin-bottom: 5px;">Present</p>                    
+                            <h3 style="font-size: 28px; font-weight: bold; color: #065F46;" id="attendancePresentCount">0</h3>                
+                        </div>                
+                        <div style="background: #FEE2E2; padding: 15px; border-radius: 10px; text-align: center;">                    
+                            <p style="font-size: 14px; color: #991B1B; margin-bottom: 5px;">Absent</p>                    
+                            <h3 style="font-size: 28px; font-weight: bold; color: #991B1B;" id="attendanceAbsentCount">0</h3>                
+                            </div>            
+                        </div>
+            
+                        <!-- Student List -->
+                        <div id="attendanceStudentsList"></div>
+
+                        <!-- Step 5: Save -->            
+                        <button class="btn btn-success" onclick="saveAttendanceData()" style="margin-top: 20px; width: 100%;">                
+                            💾 Step 5: Save Attendance
+                        </button>        
+                    </div>
+                </div>
+            </div>
+
+            <!-- Payments Screen -->
+            <div id="payments" class="screen">
+                <div class="screen-header">
+                    <h1 class="screen-title">Payment Management</h1>
+                    <p class="screen-subtitle">Manage student fee payments</p>
+                </div>
+
+                <div class="card">
+                    <h3 class="card-title">Record Payment</h3>
+                    
+                    <div style="display: flex; gap: 12px; margin-bottom: 20px;">    
+                        <button class="btn btn-primary" onclick="openQRScanner('payment')" style="flex: 1;">        
+                            📷 Scan QR Code    
+                        </button>    
+                        <button class="btn btn-secondary" onclick="manualQRInput('payment')">        
+                            ⌨️ Manual Entry
+                        </button>
+                    </div>
+
+                    <div class="form-group">
+                        <label>Student ID *</label>
+                        <input type="text" id="paymentStudentId" placeholder="Enter student ID or scan QR">
+                    </div>
+
+                    <div class="form-group">
+                        <label>Class (Auto-filled)</label>
+                        <input type="text" id="paymentClass" placeholder="Will auto-fill after entering ID" disabled>
+                    </div>
+
+                    <div class="form-group">
+                        <label>Month *</label>
+                        <select id="paymentMonthDropdown">
+                            <option value="">Select Month</option>
+                            <option value="January">January</option>
+                            <option value="February">February</option>
+                            <option value="March">March</option>
+                            <option value="April">April</option>
+                            <option value="May">May</option>
+                            <option value="June">June</option>
+                            <option value="July">July</option>
+                            <option value="August">August</option>
+                            <option value="September">September</option>
+                            <option value="October">October</option>
+                            <option value="November">November</option>
+                            <option value="December">December</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label>Amount *</label>
+                        <input type="number" id="paymentAmountInput" placeholder="Enter amount">
+                    </div>
+
+                    <div class="form-group">
+                        <label>Payment Status *</label>
+                        <select id="paymentStatusDropdown">
+                            <option value="Paid">Paid</option>
+                            <option value="Unpaid">Unpaid</option>
+                            <option value="Free Card">Free Card</option>
+                        </select>
+                    </div>
+
+                    <button class="btn btn-primary" onclick="recordPayment()">
+                        💾 Record Payment
+                    </button>
+                </div>
+
+                <div class="card">
+                    <h3 class="card-title">Payment History</h3>
+                    <div class="table-container">
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>Date</th>
+                                    <th>Student ID</th>
+                                    <th>Student Name</th>
+                                    <th>Class</th>
+                                    <th>Month</th>
+                                    <th>Amount</th>
+                                    <th>Status</th>
+                                </tr>
+                            </thead>
+                            <tbody id="paymentHistoryTable">
+                                <tr>
+                                    <td colspan="7" style="text-align: center; padding: 40px; color: #6B7280;">
+                                        No payment records yet
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Reports Screen -->
+            <div id="reports" class="screen">
+                <div class="screen-header">
+                    <h1 class="screen-title">Reports</h1>
+                </div>
+                <div class="card">
+                    <h3 class="card-title">Generate Report</h3>
+                    <div class="form-group">
+                        <label>Report Type</label>
+                        <select id="reportType">
+                            <option value="attendance">Monthly Attendance by Grade</option>
+                            <option value="payment">Payment Collection Summary</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>Month</label>
+                        <input type="month" id="reportMonth">
+                    </div>
+                    <div class="form-group">
+                        <label>Grade</label>
+                        <select id="reportGrade">
+                            <option value="all">All Grades</option>
+                        </select>
+                    </div>
+                    <button class="btn btn-primary" onclick="generateReport()">📊 Generate</button>
+                    <button class="btn btn-success" onclick="exportToExcel()" style="margin-top: 12px;">📥 Export Excel</button>
+                </div>
+                <div class="card" id="reportPreview" style="display: none;">
+                    <h3 class="card-title">Preview</h3>
+                    <div id="reportContent"></div>
+                </div>
+            </div>
+
+            <!-- QR Scanner Modal -->
+
+            <div class="modal" id="qrScannerModal">    
+                <div class="modal-content" style="max-width: 600px;">        
+                    <div class="modal-header">            
+                        <h3 class="modal-title">📷 Scan QR Code</h3>            
+                        <button class="close-btn" onclick="closeQRScanner()">✖</button>
+        
+                    </div>        
+                    <div id="qr-reader" style="width: 100%;"></div>                
+                    <div style="margin-top: 20px; padding: 15px; background: #F3F4F6; border-radius: 8px;">            
+                        <p style="margin: 0; font-size: 14px; color: #6B7280;">                
+                            📱 Position the QR code in front of your camera            
+                        </p>        
+                    </div>
+               
+                    <div id="qr-result" style="margin-top: 15px; padding: 15px; background: #D1FAE5; border-radius: 8px; display: none;">            
+                        <p style="margin: 0; font-weight: 600; color: #065F46;">             
+                            ✅ Scanned: <span id="qr-scanned-id"></span>            
+                        </p>        
+                    </div>    
+                </div>
+            </div>
+
+            <!-- QR Code Display Modal -->
+            <div class="modal" id="qrCodeDisplayModal">    
+                <div class="modal-content" style="max-width: 500px;">        
+                    <div class="modal-header">            
+                        <h3 class="modal-title">Student QR Code</h3>            
+                        <button class="close-btn" onclick="closeQRCodeDisplay()">✖</button>        
+                    </div>
+        
+                    <div style="text-align: center;">            
+                        <div style="background: #F3F4F6; padding: 20px; border-radius: 12px; margin-bottom: 20px;">                
+                            <p style="font-size: 18px; font-weight: 600; color: #1F2937; margin-bottom: 5px;" id="qrStudentName"></p>                
+                            <p style="font-size: 14px; color: #6B7280; margin-bottom: 15px;" id="qrStudentDetails"></p>
+                            
+                            <!-- QR Code will be generated here -->                                
+                            <div id="qrcode-container" style="display: flex; justify-content: center; margin: 20px 0;"></div>                                
+                            
+                            <p style="font-size: 16px; font-weight: 600; color: #2563EB;" id="qrStudentId"></p>            
+                        </div>
+                        
+                        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px;">                
+                            <button class="btn btn-primary" onclick="downloadQRCode()">        
+                                💾 Download QR Code            
+                            </button>                
+                            <button class="btn btn-success" onclick="downloadStudentCard()">                    
+                                🎫 Download ID Card        
+                            </button>            
+                        </div>        
+                    </div>    
+                </div>
+            </div>
+
+            <!-- Settings Screen -->
+            <div id="settings" class="screen">
+                <div class="screen-header">
+                    <h1 class="screen-title">Settings</h1>
+                </div>
+                <div class="card">
+                    <h3 class="card-title">Grades</h3>
+                    <div id="gradesList"></div>
+                    <div style="display: flex; gap: 12px; margin-top: 16px;">
+                        <input type="text" id="newGrade" placeholder="e.g., 13" style="flex: 1;">
+                        <button class="btn btn-primary" onclick="addGrade()">➕ Add</button>
+                    </div>
+                </div>
+                <div class="card">
+                    <h3 class="card-title">Subject</h3>
+                    <div class="form-group">
+                        <label>Subject Name</label>
+                        <input type="text" id="subjectNameInput" value="Mathematics">
+                    </div>
+                    <button class="btn btn-primary" onclick="saveSubject()">💾 Save</button>
+                </div>
+                <div class="card">
+                    <h3 class="card-title">Backup</h3>
+                    <p style="font-size: 14px; color: #6B7280; margin-bottom: 16px;">Last: <span id="lastBackup">Never</span></p>
+                    <button class="btn btn-primary" onclick="backupData()" style="margin-bottom: 12px;">💾 Backup</button>
+                    <button class="btn btn-secondary" onclick="restoreData()" style="margin-bottom: 12px;">📂 Restore</button>
+                    <button class="btn btn-danger" onclick="clearAllData()">🗑️ Clear All</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modals -->
+    <div class="modal" id="timetableModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 class="modal-title" id="timetableModalTitle">Add Class</h3>
+                <button class="close-btn" onclick="closeTimetableModal()">✖</button>
+            </div>
+            <div class="form-group">
+                <label>Day</label>
+                <select id="timetableDay">
+                    <option>Monday</option>
+                    <option>Tuesday</option>
+                    <option>Wednesday</option>
+                    <option>Thursday</option>
+                    <option>Friday</option>
+                    <option>Saturday</option>
+                    <option>Sunday</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label>Time</label>
+                <input type="time" id="timetableTime">
+            </div>
+            <div class="form-group">
+                <label>Grade</label>
+                <select id="timetableGrade"></select>
+            </div>
+            <div class="form-group">
+                <label>Notes</label>
+                <input type="text" id="timetableNotes" placeholder="e.g., Room 101">
+            </div>
+            <button class="btn btn-primary" onclick="saveTimetableEntry()">💾 Save</button>
+        </div>
+    </div>
+
+    <div class="modal" id="paymentModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 class="modal-title">Record Payment</h3>
+                <button class="close-btn" onclick="closePaymentModal()">✖</button>
+            </div>
+            <div class="form-group">
+                <label>Amount</label>
+                <input type="number" id="paymentAmount" placeholder="Enter amount">
+            </div>
+            <div class="form-group">
+                <label>Date</label>
+                <input type="date" id="paymentDate">
+            </div>
+            <div class="form-group">
+                <label>Month</label>
+                <input type="month" id="paymentMonth">
+            </div>
+            <div class="form-group">
+                <label>Method</label>
+                <select id="paymentMethod">
+                    <option>Cash</option>
+                    <option>Bank Transfer</option>
+                    <option>Mobile Payment</option>
+                </select>
+            </div>
+            <button class="btn btn-primary" onclick="savePayment()">💾 Record</button>
+        </div>
+    </div>
+    <script>
+        let appData = {
+            students: [],
+            grades: ['06', '07', '08', '09', '10', '11', '12'],
+            timetable: [],
+            attendance: {},
+            payments: [],
+            subjectName: 'Mathematics',
+            selectedStudent: null,
+            editingTimetable: null,
+            selectedPaymentStudent: null
+        };
+
+        function init() {
+            console.log('Initializing app...');
+        
+            // Load saved data   
+            loadData();
+        
+            // Hide splash screen    
+            const splash = document.getElementById('splash');    
+            if (splash) {        
+                splash.style.display = 'none';        
+                console.log('Splash hidden');    
+            } else {        
+                console.warn('Splash element not found');    
+            }
+        
+            // Show app immediately    
+            const app = document.getElementById('app');    
+            if (app) {        
+                app.classList.add('active');        
+                console.log('App shown');    
+            } else {        
+                console.error('App element not found!');    
+            }
+        
+            // Update dashboard if function exists    
+            if (typeof updateDashboard === 'function') {        
+                updateDashboard();    
+            }
+       
+            console.log('App initialized');
+        }
+
+        function loadData() {
+            const saved = localStorage.getItem('classManagerData');
+            if (saved) {
+                appData = { ...appData, ...JSON.parse(saved) };
+            }
+            populateGradeDropdowns();
+            updateDashboard();
+        }
+
+        function saveData() {
+            localStorage.setItem('classManagerData', JSON.stringify(appData));
+        }
+
+        function navigateTo(screenName) {
+            document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+            document.getElementById(screenName).classList.add('active');
+            
+            document.querySelectorAll('.menu-item').forEach(m => m.classList.remove('active'));
+            const menuItem = document.querySelector(`.menu-item[data-screen="${screenName}"]`);
+            
+            if (menuItem) menuItem.classList.add('active');
+            
+            toggleSidebar();
+            // Call the correct screen initialization functions
+            if (screenName === 'students') loadStudentsScreen();
+            if (screenName === 'timetable') loadTimetable();
+            if (screenName === 'attendance') {
+    
+                const dateInput = document.getElementById('attendanceDateSelect');
+    
+                if (dateInput && !dateInput.value) {
+                    dateInput.value = new Date().toISOString().split('T')[0];
+                }
+            }
+            if (screenName === 'payments') loadPaymentHistory();
+            if (screenName === 'settings') loadSettings();
+        }
+
+        function toggleSidebar() {
+            document.getElementById('sidebar').classList.toggle('active');
+            document.getElementById('sidebarOverlay').classList.toggle('active');
+        }
+
+        function populateGradeDropdowns() {
+            const html = appData.grades.map(g => `<option value="${g}">Grade ${g}</option>`).join('');
+    
+    
+            // Only update elements that exist
+    
+            const gradeFilter = document.getElementById('gradeFilter');
+    
+            if (gradeFilter) {
+                gradeFilter.innerHTML = '<option value="all">All Grades</option>' + html;
+            }
+    
+            const studentGradeFilter = document.getElementById('studentGradeFilter');
+            if (studentGradeFilter) {
+                studentGradeFilter.innerHTML = '<option value="all">All Grades</option>' + html;
+            }
+    
+            const studentGradeInput = document.getElementById('studentGradeInput');
+            if (studentGradeInput) {
+                studentGradeInput.innerHTML = '<option value="">Select Grade</option>' + html;
+            }
+    
+            const attendanceGrade = document.getElementById('attendanceGrade');
+            if (attendanceGrade) {
+                attendanceGrade.innerHTML = html;
+            }
+    
+            const attendanceClassSelect = document.getElementById('attendanceClassSelect');
+            if (attendanceClassSelect) {
+                attendanceClassSelect.innerHTML = '<option value="">Choose a class</option>' + html;
+            }
+    
+            const timetableGrade = document.getElementById('timetableGrade');
+            if (timetableGrade) {
+                timetableGrade.innerHTML = html;
+            }
+    
+            const paymentGradeFilter = document.getElementById('paymentGradeFilter');
+            if (paymentGradeFilter) {
+                paymentGradeFilter.innerHTML = '<option value="all">All Grades</option>' + html;
+            }
+    
+            const reportGrade = document.getElementById('reportGrade');
+            if (reportGrade) {
+                reportGrade.innerHTML = '<option value="all">All Grades</option>' + html;
+            }
+        }
+
+        function updateDashboard() {
+            const filter = document.getElementById('gradeFilter').value;
+            const filtered = filter === 'all' ? appData.students : appData.students.filter(s => s.grade === filter);
+            
+            document.getElementById('totalStudents').textContent = filtered.length;
+            
+            const today = new Date().getDay();
+            const days = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
+            const todayClasses = appData.timetable.filter(t => t.day === days[today]);
+            document.getElementById('todayClasses').textContent = todayClasses.length;
+            
+            const pending = getPendingPayments().length;
+            document.getElementById('pendingPayments').textContent = pending;
+            
+            document.getElementById('attendanceRate').textContent = getTodayAttendanceRate();
+            
+            const list = document.getElementById('todayClassesList');
+            if (todayClasses.length === 0) {
+                list.innerHTML = '<p style="color: #6B7280; font-size: 14px;">No classes today</p>';
+            } else {
+                list.innerHTML = todayClasses.map(c => `
+                    <div style="padding: 12px; background: #EFF6FF; border-radius: 8px; margin-bottom: 8px;">
+                        <div style="font-weight: 600;">Grade ${c.grade}</div>
+                        <div style="font-size: 14px; color: #6B7280;">${c.time}</div>
+                    </div>
+                `).join('');
+            }
+        }
+
+        function getPendingPayments() {
+            const current = new Date();
+            return appData.students.filter(student => {
+                const payments = appData.payments.filter(p => p.studentId === student.id);
+                if (payments.length === 0 && current.getDate() > 14) return true;
+                if (payments.length > 0) {
+                    const last = payments[payments.length - 1];
+                    const payDate = new Date(last.date);
+                    const months = (current.getFullYear() - payDate.getFullYear()) * 12 + (current.getMonth() - payDate.getMonth());
+                    return months > 0 && current.getDate() > 14;
+                }
+                return false;
+            });
+        }
+
+        function getTodayAttendanceRate() {
+            const today = new Date().toISOString().split('T')[0];
+            const att = appData.attendance[today] || {};
+            const total = Object.keys(att).length;
+            if (total === 0) return '0%';
+            const present = Object.values(att).filter(s => s === 'present').length;
+            return Math.round((present / total) * 100) + '%';
+        }
+
+        // ============================================
+        // STUDENT MANAGEMENT - UPDATED VERSION
+        // ============================================
+
+        let currentSelectedGradeTab = 'all';
+        let selectedStudentForEdit = null;
+
+        function loadStudentsScreen() {
+            populateStudentGradeDropdown();
+            createGradeTabs();
+            filterStudentsByTab();
+        }
+
+        function populateStudentGradeDropdown() {
+            const gradeSelect = document.getElementById('studentGradeInput');
+            if (gradeSelect) {
+                gradeSelect.innerHTML = '<option value="">Select Grade</option>' + 
+                    appData.grades.map(g => `<option value="${g}">Grade ${g}</option>`).join('');
+            }
+        }
+
+        function createGradeTabs() {
+            const tabsContainer = document.getElementById('gradeTabs');
+            if (tabsContainer) {
+                tabsContainer.innerHTML = appData.grades.map(g => `
+                    <button class="grade-tab" data-grade="${g}" onclick="switchGradeTab('${g}')">
+                        Grade ${g}
+                    </button>
+                `).join('');
+            }
+        }
+
+        function switchGradeTab(grade) {
+            currentSelectedGradeTab = grade;
+            
+            // Update active tab styling
+            document.querySelectorAll('.grade-tab').forEach(tab => {
+                tab.classList.remove('active');
+            });
+            document.querySelector(`.grade-tab[data-grade="${grade}"]`).classList.add('active');
+            
+            filterStudentsByTab();
+        }
+
+        function filterStudentsByTab() {
+            const searchTerm = document.getElementById('studentSearchBox').value.toLowerCase();
+            
+            let filtered = appData.students;
+            
+            // Filter by grade tab
+            if (currentSelectedGradeTab !== 'all') {
+                filtered = filtered.filter(s => s.grade === currentSelectedGradeTab);
+            }
+            
+            // Filter by search
+            if (searchTerm) {
+                filtered = filtered.filter(s => 
+                    s.name.toLowerCase().includes(searchTerm) ||
+                    s.id.includes(searchTerm) ||
+                    (s.studentPhone && s.studentPhone.includes(searchTerm)) ||
+                    (s.parentPhone && s.parentPhone.includes(searchTerm))
+                );
+            }
+            
+            displayStudentList(filtered);
+        }
+
+        function displayStudentList(students) {    
+            const listContainer = document.getElementById('studentListByGrade');
+        
+            if (students.length === 0) {
+                listContainer.innerHTML = '<p style="text-align: center; color: #6B7280; padding: 40px;">No students found</p>';        
+                return;    
+            }
+        
+            listContainer.innerHTML = students.map(s => `                    
+                <div class="student-card ${selectedStudentForEdit?.id === s.id ? 'selected' : ''}"                             
+                    onclick='selectStudentForEdit(${JSON.stringify(s).replace(/'/g, "&apos;")})'>                            
+                    <div style="display: flex; justify-content: space-between; align-items: center;">                                    
+                        <div style="flex: 1;">                                
+                            <div class="student-card-name">${s.name}</div>                                            
+                            <div class="student-card-details">                                            
+                                ID: ${s.id}<br>                                                    
+                                Grade ${s.grade} - Class ${s.class || 'N/A'} | ${s.gender || 'N/A'}<br>                                                    
+                                Parent: ${s.parentPhone || 'N/A'}   
+                            </div>                                
+                        </div>                    
+                        <button onclick='event.stopPropagation(); showQRCode(${JSON.stringify(s).replace(/'/g, "&apos;")})'                         
+                                style="background: #2563EB; color: white; padding: 8px 16px; border: none; border-radius: 6px; cursor: pointer; font-size: 14px; font-weight: 600;">                    
+                            📱 QR                                    
+                        </button>            
+                    </div>
+                </div>        
+            `).join(''); 
+        }
+
+        function selectStudentForEdit(student) {
+            selectedStudentForEdit = student;
+            
+            // Fill form with student data
+            document.getElementById('studentFormTitle').textContent = 'Edit Student';
+            document.getElementById('studentNameInput').value = student.name;
+            document.getElementById('studentBirthdayInput').value = student.birthday || '';
+            document.getElementById('studentGenderInput').value = student.gender || '';
+            document.getElementById('studentClassInput').value = student.class || '';
+            document.getElementById('studentGradeInput').value = student.grade;
+            document.getElementById('studentPhoneInput').value = student.studentPhone || '';
+            document.getElementById('parentPhoneInput').value = student.parentPhone || '';
+            
+            // Show student ID and QR
+            document.getElementById('studentIdDisplay').value = student.id;
+            document.getElementById('qrCodeDisplay').textContent = student.id;
+            document.getElementById('studentIdDisplaySection').style.display = 'block';
+            
+            // Show/hide buttons
+            document.getElementById('addStudentBtn').style.display = 'none';
+            document.getElementById('updateStudentBtn').style.display = 'block';
+            document.getElementById('deleteStudentBtn').style.display = 'block';
+            
+            // Update selected styling
+            filterStudentsByTab();
+        }
+
+        function addNewStudent() {
+            // Get form values
+            const name = document.getElementById('studentNameInput').value.trim();
+            const birthday = document.getElementById('studentBirthdayInput').value;
+            const gender = document.getElementById('studentGenderInput').value;
+            const studentClass = document.getElementById('studentClassInput').value;
+            const grade = document.getElementById('studentGradeInput').value;
+            const studentPhone = document.getElementById('studentPhoneInput').value.trim();
+            const parentPhone = document.getElementById('parentPhoneInput').value.trim();
+            
+            // Validation
+            if (!name) {
+                alert('Please enter student name');
+                return;
+            }
+            if (!birthday) {
+                alert('Please select birthday');
+                return;
+            }
+            if (!gender) {
+                alert('Please select gender');
+                return;
+            }
+            if (!studentClass) {
+                alert('Please select class');
+                return;
+            }
+            if (!grade) {
+                alert('Please select grade');
+                return;
+            }
+            if (!parentPhone) {
+                alert('Please enter parent\'s phone number');
+                return;
+            }
+            
+            // Generate student ID
+            const studentId = generateStudentId(grade);
+            
+            // Create student object
+            const newStudent = {
+                id: studentId,
+                name: name,
+                birthday: birthday,
+                gender: gender,
+                class: studentClass,
+                grade: grade,
+                studentPhone: studentPhone,
+                parentPhone: parentPhone,
+                qrCode: studentId
+            };
+            
+            // Add to array
+            appData.students.push(newStudent);
+            saveData();
+            
+            // Refresh display
+            filterStudentsByTab();
+            clearStudentForm();
+            
+            alert('✅ Student added successfully!\n\nStudent ID: ' + studentId);
+        }
+
+        function updateExistingStudent() {
+            if (!selectedStudentForEdit) return;
+            
+            // Get form values
+            const name = document.getElementById('studentNameInput').value.trim();
+            const birthday = document.getElementById('studentBirthdayInput').value;
+            const gender = document.getElementById('studentGenderInput').value;
+            const studentClass = document.getElementById('studentClassInput').value;
+            const grade = document.getElementById('studentGradeInput').value;
+            const studentPhone = document.getElementById('studentPhoneInput').value.trim();
+            const parentPhone = document.getElementById('parentPhoneInput').value.trim();
+            
+            // Validation
+            if (!name || !birthday || !gender || !studentClass || !grade || !parentPhone) {
+                alert('Please fill in all required fields');
+                return;
+            }
+            
+            // Update student
+            appData.students = appData.students.map(s => {
+                if (s.id === selectedStudentForEdit.id) {
+                    return {
+                        ...s,
+                        name: name,
+                        birthday: birthday,
+                        gender: gender,
+                        class: studentClass,
+                        grade: grade,
+                        studentPhone: studentPhone,
+                        parentPhone: parentPhone
+                    };
+                }
+                return s;
+            });
+            
+            saveData();
+            filterStudentsByTab();
+            clearStudentForm();
+            
+            alert('✅ Student updated successfully!');
+        }
+
+        function deleteExistingStudent() {
+            if (!selectedStudentForEdit) return;
+            
+            if (!confirm(`Are you sure you want to delete this student?\n\nName: ${selectedStudentForEdit.name}\nID: ${selectedStudentForEdit.id}`)) {
+                return;
+            }
+            
+            appData.students = appData.students.filter(s => s.id !== selectedStudentForEdit.id);
+            saveData();
+            
+            filterStudentsByTab();
+            clearStudentForm();
+            
+            alert('✅ Student deleted successfully!');
+        }
+
+        function clearStudentForm() {
+            selectedStudentForEdit = null;
+            
+            document.getElementById('studentFormTitle').textContent = 'Add New Student';
+            document.getElementById('studentNameInput').value = '';
+            document.getElementById('studentBirthdayInput').value = '';
+            document.getElementById('studentGenderInput').value = '';
+            document.getElementById('studentClassInput').value = '';
+            document.getElementById('studentGradeInput').value = '';
+            document.getElementById('studentPhoneInput').value = '';
+            document.getElementById('parentPhoneInput').value = '';
+            
+            document.getElementById('studentIdDisplaySection').style.display = 'none';
+            
+            document.getElementById('addStudentBtn').style.display = 'block';
+            document.getElementById('updateStudentBtn').style.display = 'none';
+            document.getElementById('deleteStudentBtn').style.display = 'none';
+            
+            filterStudentsByTab();
+        }
+
+        function printStudentQR() {
+            if (!selectedStudentForEdit) return;
+            alert('🖨️ Print QR Code\n\nStudent: ' + selectedStudentForEdit.name + '\nID: ' + selectedStudentForEdit.id + '\n\nIn a real app, this would open a print dialog with the QR code.');
+        }
+
+        function generateStudentId(grade) {
+            const year = new Date().getFullYear();
+            const gradeStudents = appData.students.filter(s => s.grade === grade);
+            const nextNumber = String(gradeStudents.length + 1).padStart(3, '0');
+            return `${year}${grade}${nextNumber}`;
+        }
+        
+        function showQRCodeForCurrentStudent() {    
+            if (!selectedStudentForEdit) {        
+                alert('No student selected');        
+                return;    
+            }
+        
+            showQRCode(selectedStudentForEdit);
+        }
+
+        // TIMETABLE
+        function loadTimetable() {
+            const tbody = document.getElementById('timetableTableBody');
+            if (appData.timetable.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="5" style="text-align: center; padding: 40px; color: #6B7280;">No classes</td></tr>';
+                return;
+            }
+            tbody.innerHTML = appData.timetable.map(t => `
+                <tr>
+                    <td>${t.day}</td>
+                    <td>${t.time}</td>
+                    <td><span class="badge badge-blue">Grade ${t.grade}</span></td>
+                    <td>${t.notes || '-'}</td>
+                    <td>
+                        <button class="icon-btn icon-btn-blue" onclick='editTimetable(${JSON.stringify(t)})'>✏️</button>
+                        <button class="icon-btn icon-btn-red" onclick="deleteTimetable('${t.id}')">🗑️</button>
+                    </td>
+                </tr>
+            `).join('');
+        }
+
+        function showAddTimetable() {
+            appData.editingTimetable = null;
+            document.getElementById('timetableModalTitle').textContent = 'Add Class';
+            document.getElementById('timetableDay').value = 'Monday';
+            document.getElementById('timetableTime').value = '';
+            document.getElementById('timetableGrade').value = appData.grades[0];
+            document.getElementById('timetableNotes').value = '';
+            document.getElementById('timetableModal').classList.add('active');
+        }
+
+        function editTimetable(entry) {
+            appData.editingTimetable = entry;
+            document.getElementById('timetableModalTitle').textContent = 'Edit Class';
+            document.getElementById('timetableDay').value = entry.day;
+            document.getElementById('timetableTime').value = entry.time;
+            document.getElementById('timetableGrade').value = entry.grade;
+            document.getElementById('timetableNotes').value = entry.notes || '';
+            document.getElementById('timetableModal').classList.add('active');
+        }
+
+        function closeTimetableModal() {
+            document.getElementById('timetableModal').classList.remove('active');
+        }
+
+        function saveTimetableEntry() {
+            const day = document.getElementById('timetableDay').value;
+            const time = document.getElementById('timetableTime').value;
+            const grade = document.getElementById('timetableGrade').value;
+            const notes = document.getElementById('timetableNotes').value;
+            
+            if (!time) {
+                alert('Enter time');
+                return;
+            }
+            
+            if (appData.editingTimetable) {
+                appData.timetable = appData.timetable.map(t => t.id === appData.editingTimetable.id ? { ...t, day, time, grade, notes } : t);
+            } else {
+                appData.timetable.push({ id: Date.now().toString(), day, time, grade, notes });
+            }
+            
+            saveData();
+            closeTimetableModal();
+            loadTimetable();
+            updateDashboard();
+            alert('Saved!');
+        }
+
+        function deleteTimetable(id) {
+            if (!confirm('Delete?')) return;
+            appData.timetable = appData.timetable.filter(t => t.id !== id);
+            saveData();
+            loadTimetable();
+            updateDashboard();
+        }
+        
+        // ============================================
+        // PAYMENT MANAGEMENT FUNCTIONS
+        // ============================================
+
+        // Auto-fill class when student ID is entered
+        document.addEventListener('DOMContentLoaded', function() {
+            const studentIdInput = document.getElementById('paymentStudentId');
+            if (studentIdInput) {
+                studentIdInput.addEventListener('input', function() {
+                    const studentId = this.value.trim();
+                    const student = appData.students.find(s => s.id === studentId);
+                    
+                    if (student) {
+                        document.getElementById('paymentClass').value = 'Grade ' + student.grade;
+                    } else {
+                        document.getElementById('paymentClass').value = '';
+                    }
+                });
+            }
+        });
+
+        function scanQRForPayment() {
+            const studentId = prompt('📷 QR Scanner\n\nIn real app, camera would open.\nFor now, enter Student ID:');
+            if (studentId) {
+                document.getElementById('paymentStudentId').value = studentId;
+                
+                const student = appData.students.find(s => s.id === studentId);
+                if (student) {
+                    document.getElementById('paymentClass').value = 'Grade ' + student.grade;
+                } else {
+                    alert('Student not found!');
+                }
+            }
+        }
+
+        function recordPayment() {
+            const studentId = document.getElementById('paymentStudentId').value.trim();
+            const month = document.getElementById('paymentMonthDropdown').value;
+            const amount = document.getElementById('paymentAmountInput').value.trim();
+            const status = document.getElementById('paymentStatusDropdown').value;
+
+            // Validation
+            if (!studentId) {
+                alert('Please enter Student ID');
+                return;
+            }
+
+            const student = appData.students.find(s => s.id === studentId);
+            if (!student) {
+                alert('Student ID not found!');
+                return;
+            }
+
+            if (!month) {
+                alert('Please select Month');
+                return;
+            }
+
+            if (!amount && status !== 'Free Card') {
+                alert('Please enter Amount');
+                return;
+            }
+
+            // Create payment record
+            const payment = {
+                id: Date.now().toString(),
+                date: new Date().toISOString().split('T')[0],
+                studentId: studentId,
+                studentName: student.name,
+                class: 'Grade ' + student.grade,
+                month: month,
+                amount: status === 'Free Card' ? 0 : parseFloat(amount),
+                status: status
+            };
+
+            // Add to payments array
+            if (!appData.payments) appData.payments = [];
+            appData.payments.push(payment);
+            
+            saveData();
+            loadPaymentHistory();
+
+            // Clear form
+            document.getElementById('paymentStudentId').value = '';
+            document.getElementById('paymentClass').value = '';
+            document.getElementById('paymentMonthDropdown').value = '';
+            document.getElementById('paymentAmountInput').value = '';
+            document.getElementById('paymentStatusDropdown').value = 'Paid';
+
+            alert('✅ Payment recorded successfully!');
+        }
+
+        function loadPaymentHistory() {
+            const tbody = document.getElementById('paymentHistoryTable');
+            
+            if (!appData.payments || appData.payments.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="7" style="text-align: center; padding: 40px; color: #6B7280;">No payment records yet</td></tr>';
+                return;
+            }
+
+            // Sort by date (newest first)
+            const sorted = [...appData.payments].sort((a, b) => new Date(b.date) - new Date(a.date));
+
+            tbody.innerHTML = sorted.map(p => {
+                let statusBadge = '';
+                if (p.status === 'Paid') {
+                    statusBadge = '<span class="badge badge-green">Paid</span>';
+                } else if (p.status === 'Unpaid') {
+                    statusBadge = '<span class="badge badge-red">Unpaid</span>';
+                } else if (p.status === 'Free Card') {
+                    statusBadge = '<span class="badge badge-blue">Free Card</span>';
+                }
+
+                return `
+                    <tr>
+                        <td>${p.date}</td>
+                        <td>${p.studentId}</td>
+                        <td>${p.studentName}</td>
+                        <td>${p.class}</td>
+                        <td>${p.month}</td>
+                        <td>Rs. ${p.amount.toFixed(2)}</td>
+                        <td>${statusBadge}</td>
+                    </tr>
+                `;
+            }).join('');
+        }
+
+        // ============================================
+        // ATTENDANCE MANAGEMENT - WORKING VERSION
+        // ============================================
+
+        let currentAttendanceData = {};
+        let currentAttendanceStudents = [];
+
+        function loadAttendanceStudents() {
+            const gradeSelect = document.getElementById('attendanceClassSelect');
+            const dateSelect = document.getElementById('attendanceDateSelect');
+    
+            if (!gradeSelect || !dateSelect) {
+                alert('Error: Controls not found');
+                return;    
+            }
+        
+            const grade = gradeSelect.value;    
+            const date = dateSelect.value;
+        
+            console.log('Loading attendance - Grade:', grade, 'Date:', date);
+        
+            if (!grade) {        
+                alert('⚠️ Please select a class first');        
+                return;    
+            }
+    
+    
+            if (!date) {        
+                alert('⚠️ Please select a date first');        
+                return;    
+            }
+        
+            // Get students for selected grade    
+            currentAttendanceStudents = appData.students.filter(s => s.grade === grade);        
+            console.log('Found students:', currentAttendanceStudents.length);
+        
+            if (currentAttendanceStudents.length === 0) {        
+                alert('❌ No students in Grade ' + grade + '\n\nPlease add students first.');        
+                document.getElementById('attendanceStudentCard').style.display = 'none';        
+                return;  
+            }
+    
+            // Show attendance card   
+            document.getElementById('attendanceStudentCard').style.display = 'block';    
+    
+            // Load existing attendance data for this date    
+            if (!appData.attendance) {        
+                appData.attendance = {};    
+            }
+        
+            if (appData.attendance[date]) {        
+                currentAttendanceData = { ...appData.attendance[date] };        
+                console.log('Loaded existing attendance:', currentAttendanceData);    
+            } else {        
+                currentAttendanceData = {};        
+                console.log('No existing attendance for this date');    
+            }
+    
+    
+            // Display students    
+            displayAttendanceStudents();
+        }
+
+        function displayAttendanceStudents() {    
+            const container = document.getElementById('attendanceStudentsList');    
+    
+            if (!container) {        
+                console.error('Student list container not found');        
+                return;    
+            }
+        
+            let html = '';    
+    
+            currentAttendanceStudents.forEach(s => {        
+                const isPresent = currentAttendanceData[s.id] === 'present';        
+        
+                html += `            
+                    <div style="background: ${isPresent ? '#D1FAE5' : '#F3F4F6'}; padding: 20px; border-radius: 10px; margin-bottom: 15px; border: 2px solid ${isPresent ? '#10B981' : '#D1D5DB'}; transition: all 0.3s;">                
+                        <div style="display: flex; justify-content: space-between; align-items: center;">                    
+                            <div>                        
+                                <div style="font-weight: 700; font-size: 18px; margin-bottom: 5px; color: #1F2937;">${s.name}</div>                        
+                                <div style="color: #6B7280; font-size: 14px;">ID: ${s.id} | Grade ${s.grade}</div>
+                            </div>
+                            <button onclick="toggleAttendance('${s.id}')"                             
+                            style="background: ${isPresent ? '#10B981' : '#EF4444'}; color: white; padding: 15px 30px; border: none; border-radius: 10px; cursor: pointer; font-size: 18px; font-weight: 700; min-width: 140px; transition: all 0.3s;">
+                            ${isPresent ? '✓ Present' : '✗ Absent'}                
+                            </button>
+                        </div>
+                    </div>
+   
+                `;
+    
+            });
+    
+            container.innerHTML = html;
+    
+            updateAttendanceCounts();
+    
+            console.log('Students displayed successfully');
+        }
+   
+        function toggleAttendance(studentId) {            
+            console.log('Toggle attendance for:', studentId);
+            
+            // Toggle status            
+            if (currentAttendanceData[studentId] === 'present') {                    
+                currentAttendanceData[studentId] = 'absent';           
+            } else {                    
+                currentAttendanceData[studentId] = 'present';            
+            }
+                
+            console.log('New status:', currentAttendanceData[studentId]);
+                
+            // Refresh display            
+            displayAttendanceStudents();    
+        }
+    
+        function updateAttendanceCounts() {            
+            const total = currentAttendanceStudents.length;            
+            const present = currentAttendanceStudents.filter(s => currentAttendanceData[s.id] === 'present').length;            
+            const absent = total - present;
+                
+            const totalEl = document.getElementById('attendanceTotalCount');       
+            const presentEl = document.getElementById('attendancePresentCount');            
+            const absentEl = document.getElementById('attendanceAbsentCount');
+                
+            if (totalEl) totalEl.textContent = total;            
+            if (presentEl) presentEl.textContent = present;            
+            if (absentEl) absentEl.textContent = absent;       
+        
+            console.log('Counts updated - Total:', total, 'Present:', present, 'Absent:', absent);
+        }
+    
+        function saveAttendanceData() {            
+            const dateSelect = document.getElementById('attendanceDateSelect');    
+            const gradeSelect = document.getElementById('attendanceClassSelect');
+            
+            if (!dateSelect || !gradeSelect) {                    
+                alert('Error: Controls not found');                    
+                return;            
+            }
+                
+            const date = dateSelect.value;            
+            const grade = gradeSelect.value;        
+        
+            if (!date || !grade) {                    
+                alert('⚠️ Please select class and date first');                    
+                return;            
+            }
+                
+            // Save to appData            
+            if (!appData.attendance) {                   
+                appData.attendance = {};            
+            }
+                
+            appData.attendance[date] = { ...currentAttendanceData };        
+        
+            saveData();        
+        
+            // Calculate stats           
+            const present = currentAttendanceStudents.filter(s => currentAttendanceData[s.id] === 'present').length;            
+            const absent = currentAttendanceStudents.length - present;     
+        
+            alert(`✅ Attendance Saved Successfully!\n\nDate: ${date}\nClass: Grade ${grade}\n\nPresent: ${present}\nAbsent: ${absent}`);        
+        
+            console.log('Attendance saved:', appData.attendance[date]);    
+        }
+    
+        function scanQRForAttendance() {        
+            const gradeSelect = document.getElementById('attendanceClassSelect');
+            
+            if (!gradeSelect || !gradeSelect.value) {              
+                alert('⚠️ Please select a class first');                    
+                return;          
+            }
+            
+            const studentId = prompt('📷 QR Scanner\n\nIn real app, camera would open.\nFor now, enter Student ID:');
+                
+            if (!studentId) return;
+               
+            const student = appData.students.find(s => s.id === studentId.trim());    
+        
+            if (!student) {                    
+                alert('❌ Student not found!\n\nID: ' + studentId);                    
+                return;            
+            }        
+        
+            if (student.grade !== gradeSelect.value) {                    
+                alert(`❌ Wrong Class!\n\nStudent: ${student.name}\nGrade: ${student.grade}\nSelected: ${gradeSelect.value}`);                   
+                return;            
+            }    
+        
+            // Mark as present            
+            currentAttendanceData[studentId.trim()] = 'present';
+            
+            // Check if students are loaded            
+            if (currentAttendanceStudents.length === 0) {                    
+                loadAttendanceStudents();            
+            } else {                    
+                displayAttendanceStudents();            
+            }
+       
+            alert('✅ ' + student.name + ' marked as Present');    
+        }
+
+        // ============================================
+        // QR CODE GENERATION & DISPLAY
+        // ============================================
+
+        let currentQRStudent = null;
+
+        function showQRCode(student) {    
+            currentQRStudent = student;
+        
+            // Set student details    
+            document.getElementById('qrStudentName').textContent = student.name;    
+            document.getElementById('qrStudentDetails').textContent = `Grade ${student.grade} - Class ${student.class || 'N/A'}`;    
+            document.getElementById('qrStudentId').textContent = `ID: ${student.id}`;
+        
+            // Clear previous QR code    
+            const container = document.getElementById('qrcode-container');    
+            container.innerHTML = '';
+        
+            // Generate new QR code    
+            new QRCode(container, {        
+                text: student.id,        
+                width: 200,        
+                height: 200,        
+                colorDark: "#000000",        
+                colorLight: "#ffffff",        
+                correctLevel: QRCode.CorrectLevel.H    
+            });
+        
+            // Show modal   
+            document.getElementById('qrCodeDisplayModal').classList.add('active');
+        }
+
+        function closeQRCodeDisplay() {    
+            document.getElementById('qrCodeDisplayModal').classList.remove('active');    
+            currentQRStudent = null;
+        }
+
+        function downloadQRCode() {    
+            if (!currentQRStudent) return;
+        
+            // Get the QR code canvas    
+            const canvas = document.querySelector('#qrcode-container canvas');
+        
+            if (!canvas) {        
+                alert('QR Code not found');        
+                return;    
+            }
+        
+            // Convert to image and download    
+            const link = document.createElement('a');    
+            link.download = `QR_${currentQRStudent.id}_${currentQRStudent.name}.png`;    
+            link.href = canvas.toDataURL();    
+            link.click();
+        
+            alert(`✅ QR Code downloaded!\n\nFile: QR_${currentQRStudent.id}_${currentQRStudent.name}.png`);
+        }
+
+        function downloadStudentCard() {    
+            if (!currentQRStudent) return;    
+    
+            const student = currentQRStudent;
+    
+            // Create canvas - credit card size ratio    
+            const canvas = document.createElement('canvas');   
+            canvas.width = 800;    
+            canvas.height = 500;    
+            const ctx = canvas.getContext('2d');
+        
+            // Gradient background    
+            const gradient = ctx.createLinearGradient(0, 0, 800, 500);    
+            gradient.addColorStop(0, '#2563EB');    
+            gradient.addColorStop(1, '#1E40AF');    
+            ctx.fillStyle = gradient;    
+            ctx.fillRect(0, 0, 800, 500);
+        
+            // White card area    
+            ctx.fillStyle = '#FFFFFF';    
+            ctx.roundRect(20, 60, 760, 380, 15);    
+            ctx.fill();
+    
+    
+            // Header bar    
+            ctx.fillStyle = '#2563EB';    
+            ctx.roundRect(20, 60, 760, 70, [15, 15, 0, 0]);    
+            ctx.fill();
+    
+    
+            // School name    
+            ctx.fillStyle = '#FFFFFF';    
+            ctx.font = 'bold 36px Arial';    
+            ctx.textAlign = 'center';    
+            ctx.fillText('STUDENT ID CARD', 400, 110);
+    
+    
+            // Photo placeholder
+    
+            ctx.fillStyle = '#E5E7EB';    
+            ctx.roundRect(50, 160, 180, 220, 10);    
+            ctx.fill();
+       
+            ctx.fillStyle = '#9CA3AF';    
+            ctx.font = 'bold 20px Arial';    
+            ctx.textAlign = 'center';    
+            ctx.fillText('PHOTO', 140, 275);
+        
+            // Student info section    
+            ctx.fillStyle = '#1F2937';    
+            ctx.font = 'bold 32px Arial';    
+            ctx.textAlign = 'left';    
+            ctx.fillText(student.name, 260, 195);
+        
+            // Details    
+            ctx.fillStyle = '#4B5563';    
+            ctx.font = '22px Arial';
+    
+    
+            const details = [        
+                `ID: ${student.id}`,                   
+                `Grade: ${student.grade}`,                    
+                `Class: ${student.class || 'N/A'}`,                    
+                student.studentPhone ? `Phone: ${student.studentPhone}` : null            
+            ].filter(Boolean);
+                
+            details.forEach((detail, index) => {
+                ctx.fillText(detail, 260, 240 + (index * 35));            
+            });
+            
+            // QR Code section        
+            const qrCanvas = document.querySelector('#qrcode-container canvas');
+            
+            if (qrCanvas) {                    
+                // QR background                    
+                ctx.fillStyle = '#F9FAFB';                    
+                ctx.roundRect(580, 160, 180, 180, 10);                   
+                ctx.fill();
+                            
+                // QR Code                    
+                ctx.drawImage(qrCanvas, 595, 175, 150, 150);
+                            
+                // QR label        
+                ctx.fillStyle = '#6B7280';        
+                ctx.font = '14px Arial';        
+                ctx.textAlign = 'center';        
+                ctx.fillText('Scan to verify', 670, 355);    
+            }
+        
+            // Footer    
+            ctx.fillStyle = '#9CA3AF';    
+            ctx.font = 'italic 16px Arial';    
+            ctx.textAlign = 'center';    
+            ctx.fillText('Keep this card safe and bring it to class', 400, 420);
+    
+            // Outer border    
+            ctx.strokeStyle = '#2563EB';    
+            ctx.lineWidth = 3;    
+            ctx.roundRect(20, 60, 760, 380, 15);   
+            ctx.stroke();
+    
+    
+            // Download    
+            const link = document.createElement('a');    
+            link.download = `Student_ID_${student.id}_${student.name.replace(/\s+/g, '_')}.png`;    
+            link.href = canvas.toDataURL('image/png');    
+            link.click();
+        
+            alert(`✅ ID Card Downloaded!\n\n${student.name}\nID: ${student.id}`);
+        }
+
+        // Helper function for rounded rectangles (add this too)
+        CanvasRenderingContext2D.prototype.roundRect = function (x, y, width, height, radius) {    
+            if (typeof radius === 'number') {        
+                radius = [radius, radius, radius, radius];    
+            }
+    
+            this.beginPath();    
+            this.moveTo(x + radius[0], y);    
+            this.lineTo(x + width - radius[1], y);    
+            this.quadraticCurveTo(x + width, y, x + width, y + radius[1]);    
+            this.lineTo(x + width, y + height - radius[2]);    
+            this.quadraticCurveTo(x + width, y + height, x + width - radius[2], y + height);    
+            this.lineTo(x + radius[3], y + height);    
+            this.quadraticCurveTo(x, y + height, x, y + height - radius[3]);    
+            this.lineTo(x, y + radius[0]);    
+            this.quadraticCurveTo(x, y, x + radius[0], y);    
+            this.closePath();    
+            return this;
+        };
+
+        // REPORTS
+        function generateReport() {
+            const type = document.getElementById('reportType').value;
+            const month = document.getElementById('reportMonth').value;
+            const grade = document.getElementById('reportGrade').value;
+            
+            if (!month) {
+                alert('Select month');
+                return;
+            }
+            
+            let html = '';
+            if (type === 'attendance') html = generateAttendanceReport(month, grade);
+            else html = generatePaymentReport(month, grade);
+            
+            document.getElementById('reportContent').innerHTML = html;
+            document.getElementById('reportPreview').style.display = 'block';
+        }
+
+        function generateAttendanceReport(month, grade) {
+            const students = grade === 'all' ? appData.students : appData.students.filter(s => s.grade === grade);
+            let html = `<h4 style="margin-bottom: 16px;">Attendance Report - ${month}</h4>`;
+            html += '<table><thead><tr><th>ID</th><th>Name</th><th>Grade</th><th>Present</th><th>Absent</th><th>Rate</th></tr></thead><tbody>';
+            
+            students.forEach(s => {
+                let present = 0, total = 0;
+                Object.keys(appData.attendance).forEach(date => {
+                    if (date.startsWith(month)) {
+                        total++;
+                        if (appData.attendance[date][s.id] === 'present') present++;
+                    }
+                });
+                const rate = total > 0 ? Math.round((present / total) * 100) : 0;
+                html += `
+                    <tr>
+                        <td>${s.id}</td>
+                        <td>${s.name}</td>
+                        <td>Grade ${s.grade}</td>
+                        <td>${present}</td>
+                        <td>${total - present}</td>
+                        <td><span class="badge ${rate >= 75 ? 'badge-green' : 'badge-red'}">${rate}%</span></td>
+                    </tr>
+                `;
+            });
+            
+            html += '</tbody></table>';
+            return html;
+        }
+
+        function generatePaymentReport(month, grade) {
+            const students = grade === 'all' ? appData.students : appData.students.filter(s => s.grade === grade);
+            let html = `<h4 style="margin-bottom: 16px;">Payment Report - ${month}</h4>`;
+            html += '<table><thead><tr><th>ID</th><th>Name</th><th>Grade</th><th>Amount</th><th>Status</th></tr></thead><tbody>';
+            
+            let total = 0;
+            students.forEach(s => {
+                const monthPayments = appData.payments.filter(p => p.studentId === s.id && p.month === month);
+                const amount = monthPayments.reduce((sum, p) => sum + p.amount, 0);
+                const status = monthPayments.length > 0 ? 'Paid' : 'Unpaid';
+                if (amount > 0) total += amount;
+                
+                html += `
+                    <tr>
+                        <td>${s.id}</td>
+                        <td>${s.name}</td>
+                        <td>Grade ${s.grade}</td>
+                        <td>Rs. ${amount.toFixed(2)}</td>
+                        <td><span class="badge ${status === 'Paid' ? 'badge-green' : 'badge-red'}">${status}</span></td>
+                    </tr>
+                `;
+            });
+            
+            html += '</tbody></table>';
+            html += `<div style="margin-top: 20px; padding: 16px; background: #EFF6FF; border-radius: 8px;">
+                <strong>Total Collected: Rs. ${total.toFixed(2)}</strong>
+            </div>`;
+            return html;
+        }
+
+        function exportToExcel() {
+            alert('📥 Export to Excel\n\nIn a real app, this would download an Excel file.\n\nFor now, you can copy the table data above.');
+        }
+
+        // ============================================
+        // QR CODE SCANNER - FIXED VERSION
+        // ============================================
+
+        let html5QrcodeScanner = null;
+        let qrScanMode = null; // 'attendance' or 'payment'
+        let isScannerRunning = false;
+
+        function openQRScanner(mode) {    
+            qrScanMode = mode;    
+            document.getElementById('qrScannerModal').classList.add('active');
+        
+            // Initialize scanner    
+            html5QrcodeScanner = new Html5Qrcode("qr-reader");
+        
+            Html5Qrcode.getCameras().then(cameras => {        
+                if (cameras && cameras.length) {            
+                    const cameraId = cameras[0].id;
+                        
+                    html5QrcodeScanner.start(
+                        cameraId,                
+                        {                    
+                            fps: 10,                    
+                            qrbox: { width: 250, height: 250 }                
+                        },                
+                        onScanSuccess,                
+                        onScanFailure            
+                    ).then(() => {                
+                        isScannerRunning = true;                
+                        console.log('Scanner started successfully');            
+                    }).catch(err => {            
+                        console.error('Error starting scanner:', err);                
+                        isScannerRunning = false;
+                                
+                        if (err.name === 'NotAllowedError') {                    
+                            alert('❌ Camera Permission Denied\n\nPlease allow camera access in your browser settings and try again.');                
+                        } else {                    
+                            alert('❌ Cannot access camera\n\nError: ' + err.message);                
+                        }
+                                
+                        document.getElementById('qrScannerModal').classList.remove('active');            
+                    });        
+                } else {            
+                    alert('❌ No cameras found on this device');            
+                    document.getElementById('qrScannerModal').classList.remove('active');        
+                }    
+            }).catch(err => {        
+                console.error('Error getting cameras:', err);
+               
+                if (err.name === 'NotAllowedError') {            
+                    alert('❌ Camera Permission Denied\n\nPlease:\n1. Allow camera access when prompted\n2. Check browser settings\n3. Try again');        
+                } else {            
+                    alert('❌ Error accessing camera\n\n' + err.message);        
+                }
+                
+                document.getElementById('qrScannerModal').classList.remove('active');    
+            });
+        }
+
+        function onScanSuccess(decodedText, decodedResult) {
+            console.log('QR Code scanned:', decodedText);
+        
+            // Show scanned result    
+            document.getElementById('qr-scanned-id').textContent = decodedText;
+            document.getElementById('qr-result').style.display = 'block';
+        
+            // Process based on mode    
+            if (qrScanMode === 'attendance') {        
+                processQRForAttendance(decodedText);    
+            } else if (qrScanMode === 'payment') {    
+                processQRForPayment(decodedText);    
+            }
+        
+            // Close scanner after 2 seconds    
+            setTimeout(() => {        
+                closeQRScanner();    
+            }, 2000);
+        }
+
+        function onScanFailure(error) {
+            // Scanner is trying to detect QR - this is normal, don't show errors
+        }
+
+        function closeQRScanner() {
+            if (html5QrcodeScanner && isScannerRunning) {        
+                html5QrcodeScanner.stop().then(() => {        
+                    isScannerRunning = false;            
+                    html5QrcodeScanner = null;            
+                    document.getElementById('qrScannerModal').classList.remove('active');            
+                    document.getElementById('qr-result').style.display = 'none';        
+                    console.log('Scanner stopped successfully');        
+                }).catch(err => {        
+                    console.error('Error stopping scanner:', err);        
+                    isScannerRunning = false;            
+                    html5QrcodeScanner = null;            
+                    document.getElementById('qrScannerModal').classList.remove('active');            
+                    document.getElementById('qr-result').style.display = 'none';    
+                });    
+            } else {        
+                isScannerRunning = false;        
+                html5QrcodeScanner = null;        
+                document.getElementById('qrScannerModal').classList.remove('active');        
+                document.getElementById('qr-result').style.display = 'none';    
+            }
+        }
+
+        function processQRForAttendance(studentId) {    
+            const student = appData.students.find(s => s.id === studentId.trim());
+        
+            if (!student) {        
+                alert('❌ Student not found!\n\nScanned ID: ' + studentId);        
+                return;    
+            }
+        
+            const gradeSelect = document.getElementById('attendanceClassSelect');    
+            const selectedClass = gradeSelect ? gradeSelect.value : '';
+        
+            if (!selectedClass) {        
+                alert('⚠️ Please select a class first before scanning');        
+                return;    
+            }
+        
+            if (student.grade !== selectedClass) {        
+                alert(`❌ Wrong Class!\n\nStudent: ${student.name}\nStudent's Grade: ${student.grade}\nSelected Grade: ${selectedClass}`);        
+                return;    
+            }
+        
+            // Mark as present    
+            currentAttendanceData[studentId.trim()] = 'present';
+        
+            if (currentAttendanceStudents.length === 0) {        
+                loadAttendanceStudents();    
+            } else {            
+                displayAttendanceStudents();    
+            }
+        
+            alert('✅ Success!\n\n' + student.name + '\nMarked as Present');
+        }
+
+        function processQRForPayment(studentId) {
+            const student = appData.students.find(s => s.id === studentId.trim());
+        
+            if (!student) {        
+                alert('❌ Student not found!\n\nScanned ID: ' + studentId);        
+                return;    
+            }
+        
+            // Fill in the payment form    
+            const studentIdInput = document.getElementById('paymentStudentId');    
+            const classInput = document.getElementById('paymentClass');
+        
+            if (studentIdInput) studentIdInput.value = studentId;    
+            if (classInput) classInput.value = 'Grade ' + student.grade;
+        
+            alert('✅ Student Loaded!\n\n' + student.name + '\nGrade ' + student.grade + '\n\nPlease fill in payment details below.');
+
+        }
+
+        function manualQRInput(mode) {    
+            const studentId = prompt('Enter Student ID:\n\n(Camera not working? Enter ID manually)');
+        
+            if (!studentId) return;
+        
+            if (mode === 'attendance') {        
+                processQRForAttendance(studentId);    
+            } else if (mode === 'payment') {        
+                processQRForPayment(studentId);    
+            }
+        }
+    
+        // ============================================    
+        // EXCEL EXPORT    
+        // ============================================
+    
+        function exportToExcel() {            
+            const type = document.getElementById('reportType').value;            
+            const month = document.getElementById('reportMonth').value;            
+            const grade = document.getElementById('reportGrade').value;
+                
+            if (!month) {                    
+                alert('⚠️ Please select a month first');                    
+                return;            
+            }
+                
+            if (type === 'attendance') {                    
+                exportAttendanceToExcel(month, grade);            
+            } else if (type === 'payment') {                    
+                exportPaymentToExcel(month, grade);            
+            }    
+        }
+    
+        function exportAttendanceToExcel(month, grade) {            
+            const students = grade === 'all' ? appData.students : appData.students.filter(s => s.grade === grade);
+                
+            // Prepare data            
+            const data = [];
+                
+            // Add headers            
+            data.push(['Student ID', 'Name', 'Grade', 'Present Days', 'Absent Days', 'Attendance Rate']);
+        
+        
+            // Add student rows            
+            students.forEach(s => {                    
+                let presentDays = 0;                    
+                let totalDays = 0;
+                            
+                Object.keys(appData.attendance || {}).forEach(date => {                            
+                    if (date.startsWith(month)) {                                    
+                        totalDays++;                                    
+                        if (appData.attendance[date][s.id] === 'present') {                    
+                        presentDays++;                
+                        }                            
+                    }        
+                });
+                            
+                const rate = totalDays > 0 ? Math.round((presentDays / totalDays) * 100) : 0;
+                    
+                data.push([                        
+                    s.id,                                        
+                    s.name,                           
+                    'Grade ' + s.grade,                            
+                    presentDays,                            
+                    totalDays - presentDays,                            
+                    rate + '%'                    
+                ]);            
+            });
+                
+            // Create workbook            
+            const wb = XLSX.utils.book_new();            
+            const ws = XLSX.utils.aoa_to_sheet(data);
+                
+            // Set column widths            
+            ws['!cols'] = [
+                { wch: 15 }, // Student ID                    
+                { wch: 25 }, // Name                    
+                { wch: 10 }, // Grade                    
+                { wch: 12 }, // Present                    
+                { wch: 12 }, // Absent                    
+                { wch: 15 }  // Rate           
+            ];
+               
+            XLSX.utils.book_append_sheet(wb, ws, 'Attendance Report');
+                
+            // Save file            
+            const filename = `Attendance_Report_${month}_${grade === 'all' ? 'All_Grades' : 'Grade_' + grade}.xlsx`;            
+            XLSX.writeFile(wb, filename);
+                
+            alert('✅ Excel file downloaded!\n\nFile: ' + filename);    
+        }
+    
+        function exportPaymentToExcel(month, grade) {            
+            const students = grade === 'all' ? appData.students : appData.students.filter(s => s.grade === grade);
+                
+            // Prepare data            
+            const data = [];
+                
+            // Add headers            
+            data.push(['Student ID', 'Name', 'Grade', 'Amount Paid', 'Status']);
+                
+            let totalCollected = 0;
+                
+            // Add student rows            
+            students.forEach(s => {                    
+                const monthPayments = (appData.payments || []).filter(p =>                             
+                    p.studentId === s.id && p.month === month                
+                );
+                    
+                const amount = monthPayments.reduce((sum, p) => sum + p.amount, 0);            
+                const status = monthPayments.length > 0 ? 'Paid' : 'Unpaid';
+                    
+                if (amount > 0) totalCollected += amount;
+                    
+                data.push([
+                    s.id,                            
+                    s.name,                            
+                    'Grade ' + s.grade,                           
+                    'Rs. ' + amount.toFixed(2),                            
+                    status                    
+                ]);            
+            });    
+        
+            // Add total row            
+            data.push([]);           
+            data.push(['', '', '', 'Total Collected:', 'Rs. ' + totalCollected.toFixed(2)]);
+                
+            // Create workbook            
+            const wb = XLSX.utils.book_new();            
+            const ws = XLSX.utils.aoa_to_sheet(data);
+                
+            // Set column widths    
+            ws['!cols'] = [
+                { wch: 15 }, // Student ID                    
+                { wch: 25 }, // Name                    
+                { wch: 10 }, // Grade                    
+                { wch: 15 }, // Amount                    
+                { wch: 10 }  // Status            
+            ];
+                
+            XLSX.utils.book_append_sheet(wb, ws, 'Payment Report');
+                
+            // Save file            
+            const filename = `Payment_Report_${month}_${grade === 'all' ? 'All_Grades' : 'Grade_' + grade}.xlsx`;            
+            XLSX.writeFile(wb, filename);
+                
+            alert('✅ Excel file downloaded!\n\nFile: ' + filename);    
+        }
+    
+        // Export Student List    
+        function exportStudentListToExcel() {            
+            const data = [];
+                
+            // Add headers            
+            data.push(['Student ID', 'Name', 'Birthday', 'Gender', 'Class', 'Grade', 'Student Phone', 'Parent Phone']);
+                
+            // Add student rows            
+            appData.students.forEach(s => {                    
+                data.push([
+                    s.id,                       
+                    s.name,                           
+                    s.birthday || '',                            
+                    s.gender || '',                            
+                    s.class || '',                            
+                    'Grade ' + s.grade,                            
+                    s.studentPhone || '',                            
+                    s.parentPhone || ''                    
+                ]);            
+            });
+                
+            // Create workbook            
+            const wb = XLSX.utils.book_new();            
+            const ws = XLSX.utils.aoa_to_sheet(data);
+                
+            // Set column widths            
+            ws['!cols'] = [
+                { wch: 15 },                    
+                { wch: 25 },                    
+                { wch: 12 },                    
+                { wch: 10 },                    
+                { wch: 8 },                    
+                { wch: 10 },                    
+                { wch: 15 },                    
+                { wch: 15 }            
+            ];
+                
+            XLSX.utils.book_append_sheet(wb, ws, 'Student List');        
+        
+            // Save file            
+            XLSX.writeFile(wb, 'Student_List.xlsx');       
+        
+            alert('✅ Student list exported to Excel!');    
+        }
+        
+        // SETTINGS
+        function loadSettings() {
+            document.getElementById('subjectNameInput').value = appData.subjectName;
+            document.getElementById('subjectDisplay').textContent = 'Subject: ' + appData.subjectName;
+            
+            const list = document.getElementById('gradesList');
+            list.innerHTML = appData.grades.map(g => `
+                <div style="display: flex; justify-content: space-between; align-items: center; padding: 12px; background: #F9FAFB; border-radius: 8px; margin-bottom: 8px;">
+                    <span style="font-weight: 600;">Grade ${g}</span>
+                    <button class="icon-btn icon-btn-red" onclick="deleteGrade('${g}')">🗑️ Remove</button>
+                </div>
+            `).join('');
+            
+            const lastBackup = localStorage.getItem('lastBackup');
+            document.getElementById('lastBackup').textContent = lastBackup || 'Never';
+        }
+
+        function addGrade() {
+            const newGrade = document.getElementById('newGrade').value.trim();
+            
+            if (!newGrade) {
+                alert('Enter grade number');
+                return;
+            }
+            
+            if (appData.grades.includes(newGrade)) {
+                alert('Grade already exists');
+                return;
+            }
+            
+            appData.grades.push(newGrade);
+            appData.grades.sort();
+            saveData();
+            populateGradeDropdowns();
+            loadSettings();
+            document.getElementById('newGrade').value = '';
+            alert('Grade added!');
+        }
+
+        function deleteGrade(grade) {
+            const hasStudents = appData.students.some(s => s.grade === grade);
+            
+            if (hasStudents) {
+                alert('Cannot delete grade with students');
+                return;
+            }
+            
+            if (!confirm(`Delete Grade ${grade}?`)) return;
+            
+            appData.grades = appData.grades.filter(g => g !== grade);
+            saveData();
+            populateGradeDropdowns();
+            loadSettings();
+            alert('Grade deleted!');
+        }
+
+        function saveSubject() {
+            const subject = document.getElementById('subjectNameInput').value.trim();
+            
+            if (!subject) {
+                alert('Enter subject name');
+                return;
+            }
+            
+            appData.subjectName = subject;
+            saveData();
+            document.getElementById('subjectDisplay').textContent = 'Subject: ' + subject;
+            alert('Subject saved!');
+        }
+
+        function backupData() {
+            const dataStr = JSON.stringify(appData, null, 2);
+            const dataBlob = new Blob([dataStr], { type: 'application/json' });
+            const url = URL.createObjectURL(dataBlob);
+            const link = document.createElement('a');
+            link.href = url;
+            link.download = `class-manager-backup-${new Date().toISOString().split('T')[0]}.json`;
+            link.click();
+            
+            const now = new Date().toLocaleString();
+            localStorage.setItem('lastBackup', now);
+            document.getElementById('lastBackup').textContent = now;
+            alert('Backup downloaded!');
+        }
+
+        function restoreData() {
+            const input = document.createElement('input');
+            input.type = 'file';
+            input.accept = '.json';
+            input.onchange = (e) => {
+                const file = e.target.files[0];
+                const reader = new FileReader();
+                reader.onload = (event) => {
+                    try {
+                        const restored = JSON.parse(event.target.result);
+                        appData = restored;
+                        saveData();
+                        populateGradeDropdowns();
+                        updateDashboard();
+                        loadSettings();
+                        alert('Data restored!');
+                    } catch (err) {
+                        alert('Invalid backup file');
+                    }
+                };
+                reader.readAsText(file);
+            };
+            input.click();
+        }
+
+        function clearAllData() {
+            if (!confirm('⚠️ Delete ALL data?\n\nThis cannot be undone!')) return;
+            if (!confirm('Are you absolutely sure?')) return;
+            
+            localStorage.clear();
+            location.reload();
+        }
+        // Initialize app
+        init();
+    </script>
+</body>
+</html>
