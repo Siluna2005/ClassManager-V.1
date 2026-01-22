@@ -5,9 +5,24 @@
   <title>Class Manager</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <link rel="stylesheet" href="style.css">
+  <link rel="icon" type="image/x-icon" href="assets/favicon.ico">
 </head>
 <body>
 
+<!-- Loading Screen -->
+<div id="loader">
+  <div class="loader-content">
+    <img src="assets/logo.png" alt="Class Manager Logo" class="logo-img">
+
+    <div class="dots">
+      <span></span>
+      <span></span>
+      <span></span>
+    </div>
+
+    <p>Preparing your workspace</p>
+  </div>
+</div>
 
 <div class="page">
   <div class="login-card">
@@ -30,6 +45,14 @@
 </div>
 
 <script type="module" src="auth.js"></script>
+<script>
+  window.addEventListener("load", () => {
+    setTimeout(() => {
+      document.getElementById("loader").classList.add("hide-loader");
+    }, 2500);
+  });
+</script>
+
 </body>
 </html>
 
