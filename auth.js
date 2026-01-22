@@ -3,7 +3,11 @@ import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebas
 import {
   getAuth,
   onAuthStateChanged,
-  signOut
+  signOut,
+  signInWithEmailAndPassword,
+  createUserWithEmailAndPassword,
+  GoogleAuthProvider,
+  signInWithPopup
 } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
 
 // 🔥 PASTE YOUR FIREBASE CONFIG HERE
@@ -22,8 +26,66 @@ const auth = getAuth(app);
 onAuthStateChanged(auth, (user) => {
   if (!user && window.location.pathname.includes("app.html")) {
     window.location.href = "index.html";
+  } else if (user && window.location.pathname.includes("index.html")) {
+    window.location.href = "app.html";
   }
 });
+
+// 📧 Email/Password Login
+window.login = function () {
+  const email = document.getElementById("email").value;
+  const password = document.getElementById("password").value;
+
+  if (!email || !password) {
+    alert("Please enter both email and password");
+    return;
+  }
+
+  signInWithEmailAndPassword(auth, email, password)
+    .then(() => {
+      window.location.href = "app.html";
+    })
+    .catch((error) => {
+      alert("Login failed: " + error.message);
+    });
+};
+
+// ✍️ Sign Up
+window.signUp = function () {
+  const email = document.getElementById("email").value;
+  const password = document.getElementById("password").value;
+
+  if (!email || !password) {
+    alert("Please enter both email and password");
+    return;
+  }
+
+  if (password.length < 6) {
+    alert("Password must be at least 6 characters");
+    return;
+  }
+
+  createUserWithEmailAndPassword(auth, email, password)
+    .then(() => {
+      window.location.href = "app.html";
+    })
+    .catch((error) => {
+      alert("Sign up failed: " + error.message);
+    });
+};
+
+// 🔵 Google Login
+window.googleLogin = function () {
+  const provider = new GoogleAuthProvider();
+  
+  signInWithPopup(auth, provider)
+    .then(() => {
+      window.location.href = "app.html";
+    })
+    .catch((error) => {
+      alert("Google login failed: " + error.message);
+    });
+};
 
 // 🚪 Logout (exposed globally)
 window.logout = function () {
