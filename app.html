@@ -1455,9 +1455,9 @@
             <button class="btn btn-primary" onclick="savePayment()">💾 Record</button>
         </div>
     </div>
-    <script>
-        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";  
+    <script type="module">  
         import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";  
   
         // 🔥 SAME Firebase config you used in auth.js  
         const firebaseConfig = {    
@@ -1479,7 +1479,8 @@
             }    
             // ✅ Logged in → stay on app.html  
         });
-
+    </script>
+    <script>
         let appData = {
             students: [],
             grades: ['06', '07', '08', '09', '10', '11', '12'],
@@ -3115,4 +3116,3 @@
     </script>
 </body>
 </html>
-
