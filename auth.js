@@ -11,7 +11,7 @@ import {
 // 🔥 PASTE YOUR FIREBASE CONFIG HERE
 const firebaseConfig = {
   apiKey: "AIzaSyD4z857J2ipSxqK8pN4tEWqU-jeK_mwA2I",
-  authDomain: "ClassManager.firebaseapp.com",
+  authDomain: "class-manager-383ad.firebaseapp.com",
   projectId: "class-manager-383ad",
   appId: "1:1085651561679:web:82ca82d59d6ff2ec671bba"
 };
@@ -54,3 +54,8 @@ window.googleLogin = function () {
     })
     .catch(err => alert(err.message));
 };
+
+onAuthStateChanged(auth, () => {
+  const loader = document.getElementById("loader");
+  if (loader) loader.classList.add("hide-loader");
+});
