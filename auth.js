@@ -1,11 +1,9 @@
-// 🔥 Firebase imports
+// auth.js
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
 import {
   getAuth,
-  signInWithEmailAndPassword,
-  createUserWithEmailAndPassword,
-  GoogleAuthProvider,
-  signInWithPopup
+  onAuthStateChanged,
+  signOut
 } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
 
 // 🔥 PASTE YOUR FIREBASE CONFIG HERE
@@ -19,43 +17,17 @@ const firebaseConfig = {
 // 🔥 Initialize Firebase
 const app = initializeApp(firebaseConfig);
 const auth = getAuth(app);
-const provider = new GoogleAuthProvider();
 
-// ===============================
-// ✅ EXPOSE FUNCTIONS TO HTML
-// ===============================
-
-window.login = function () {
-  const email = document.getElementById("email").value;
-  const password = document.getElementById("password").value;
-
-  signInWithEmailAndPassword(auth, email, password)
-    .then(() => {
-      window.location.href = "app.html";
-    })
-    .catch(err => alert(err.message));
-};
-
-window.signUp = function () {
-  const email = document.getElementById("email").value;
-  const password = document.getElementById("password").value;
-
-  createUserWithEmailAndPassword(auth, email, password)
-    .then(() => {
-      window.location.href = "app.html";
-    })
-    .catch(err => alert(err.message));
-};
-
-window.googleLogin = function () {
-  signInWithPopup(auth, provider)
-    .then(() => {
-      window.location.href = "app.html";
-    })
-    .catch(err => alert(err.message));
-};
-
-onAuthStateChanged(auth, () => {
-  const loader = document.getElementById("loader");
-  if (loader) loader.classList.add("hide-loader");
+// 🔐 Protect app.html
+onAuthStateChanged(auth, (user) => {
+  if (!user && window.location.pathname.includes("app.html")) {
+    window.location.href = "index.html";
+  }
 });
+
+// 🚪 Logout (exposed globally)
+window.logout = function () {
+  signOut(auth).then(() => {
+    window.location.href = "index.html";
+  });
+};
