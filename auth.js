@@ -31,37 +31,22 @@ onAuthStateChanged(auth, (user) => {
   }
 });
 
-// 📧 Email/Password Login
-window.login = function () {
-  const email = document.getElementById("email").value;
-  const password = document.getElementById("password").value;
-
-  if (!email || !password) {
-    alert("Please enter both email and password");
-    return;
-  }
-
+// 📧 Email/Password Login - Updated for new form
+window.login = function (email, password, callback) {
   signInWithEmailAndPassword(auth, email, password)
     .then(() => {
       window.location.href = "app.html";
     })
     .catch((error) => {
-      alert("Login failed: " + error.message);
+      // Pass error message to callback
+      if (callback) callback(error.message);
     });
 };
 
-// ✍️ Sign Up
-window.signUp = function () {
-  const email = document.getElementById("email").value;
-  const password = document.getElementById("password").value;
-
-  if (!email || !password) {
-    alert("Please enter both email and password");
-    return;
-  }
-
+// ✍️ Sign Up - Updated for new form
+window.signUp = function (email, password, callback) {
   if (password.length < 6) {
-    alert("Password must be at least 6 characters");
+    if (callback) callback("Password must be at least 6 characters");
     return;
   }
 
@@ -70,7 +55,8 @@ window.signUp = function () {
       window.location.href = "app.html";
     })
     .catch((error) => {
-      alert("Sign up failed: " + error.message);
+      // Pass error message to callback
+      if (callback) callback(error.message);
     });
 };
 
@@ -93,3 +79,24 @@ window.logout = function () {
     window.location.href = "index.html";
   });
 };
+
+// 🔵 Google Login
+window.googleLogin = function () {
+  const provider = new GoogleAuthProvider();
+  
+  signInWithPopup(auth, provider)
+    .then(() => {
+      window.location.href = "app.html";
+    })
+    .catch((error) => {
+      alert("Google login failed: " + error.message);
+    });
+};
+
+// 🚪 Logout (exposed globally)
+window.logout = function () {
+  signOut(auth).then(() => {
+    window.location.href = "index.html";
+  });
+};
+
