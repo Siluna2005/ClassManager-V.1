@@ -1352,6 +1352,190 @@
                 </div>
             </div>
 
+            <!-- Subscription Screen -->
+            <div id="subscription" class="screen">    
+                <div class="screen-header">        
+                    <h1 class="screen-title">Subscription Plans</h1>       
+                    <p class="screen-subtitle">Choose the plan that fits your needs</p>    
+                </div>
+    
+                <!-- Current Subscription Status -->    
+                <div class="glass-card" style="margin-bottom: 30px; max-width: 800px; margin-left: auto; margin-right: auto;">       
+                    <h3 class="card-title">📋 Current Subscription</h3>
+             
+                    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px; margin-bottom: 20px;">           
+                        <div style="background: rgba(59,130,246,0.2); padding: 15px; border-radius: 12px;">                
+                            <p style="font-size: 13px; color: rgba(255,255,255,0.7); margin-bottom: 5px;">Current Plan</p>               
+                            <p style="font-size: 20px; font-weight: 700; color: #fff; margin: 0;" id="currentPlanName">Free Trial</p>            
+                        </div>            
+                        <div style="background: rgba(16,185,129,0.2); padding: 15px; border-radius: 12px;">                
+                            <p style="font-size: 13px; color: rgba(255,255,255,0.7); margin-bottom: 5px;">Status</p>                
+                            <p style="font-size: 20px; font-weight: 700; color: #fff; margin: 0;" id="subscriptionStatus">Active</p>            
+                        </div>            
+                        <div style="background: rgba(245,158,11,0.2); padding: 15px; border-radius: 12px;">                
+                            <p style="font-size: 13px; color: rgba(255,255,255,0.7); margin-bottom: 5px;">Students</p>                
+                            <p style="font-size: 20px; font-weight: 700; color: #fff; margin: 0;"><span id="currentStudents">0</span> / <span id="maxStudents">10</span></p>            
+                        </div>            
+                        <div style="background: rgba(139,92,246,0.2); padding: 15px; border-radius: 12px;">                
+                            <p style="font-size: 13px; color: rgba(255,255,255,0.7); margin-bottom: 5px;">Valid Until</p>                
+                            <p style="font-size: 20px; font-weight: 700; color: #fff; margin: 0;" id="subscriptionEndDate">-</p>            
+                        </div>   
+                    </div>        
+                    <div id="subscriptionWarning" style="display: none; background: rgba(239,68,68,0.2); padding: 15px; border-radius: 12px; border: 1px solid rgba(239,68,68,0.3);">            
+                        <p style="margin: 0; color: #FEE2E2; font-weight: 600;">⚠️ <span id="warningMessage"></span></p>        
+                    </div>    
+                </div>
+    
+                <!-- Pricing Plans -->    
+                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 20px; max-width: 1200px; margin: 0 auto;">
+               
+                    <!-- Free Trial Plan -->        
+                    <div class="glass-card" style="position: relative;">            
+                        <div style="background: rgba(107,114,128,0.3); padding: 8px 16px; border-radius: 20px; display: inline-block; margin-bottom: 15px;">                
+                            <span style="font-size: 12px; font-weight: 600; color: #fff;">FREE TRIAL</span>            
+                        </div>         
+            
+                        <h3 style="font-size: 32px; font-weight: 700; color: #fff; margin-bottom: 10px;">                
+                            Free            
+                        </h3>            
+                        <p style="color: rgba(255,255,255,0.7); margin-bottom: 20px;">Perfect for trying out</p>
+                        
+                        <div style="border-top: 1px solid rgba(255,255,255,0.2); padding-top: 20px; margin-bottom: 20px;">                
+                            <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 12px;">                    
+                                <span style="color: #10B981; font-size: 20px;">✓</span>                    
+                                <span style="color: rgba(255,255,255,0.9);">Up to 10 students</span>                
+                            </div>                
+                            <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 12px;">                    
+                                <span style="color: #10B981; font-size: 20px;">✓</span>                    
+                                <span style="color: rgba(255,255,255,0.9);">Attendance tracking</span>                
+                            </div>                
+                            <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 12px;">                    
+                                <span style="color: #10B981; font-size: 20px;">✓</span>                    
+                                <span style="color: rgba(255,255,255,0.9);">Payment records</span>                
+                            </div>                
+                            <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 12px;">                    
+                                <span style="color: #EF4444; font-size: 20px;">✗</span>                    
+                                <span style="color: rgba(255,255,255,0.5);">Advanced reports</span>                
+                            </div>                
+                            <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 12px;">                    
+                                <span style="color: #EF4444; font-size: 20px;">✗</span>                    
+                                <span style="color: rgba(255,255,255,0.5);">Unlimited students</span>                
+                            </div>            
+                        </div>            
+            
+                        <button class="btn btn-secondary" onclick="selectPlan('free_trial')" id="btnFreeTrial">                
+                            Current Plan            
+                        </button>        
+                    </div>
+        
+                    <!-- Monthly Plan -->       
+                    <div class="glass-card" style="position: relative; border: 2px solid #10B981;">            
+                        <div style="position: absolute; top: -12px; right: 20px; background: #10B981; padding: 4px 12px; border-radius: 12px;">                
+                            <span style="font-size: 11px; font-weight: 700; color: #fff;">POPULAR</span>           
+                        </div>
+                       
+                        <div style="background: rgba(16,185,129,0.3); padding: 8px 16px; border-radius: 20px; display: inline-block; margin-bottom: 15px;">              
+                            <span style="font-size: 12px; font-weight: 600; color: #D1FAE5;">MONTHLY</span>            
+                        </div>
+                        
+                        <h3 style="font-size: 32px; font-weight: 700; color: #fff; margin-bottom: 5px;">                
+                            LKR.1000.00<span style="font-size: 16px; font-weight: 400; color: rgba(255,255,255,0.7);">/month</span>          
+                        </h3>
+                        <p style="color: rgba(255,255,255,0.7); margin-bottom: 20px;">Best for small classes</p>
+                        
+                        <div style="border-top: 1px solid rgba(255,255,255,0.2); padding-top: 20px; margin-bottom: 20px;">                
+                            <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 12px;">                    
+                                <span style="color: #10B981; font-size: 20px;">✓</span>                    
+                                <span style="color: rgba(255,255,255,0.9);">Unlimited students</span>                
+                            </div>                
+                            <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 12px;">                    
+                                <span style="color: #10B981; font-size: 20px;">✓</span>                    
+                                <span style="color: rgba(255,255,255,0.9);">All attendance features</span>                
+                            </div>                
+                            <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 12px;">                    
+                                <span style="color: #10B981; font-size: 20px;">✓</span>                    
+                                <span style="color: rgba(255,255,255,0.9);">Advanced reports</span>                
+                            </div>                
+                            <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 12px;">                   
+                                <span style="color: #10B981; font-size: 20px;">✓</span>                    
+                                <span style="color: rgba(255,255,255,0.9);">Excel exports</span>                
+                            </div>                
+                            <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 12px;">                    
+                                <span style="color: #10B981; font-size: 20px;">✓</span>                    
+                                <span style="color: rgba(255,255,255,0.9);">Priority support</span>                
+                            </div>            
+                        </div>           
+                        <button class="btn btn-success" onclick="selectPlan('monthly')" id="btnMonthly">                
+                            Subscribe Monthly            
+                        </button>        
+                    </div>
+    
+                    <!-- Annual Plan -->        
+                    <div class="glass-card" style="position: relative; border: 2px solid #3B82F6;">            
+                        <div style="position: absolute; top: -12px; right: 20px; background: #3B82F6; padding: 4px 12px; border-radius: 12px;">               
+                            <span style="font-size: 11px; font-weight: 700; color: #fff;">SAVE 20%</span>           
+                        </div>
+                       
+                        <div style="background: rgba(59,130,246,0.3); padding: 8px 16px; border-radius: 20px; display: inline-block; margin-bottom: 15px;">                
+                            <span style="font-size: 12px; font-weight: 600; color: #DBEAFE;">ANNUAL</span>           
+                        </div>
+                       
+                        <h3 style="font-size: 32px; font-weight: 700; color: #fff; margin-bottom: 5px;">                
+                            LKR.9600.00<span style="font-size: 16px; font-weight: 400; color: rgba(255,255,255,0.7);">/year</span>            
+                        </h3>
+                        
+                        <p style="color: rgba(255,255,255,0.7); margin-bottom: 20px;">Save $24/year</p>
+                        
+                        <div style="border-top: 1px solid rgba(255,255,255,0.2); padding-top: 20px; margin-bottom: 20px;">               
+                            <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 12px;">                    
+                                <span style="color: #10B981; font-size: 20px;">✓</span>                   
+                                <span style="color: rgba(255,255,255,0.9);">Everything in Monthly</span>                
+                            </div>                
+                            <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 12px;">                    
+                                <span style="color: #10B981; font-size: 20px;">✓</span>                    
+                                <span style="color: rgba(255,255,255,0.9);">20% discount</span>                
+                            </div>                
+                            <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 12px;">                    
+                                <span style="color: #10B981; font-size: 20px;">✓</span>                    
+                                <span style="color: rgba(255,255,255,0.9);">Priority updates</span>                
+                            </div>                
+                            <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 12px;">                    
+                                <span style="color: #10B981; font-size: 20px;">✓</span>                    
+                                <span style="color: rgba(255,255,255,0.9);">Dedicated support</span>                
+                            </div>                
+                            <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 12px;">                    
+                                <span style="color: #10B981; font-size: 20px;">✓</span>                    
+                                <span style="color: rgba(255,255,255,0.9);">No ads (coming soon)</span>                
+                            </div>            
+                        </div>
+                        
+                        <button class="btn btn-primary" onclick="selectPlan('annual')" id="btnAnnual">                
+                            Subscribe Annual            
+                        </button>        
+                    </div>    
+                </div>
+    
+                <!-- FAQs -->    
+                <div class="glass-card" style="margin-top: 40px; max-width: 800px; margin-left: auto; margin-right: auto;">        
+                    <h3 class="card-title">❓ Frequently Asked Questions</h3>        
+        
+                    <div style="margin-bottom: 20px;">           
+                        <h4 style="color: #fff; font-size: 16px; margin-bottom: 8px;">Can I cancel anytime?</h4>            
+                        <p style="color: rgba(255,255,255,0.7); font-size: 14px;">Yes! You can cancel your subscription at any time. You'll continue to have access until the end of your billing period.</p>        
+                    </div>
+                
+                    <div style="margin-bottom: 20px;">            
+                        <h4 style="color: #fff; font-size: 16px; margin-bottom: 8px;">What happens to my data if I cancel?</h4>            
+                        <p style="color: rgba(255,255,255,0.7); font-size: 14px;">Your data is always yours. You can export all your data before canceling. We keep your data for 30 days after cancellation.</p>      
+                    </div>
+        
+                    <div style="margin-bottom: 20px;">                  
+                        <h4 style="color: #fff; font-size: 16px; margin-bottom: 8px;">Can I upgrade or downgrade my plan?</h4>            
+                            <p style="color: rgba(255,255,255,0.7); font-size: 14px;">Yes! You can change your plan at any time. Upgrades are immediate, and downgrades take effect at the end of your billing period.</p>        
+                    </div>    
+                </div>
+            </div>
+
             <!-- QR Code Display Modal -->
             <div class="modal" id="qrCodeDisplayModal">    
                 <div class="modal-content" style="max-width: 500px;">        
@@ -1482,71 +1666,71 @@
                     </div>    
                 </div>
             </div>
-
-    <!-- Modals -->
-    <div class="modal" id="timetableModal">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h3 class="modal-title" id="timetableModalTitle">Add Class</h3>
-                <button class="close-btn" onclick="closeTimetableModal()">✖</button>
+    
+            <!-- Modals -->   
+            <div class="modal" id="timetableModal">       
+                <div class="modal-content">           
+                    <div class="modal-header">                
+                        <h3 class="modal-title" id="timetableModalTitle">Add Class</h3>                
+                        <button class="close-btn" onclick="closeTimetableModal()">✖</button>            
+                    </div>           
+                    <div class="form-group">                
+                        <label>Day</label>                
+                        <select id="timetableDay">                    
+                            <option>Monday</option>                   
+                            <option>Tuesday</option>                    
+                            <option>Wednesday</option>                    
+                            <option>Thursday</option>                    
+                            <option>Friday</option>                   
+                            <option>Saturday</option>                    
+                            <option>Sunday</option>               
+                        </select>            
+                    </div>            
+                    <div class="form-group">                
+                        <label>Time</label>                
+                        <input type="time" id="timetableTime">           
+                    </div>            
+                    <div class="form-group">                
+                        <label>Grade</label>                
+                        <select id="timetableGrade"></select>            
+                    </div>           
+                    <div class="form-group">                
+                        <label>Notes</label>               
+                        <input type="text" id="timetableNotes" placeholder="e.g., Room 101">           
+                    </div>            
+                    <button class="btn btn-primary" onclick="saveTimetableEntry()">💾 Save</button>        
+                </div>    
             </div>
-            <div class="form-group">
-                <label>Day</label>
-                <select id="timetableDay">
-                    <option>Monday</option>
-                    <option>Tuesday</option>
-                    <option>Wednesday</option>
-                    <option>Thursday</option>
-                    <option>Friday</option>
-                    <option>Saturday</option>
-                    <option>Sunday</option>
-                </select>
+    
+            <div class="modal" id="paymentModal">        
+                <div class="modal-content">            
+                    <div class="modal-header">                
+                        <h3 class="modal-title">Record Payment</h3>                
+                        <button class="close-btn" onclick="closePaymentModal()">✖</button>            
+                    </div>            
+                    <div class="form-group">                
+                        <label>Amount</label>                
+                        <input type="number" id="paymentAmount" placeholder="Enter amount">            
+                    </div>            
+                    <div class="form-group">                
+                        <label>Date</label>                
+                        <input type="date" id="paymentDate">            
+                    </div>            
+                    <div class="form-group">                
+                        <label>Month</label>                
+                        <input type="month" id="paymentMonth">            
+                    </div>            
+                    <div class="form-group">                
+                        <label>Method</label>                
+                        <select id="paymentMethod">                    
+                            <option>Cash</option>                    
+                            <option>Bank Transfer</option>                    
+                            <option>Mobile Payment</option>              
+                        </select>            
+                    </div>         
+                    <button class="btn btn-primary" onclick="savePayment()">💾 Record</button>        
+                </div>    
             </div>
-            <div class="form-group">
-                <label>Time</label>
-                <input type="time" id="timetableTime">
-            </div>
-            <div class="form-group">
-                <label>Grade</label>
-                <select id="timetableGrade"></select>
-            </div>
-            <div class="form-group">
-                <label>Notes</label>
-                <input type="text" id="timetableNotes" placeholder="e.g., Room 101">
-            </div>
-            <button class="btn btn-primary" onclick="saveTimetableEntry()">💾 Save</button>
-        </div>
-    </div>
-
-    <div class="modal" id="paymentModal">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h3 class="modal-title">Record Payment</h3>
-                <button class="close-btn" onclick="closePaymentModal()">✖</button>
-            </div>
-            <div class="form-group">
-                <label>Amount</label>
-                <input type="number" id="paymentAmount" placeholder="Enter amount">
-            </div>
-            <div class="form-group">
-                <label>Date</label>
-                <input type="date" id="paymentDate">
-            </div>
-            <div class="form-group">
-                <label>Month</label>
-                <input type="month" id="paymentMonth">
-            </div>
-            <div class="form-group">
-                <label>Method</label>
-                <select id="paymentMethod">
-                    <option>Cash</option>
-                    <option>Bank Transfer</option>
-                    <option>Mobile Payment</option>
-                </select>
-            </div>
-            <button class="btn btn-primary" onclick="savePayment()">💾 Record</button>
-        </div>
-    </div>
     <script type="module">
         import { getAuth, signOut } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js"; 
         import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
@@ -1574,16 +1758,31 @@
         });
     </script>
     <script>
-        let appData = {
-            students: [],
-            grades: ['06', '07', '08', '09', '10', '11', '12'],
-            timetable: [],
-            attendance: {},
-            payments: [],
-            subjectName: 'Mathematics',
-            selectedStudent: null,
-            editingTimetable: null,
-            selectedPaymentStudent: null
+        let appData = {    
+            students: [],    
+            grades: ['06', '07', '08', '09', '10', '11', '12'],    
+            timetable: [],    
+            attendance: {},    
+            payments: [],    
+            subjectName: 'Mathematics',    
+            selectedStudent: null,    
+            editingTimetable: null,   
+            selectedPaymentStudent: null,   
+            // ADD SUBSCRIPTION DATA   
+            subscription: {        
+                plan: 'free_trial',  // 'free_trial', 'monthly', 'annual'       
+                status: 'active',     // 'active', 'expired', 'cancelled'        
+                startDate: new Date().toISOString(),        
+                endDate: null,        
+                maxStudents: 10,      // Free trial limit        
+                features: {            
+                    students: true,            
+                    attendance: true,            
+                    payments: true,            
+                    reports: true,            
+                    backup: true        
+                }    
+            }
         };
 
         function init() {
@@ -1654,6 +1853,9 @@
             }
             if (screenName === 'payments') loadPaymentHistory();
             if (screenName === 'settings') loadSettings();
+            
+            // ADD THIS FOR SUBSCRIPTION    
+            if (screenName === 'subscription') updateSubscriptionDisplay();
         }
 
         function toggleSidebar() {
@@ -1884,6 +2086,11 @@
         }
 
         function addNewStudent() {
+
+            // CHECK SUBSCRIPTION FIRST   
+            if (!canAddStudent()) {       
+                return;    
+            }
             // Get form values
             const name = document.getElementById('studentNameInput').value.trim();
             const birthday = document.getElementById('studentBirthdayInput').value;
@@ -3325,6 +3532,240 @@
         
             alert('✅ Student list exported to Excel!');    
         }
+
+        // ============================================
+        // SUBSCRIPTION SYSTEM
+        // ============================================
+
+        // Initialize subscription on load
+        function initializeSubscription() {    
+            // Check if subscription exists in appData    
+            if (!appData.subscription) {        
+                appData.subscription = {           
+                    plan: 'free_trial',            
+                    status: 'active',            
+                    startDate: new Date().toISOString(),            
+                    endDate: null,            
+                    maxStudents: 10,            
+                    features: {                
+                        students: true,                
+                        attendance: true,                
+                        payments: true,               
+                        reports: true,                
+                        backup: true            
+                    }        
+                };        
+                saveData();
+            }    
+    
+            // Check subscription status    
+            checkSubscriptionStatus();
+        }
+
+        // Check if subscription is valid
+        function checkSubscriptionStatus() {    
+            const sub = appData.subscription;
+        
+            // Check expiration    
+            if (sub.endDate) {        
+                const endDate = new Date(sub.endDate);        
+                const now = new Date();
+                
+                if (now > endDate) {            
+                    sub.status = 'expired';            
+                    // Revert to free trial            
+                    sub.plan = 'free_trial';            
+                    sub.maxStudents = 10;            
+                    saveData();        
+                }    
+            }
+        
+            // Check student limit    
+            if (sub.plan === 'free_trial' && appData.students.length >= sub.maxStudents) {        
+                return false;    
+            }    
+    
+            return sub.status === 'active';
+        }
+
+        // Update subscription display
+        function updateSubscriptionDisplay() {    
+            const sub = appData.subscription;
+        
+            // Update current plan name   
+            const planNames = {        
+                'free_trial': 'Free Trial',        
+                'monthly': 'Monthly Plan',        
+                'annual': 'Annual Plan'    
+            };
+        
+            const currentPlanEl = document.getElementById('currentPlanName');    
+            if (currentPlanEl) {        
+                currentPlanEl.textContent = planNames[sub.plan] || 'Free Trial';    
+            }
+        
+            // Update status    
+            const statusEl = document.getElementById('subscriptionStatus');    
+            if (statusEl) {        
+                statusEl.textContent = sub.status.charAt(0).toUpperCase() + sub.status.slice(1);        
+                statusEl.style.color = sub.status === 'active' ? '#D1FAE5' : '#FEE2E2';    
+            }
+        
+            // Update student count    
+            const currentStudentsEl = document.getElementById('currentStudents');    
+            const maxStudentsEl = document.getElementById('maxStudents');    
+            if (currentStudentsEl) currentStudentsEl.textContent = appData.students.length;    
+            if (maxStudentsEl) {        
+                maxStudentsEl.textContent = sub.plan === 'free_trial' ? sub.maxStudents : '∞';    
+            }
+        
+            // Update end date    
+            const endDateEl = document.getElementById('subscriptionEndDate');    
+            if (endDateEl) {        
+                if (sub.endDate) {            
+                    const date = new Date(sub.endDate);           
+                    endDateEl.textContent = date.toLocaleDateString();        
+                } else {            
+                    endDateEl.textContent = sub.plan === 'free_trial' ? 'No expiry' : '-';        
+                }    
+            }
+        
+            // Show warning if needed   
+            const warningEl = document.getElementById('subscriptionWarning');    
+            const warningMsgEl = document.getElementById('warningMessage');    
+    
+            if (sub.plan === 'free_trial' && appData.students.length >= sub.maxStudents - 2) {        
+                warningEl.style.display = 'block';        
+                warningMsgEl.textContent = `You're using ${appData.students.length} of ${sub.maxStudents} free students. Upgrade to add unlimited students!`;    
+            } else if (sub.status === 'expired') {        
+                warningEl.style.display = 'block';       
+                warningMsgEl.textContent = 'Your subscription has expired. Please renew to continue using premium features.';    
+            } else {        
+                warningEl.style.display = 'none';   
+            }
+        
+            // Update button states    
+            updateSubscriptionButtons();
+        }
+
+        // Update subscription buttons
+        function updateSubscriptionButtons() {    
+            const sub = appData.subscription;
+        
+            const btnFreeTrial = document.getElementById('btnFreeTrial');    
+            const btnMonthly = document.getElementById('btnMonthly');    
+            const btnAnnual = document.getElementById('btnAnnual');
+        
+            // Reset all buttons    
+            if (btnFreeTrial) {        
+                btnFreeTrial.className = 'btn btn-secondary';        
+                btnFreeTrial.textContent = 'Select Plan';    
+            }    
+            if (btnMonthly) {        
+                btnMonthly.className = 'btn btn-success';        
+                btnMonthly.textContent = 'Subscribe Monthly';   
+            }    
+            if (btnAnnual) {        
+                btnAnnual.className = 'btn btn-primary';        
+                btnAnnual.textContent = 'Subscribe Annual';    
+            }
+        
+            // Highlight current plan
+    
+            if (sub.plan === 'free_trial' && btnFreeTrial) {        
+                btnFreeTrial.className = 'btn btn-secondary';        
+                btnFreeTrial.textContent = 'Current Plan';        
+                btnFreeTrial.disabled = true;        
+                btnFreeTrial.style.opacity = '0.6';
+    
+            } else if (sub.plan === 'monthly' && btnMonthly) {        
+                btnMonthly.className = 'btn btn-success';        
+                btnMonthly.textContent = 'Current Plan';        
+                btnMonthly.disabled = true;        
+                btnMonthly.style.opacity = '0.6';
+    
+            } else if (sub.plan === 'annual' && btnAnnual) {        
+                btnAnnual.className = 'btn btn-primary';        
+                btnAnnual.textContent = 'Current Plan';        
+                btnAnnual.disabled = true;        
+                btnAnnual.style.opacity = '0.6';                
+            }
+        }
+
+        // Select a subscription plan
+        function selectPlan(plan) {    
+            const sub = appData.subscription;
+       
+            if (plan === sub.plan) {        
+                alert('ℹ️ You are already on this plan.');        
+                return;    
+            }
+        
+            // Confirm subscription    
+            let message = '';    
+            let price = '';
+        
+            if (plan === 'monthly') {       
+                message = '💳 Subscribe to Monthly Plan?\n\nPrice: LKR.1000.00/month\n\n✓ Unlimited students\n✓ All premium features\n✓ Priority support';      
+                price = 'LKR.1000.00/month';    
+            } else if (plan === 'annual') {        
+                message = '💳 Subscribe to Annual Plan?\n\nPrice: LKR.9600.00/year (Save 20%)\n\n✓ Unlimited students\n✓ All premium features\n✓ Dedicated support\n✓ Priority updates';        
+                price = 'LKR.9600.00/year';    
+            } else {        
+                message = '⬇️ Downgrade to Free Trial?\n\n⚠️ You will be limited to 10 students\n⚠️ Some premium features will be disabled';    
+            }
+        
+            if (!confirm(message)) {        
+                return;    
+            }
+       
+            // Update subscription    
+            appData.subscription.plan = plan;    
+            appData.subscription.status = 'active';    
+            appData.subscription.startDate = new Date().toISOString();
+        
+            if (plan === 'free_trial') {        
+                appData.subscription.maxStudents = 10;        
+                appData.subscription.endDate = null;    
+            } else if (plan === 'monthly') {        
+                appData.subscription.maxStudents = Infinity;        
+                const endDate = new Date();        
+                endDate.setMonth(endDate.getMonth() + 1);        
+                appData.subscription.endDate = endDate.toISOString();    
+            } else if (plan === 'annual') {        
+                appData.subscription.maxStudents = Infinity;        
+                const endDate = new Date();        
+                endDate.setFullYear(endDate.getFullYear() + 1);        
+                appData.subscription.endDate = endDate.toISOString();    
+            }
+        
+            saveData();    
+            updateSubscriptionDisplay();
+        
+            // Show success message    
+            if (plan === 'free_trial') {        
+                alert('✅ Downgraded to Free Trial\n\nYou can now add up to 10 students.');    
+            } else {        
+                alert(`✅ Subscription Activated!\n\nPlan: ${plan === 'monthly' ? 'Monthly' : 'Annual'}\nPrice: ${price}\n\nThank you for subscribing!`);    
+            }
+      
+            // In a real app, this would redirect to payment gateway   
+            // processPayment(plan, price);
+        }
+
+        // Check before adding student
+        function canAddStudent() {    
+            const sub = appData.subscription;
+        
+            if (sub.plan === 'free_trial' && appData.students.length >= sub.maxStudents) {        
+                if (confirm(`⚠️ Student Limit Reached!\n\nYou've reached the limit of ${sub.maxStudents} students on the Free Trial.\n\nWould you like to upgrade to add unlimited students?`)) {            
+                    navigateTo('subscription');        
+                }        
+                return false;   
+            }    
+    
+            return true;
+        }
         
         // SETTINGS
         function loadSettings() {    
@@ -3750,7 +4191,27 @@
             if (statsTimetable) statsTimetable.textContent = appData.timetable.length;    
             if (statsAttendance) statsAttendance.textContent = Object.keys(appData.attendance || {}).length;
         }
-           
+
+        function init() {    
+            console.log('Initializing app...');    
+    
+            // Load saved data    
+            loadData();
+                
+            // INITIALIZE SUBSCRIPTION    
+            initializeSubscription();
+        
+            // Show app    
+            const app = document.getElementById('app');    
+            if (app) {       
+                app.classList.add('active');    
+            }
+        
+            updateDashboard();
+        
+            console.log('App initialized');
+        }
+        
         window.logout = function () {    
             signOut(auth).then(() => {      
                 window.location.href = "index.html";    
@@ -3762,6 +4223,7 @@
     </script>
 </body>
 </html>
+
 
 
 
