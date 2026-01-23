@@ -1325,7 +1325,6 @@
             </div>
 
             <!-- QR Scanner Modal -->
-
             <div class="modal" id="qrScannerModal">    
                 <div class="modal-content" style="max-width: 600px;">        
                     <div class="modal-header">            
@@ -1536,37 +1535,6 @@
                 </div>
             </div>
 
-            <!-- QR Code Display Modal -->
-            <div class="modal" id="qrCodeDisplayModal">    
-                <div class="modal-content" style="max-width: 500px;">        
-                    <div class="modal-header">            
-                        <h3 class="modal-title">Student QR Code</h3>            
-                        <button class="close-btn" onclick="closeQRCodeDisplay()">✖</button>        
-                    </div>
-        
-                    <div style="text-align: center;">            
-                        <div style="background: #F3F4F6; padding: 20px; border-radius: 12px; margin-bottom: 20px;">                
-                            <p style="font-size: 18px; font-weight: 600; color: #1F2937; margin-bottom: 5px;" id="qrStudentName"></p>                
-                            <p style="font-size: 14px; color: #6B7280; margin-bottom: 15px;" id="qrStudentDetails"></p>
-                            
-                            <!-- QR Code will be generated here -->                                
-                            <div id="qrcode-container" style="display: flex; justify-content: center; margin: 20px 0;"></div>                                
-                            
-                            <p style="font-size: 16px; font-weight: 600; color: #2563EB;" id="qrStudentId"></p>            
-                        </div>
-                        
-                        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px;">                
-                            <button class="btn btn-primary" onclick="downloadQRCode()">        
-                                💾 Download QR Code            
-                            </button>                
-                            <button class="btn btn-success" onclick="downloadStudentCard()">                    
-                                🎫 Download ID Card        
-                            </button>            
-                        </div>        
-                    </div>    
-                </div>
-            </div>
-
             <!-- Settings Screen -->
             <div id="settings" class="screen">    
                 <div class="screen-header">        
@@ -1663,6 +1631,37 @@
                         <button class="btn btn-danger" onclick="clearAllData()">                
                             🗑️ Clear All Data            
                         </button>        
+                    </div>    
+                </div>
+            </div>
+
+            <!-- QR Code Display Modal -->
+            <div class="modal" id="qrCodeDisplayModal">    
+                <div class="modal-content" style="max-width: 500px;">        
+                    <div class="modal-header">            
+                        <h3 class="modal-title">Student QR Code</h3>            
+                        <button class="close-btn" onclick="closeQRCodeDisplay()">✖</button>        
+                    </div>
+        
+                    <div style="text-align: center;">            
+                        <div style="background: #F3F4F6; padding: 20px; border-radius: 12px; margin-bottom: 20px;">                
+                            <p style="font-size: 18px; font-weight: 600; color: #1F2937; margin-bottom: 5px;" id="qrStudentName"></p>                
+                            <p style="font-size: 14px; color: #6B7280; margin-bottom: 15px;" id="qrStudentDetails"></p>
+                            
+                            <!-- QR Code will be generated here -->                                
+                            <div id="qrcode-container" style="display: flex; justify-content: center; margin: 20px 0;"></div>                                
+                            
+                            <p style="font-size: 16px; font-weight: 600; color: #2563EB;" id="qrStudentId"></p>            
+                        </div>
+                        
+                        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px;">                
+                            <button class="btn btn-primary" onclick="downloadQRCode()">        
+                                💾 Download QR Code            
+                            </button>                
+                            <button class="btn btn-success" onclick="downloadStudentCard()">                    
+                                🎫 Download ID Card        
+                            </button>            
+                        </div>        
                     </div>    
                 </div>
             </div>
@@ -4223,6 +4222,7 @@
     </script>
 </body>
 </html>
+
 
 
 
