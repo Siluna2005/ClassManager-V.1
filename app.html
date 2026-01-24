@@ -848,6 +848,7 @@
     <script src="https://cdn.sheetjs.com/xlsx-0.20.1/package/dist/xlsx.full.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+    <script type="text/javascript" src="https://www.payhere.lk/lib/payhere.js"></script>
 </head>
 <body>
 
@@ -1467,7 +1468,7 @@
                                 <span style="color: rgba(255,255,255,0.9);">Priority support</span>                
                             </div>            
                         </div>           
-                        <button class="btn btn-success" onclick="selectPlan('monthly')" id="btnMonthly">                
+                        <button class="btn btn-success" onclick="initiatePayment('monthly')" id="btnMonthly">                
                             Subscribe Monthly            
                         </button>        
                     </div>
@@ -1511,7 +1512,7 @@
                             </div>            
                         </div>
                         
-                        <button class="btn btn-primary" onclick="selectPlan('annual')" id="btnAnnual">                
+                        <button class="btn btn-primary" onclick="initiatePayment('annual')" id="btnAnnual">                
                             Subscribe Annual            
                         </button>        
                     </div>    
@@ -1785,6 +1786,37 @@
                     backup: true        
                 }    
             }
+        };
+        // PayHere Configuration
+        const PAYHERE_CONFIG = {    
+            // SANDBOX CREDENTIALS (for testing)    
+            merchantId: '1221149',  // Replace with your Merchant ID    
+            sandbox: true,  // Set to false for production
+       
+            // Your website details   
+            returnUrl: window.location.href,   
+            cancelUrl: window.location.href,    
+            notifyUrl: 'https://yourwebsite.com/notify',  // Optional: for server-side notifications
+        
+            // Business details    
+            businessName: 'Class Manager',    
+            currency: 'LKR'
+        };
+
+        // Subscription prices in LKR
+        const SUBSCRIPTION_PRICES = {    
+            monthly: {        
+                amount: 1000.00,  // Rs. 2,999.00        
+                currency: 'LKR',        
+                description: 'Class Manager - Monthly Subscription'   
+            },    
+            annual: {        
+                amount: 9600.00,  // Rs. 28,799.00 (Save 20%)        
+                currency: 'LKR',
+                description: 'Class Manager - Annual Subscription'
+   
+            }
+
         };
 
         function init() {
@@ -4225,6 +4257,7 @@
     </script>
 </body>
 </html>
+
 
 
 
