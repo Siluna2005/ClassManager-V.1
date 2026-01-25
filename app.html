@@ -983,11 +983,14 @@
         import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";  
   
+        
+    </script>
+    <script>
+
         // ============================================
-        // FIREBASE CONFIGURATION
+        // 1. FIREBASE CONFIGURATION (FIRST)
         // ============================================
 
-        // REPLACE THIS WITH YOUR FIREBASE CONFIG (from Step 3)
         const firebaseConfig = {          
             apiKey: "AIzaSyD4z857J2ipSxqK8pN4tEWqU-jeK_mwA2I",          
             authDomain: "class-manager-383ad.firebaseapp.com",          
@@ -998,33 +1001,31 @@
             appId: "1:1085651561679:web:82ca82d59d6ff2ec671bba"    
         };
 
-        // Initialize Firebase
         firebase.initializeApp(firebaseConfig);
-
-        // Get database reference
         const database = firebase.database();
 
-        // User ID (unique identifier for each teacher)
+        // User ID variable
         let currentUserId = null;
-
+        
         // Generate or get user ID
         function initializeUser() {    
             currentUserId = localStorage.getItem('teacherId');
-        
-            if (!currentUserId) {        
-                // Generate unique teacher ID        
+       
+            if (!currentUserId) {       
                 currentUserId = 'teacher_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9);        
-                localStorage.setItem('teacherId', currentUserId);
-                
-                console.log('New teacher ID created:', currentUserId);    
+                localStorage.setItem('teacherId', currentUserId);        
+                console.log('✅ New teacher ID created:', currentUserId);   
             } else {        
-                console.log('Existing teacher ID:', currentUserId);    
+                console.log('✅ Existing teacher ID:', currentUserId);    
             }
         
             return currentUserId;
         }
-    </script>
-    <script>
+
+        // ============================================
+        // 3. APP DATA
+        // ============================================
+        
         let appData = {    
             students: [],    
             grades: ['06', '07', '08', '09', '10', '11', '12'],    
@@ -1052,6 +1053,228 @@
                 }    
             }
         };
+
+        // ============================================
+        // 4. INIT FUNCTION (CORRECT ORDER)
+        // ============================================
+
+        function init() {
+            console.log('Initializing app...');
+        
+            // Step 1: Initialize user    
+            initializeUser();
+        
+            // Step 2: Load data    
+            loadData();
+        
+            // Step 3: Initialize subscription    
+            initializeSubscription();
+        
+            // Step 4: Enable real-time sync    
+            enableRealtimeSync();
+        
+            // Step 5: Show app    
+            const app = document.getElementById('app');    
+            if (app) {        
+                app.classList.add('active');    
+            }
+       
+            console.log('✅ App initialized successfully');
+        }
+
+        // ============================================
+        // 5. LOAD DATA FUNCTION
+        // ============================================
+
+        function loadData() {    
+            if (!currentUserId) {        
+                console.error('❌ No user ID available');        
+                return;    
+            }
+        
+            showLoadingIndicator();
+      
+            database.ref('users/' + currentUserId).once('value')        
+                .then((snapshot) => {            
+                    const firebaseData = snapshot.val();
+                        
+                    if (firebaseData) {                
+                        console.log('✅ Data loaded from Firebase');
+                               
+                        appData = {                    
+                            ...appData,                    
+                            ...firebaseData,                    
+                            students: firebaseData.students || [],                    
+                            timetable: firebaseData.timetable || [],                    
+                            payments: firebaseData.payments || [],                    
+                            attendance: firebaseData.attendance || {},                    
+                            grades: firebaseData.grades || ['06', '07', '08', '09', '10', '11', '12']                
+                        };
+                                
+                        localStorage.setItem('classManagerData', JSON.stringify(appData));            
+                    } else {                
+                        console.log('ℹ️ No Firebase data, checking localStorage...');
+                                
+                        const localData = localStorage.getItem('classManagerData');                
+                        if (localData) {                    
+                            const parsedData = JSON.parse(localData);                    
+                            appData = { ...appData, ...parsedData };                    
+                            saveData();                    
+                            console.log('✅ Local data uploaded to Firebase');               
+                        } else {                   
+                            console.log('ℹ️ No saved data, using defaults');                
+                        }            
+                    }
+                        
+                    hideLoadingIndicator();            
+                    populateGradeDropdowns();            
+                    updateDashboard();            
+        
+                })        
+                .catch((error) => {            
+                    console.error('❌ Firebase load error:', error);            
+            
+                    const localData = localStorage.getItem('classManagerData');            
+                    if (localData) {                
+                        appData = { ...appData, ...JSON.parse(localData) };                
+                        console.log('✅ Loaded from localStorage (fallback)');            
+                    }
+                        
+                    hideLoadingIndicator();            
+                    populateGradeDropdowns();            
+                    updateDashboard();
+                        
+                    alert('⚠️ Could not sync from cloud. Using local data.');        
+                });
+        }
+
+        // ============================================
+        // 6. SAVE DATA FUNCTION
+        // ============================================
+
+        function saveData() {
+            if (!currentUserId) {        
+                console.error('❌ No user ID available');        
+                return;    
+            }
+        
+            try {        
+                const dataToSave = {            
+                    ...appData,            
+                    lastSaved: new Date().toISOString()        
+                };
+                
+                updateSyncStatus('syncing');
+                
+                database.ref('users/' + currentUserId).set(dataToSave)
+            
+                    .then(() => {                
+                        console.log('✅ Data saved to Firebase');                
+                        localStorage.setItem('classManagerData', JSON.stringify(dataToSave));                
+                        updateLastSavedTime();                
+                        updateSyncStatus('synced');            
+                    })            
+                    .catch((error) => {                
+                        console.error('❌ Firebase save error:', error);                
+                        localStorage.setItem('classManagerData', JSON.stringify(dataToSave));                
+                        updateSyncStatus('error');            
+                    });
+                
+                return true;    
+            } catch (error) {        
+                console.error('❌ Error saving data:', error);        
+                return false;    
+            }
+        }
+
+        // ============================================
+        // 7. REAL-TIME SYNC FUNCTION
+        // ============================================
+
+        function enableRealtimeSync() {    
+            if (!currentUserId) {        
+                console.warn('⚠️ Cannot enable real-time sync: No user ID');        
+                return;    
+            }
+        
+            console.log('🔄 Real-time sync enabled');
+        
+            database.ref('users/' + currentUserId).on('value', (snapshot) => {        
+                const data = snapshot.val();
+                
+                if (data && data.lastSaved && data.lastSaved !== appData.lastSaved) {            
+                    console.log('🔄 Data updated from cloud');
+                        
+                    appData = {                
+                        ...appData,                
+                        ...data,                
+                        students: data.students || [],               
+                        timetable: data.timetable || [],                
+                        payments: data.payments || [],                
+                        attendance: data.attendance || {},              
+                        grades: data.grades || ['06', '07', '08', '09', '10', '11', '12']            
+                    };
+                        
+                    localStorage.setItem('classManagerData', JSON.stringify(appData));
+                        
+                    const activeScreen = document.querySelector('.screen.active');            
+                    if (activeScreen) {                
+                        const screenId = activeScreen.id;                
+                        if (screenId === 'students') loadStudentsScreen();                
+                        if (screenId === 'timetable') loadTimetable();                
+                        if (screenId === 'payments') loadPaymentHistory();                
+                        if (screenId === 'dashboard') updateDashboard();            
+                    }        
+                }    
+            }, (error) => {        
+                console.error('❌ Real-time sync error:', error);    
+            });
+        }
+
+        // ============================================
+        // 8. HELPER FUNCTIONS
+        // ============================================
+
+        // Loading indicator functions
+        function showLoadingIndicator() {    
+            const loader = document.getElementById('loader');    
+            if (loader) {        
+                loader.style.display = 'flex';    
+            }
+        }
+
+        function hideLoadingIndicator() {    
+            const loader = document.getElementById('loader');    
+            if (loader) {        
+                setTimeout(() => {            
+                    loader.classList.add('hide-loader');            
+                    setTimeout(() => {                
+                        loader.style.display = 'none';            
+                    }, 600);        
+                }, 500);    
+            }
+        }
+        
+        // Manual sync
+        function manualSync() {    
+            updateSyncStatus('syncing');
+        
+            database.ref('users/' + currentUserId).once('value')        
+                .then((snapshot) => {            
+                    const data = snapshot.val();            
+                    if (data) {                
+                        appData = { ...appData, ...data };                
+                        updateDashboard();               
+                        updateSyncStatus('synced');                
+                        alert('✅ Data synced successfully!');            
+                    }        
+                })        
+                .catch((error) => {           
+                    updateSyncStatus('error');            
+                    alert('❌ Sync failed: ' + error.message);        
+                });
+        }
+
         // PayHere Configuration
         const PAYHERE_CONFIG = {    
             // SANDBOX CREDENTIALS (for testing)    
@@ -1084,55 +1307,6 @@
 
         };
 
-        function init() {    
-            console.log('Initializing app...');
-        
-            // Initialize user first    
-            initializeUser();
-        
-            // Load data from Firebase    
-            loadData();
-        
-            // Initialize subscription    
-            initializeSubscription();
-        
-            // Show app    
-            const app = document.getElementById('app');    
-            if (app) {        
-                app.classList.add('active');    
-            }
-        
-            console.log('App initialized');
-        }
-        enableRealtimeSync();
-
-
-        // Enable real-time sync
-        function enableRealtimeSync() {   
-            if (!currentUserId) return;
-        
-            database.ref('users/' + currentUserId).on('value', (snapshot) => {       
-                const data = snapshot.val();
-                
-                if (data && data.lastSaved !== appData.lastSaved) {            
-                    console.log('🔄 Data updated from another device');
-                        
-                    appData = { ...appData, ...data };
-                        
-                    // Refresh current screen           
-                    const activeScreen = document.querySelector('.screen.active');            
-                    if (activeScreen) {               
-                        const screenId = activeScreen.id;                
-                        if (screenId === 'students') loadStudentsScreen();                
-                        if (screenId === 'timetable') loadTimetable();                
-                        if (screenId === 'payments') loadPaymentHistory();                
-                        if (screenId === 'dashboard') updateDashboard();            
-                    }        
-                }    
-            });
-
-        }
-
         // Display teacher ID
         function displayTeacherId() {    
             const teacherIdEl = document.getElementById('teacherIdDisplay');    
@@ -1149,25 +1323,7 @@
             }
         }
 
-        // Manual sync
-        function manualSync() {    
-            updateSyncStatus('syncing');
         
-            database.ref('users/' + currentUserId).once('value')        
-                .then((snapshot) => {            
-                    const data = snapshot.val();            
-                    if (data) {                
-                        appData = { ...appData, ...data };                
-                        updateDashboard();               
-                        updateSyncStatus('synced');                
-                        alert('✅ Data synced successfully!');            
-                    }        
-                })        
-                .catch((error) => {           
-                    updateSyncStatus('error');            
-                    alert('❌ Sync failed: ' + error.message);        
-                });
-        }
 
         // Update sync status
         function updateSyncStatus(status) {    
@@ -1191,139 +1347,10 @@
         // Call this in init() function
         // Add this line at the end of init():
         
-        // Load data from Firebase        
-        function loadData() {    
-            if (!currentUserId) {        
-                console.error('No user ID available');        
-                return;    
-            }
-       
-            // Show loading indicator    
-            showLoadingIndicator();
+
+
         
-            // Load from Firebase    
-            database.ref('users/' + currentUserId).once('value')        
-                .then((snapshot) => {            
-                    const firebaseData = snapshot.val();
-                        
-                    if (firebaseData) {               
-                        // Data exists in Firebase                
-                        console.log('✅ Data loaded from Firebase');
-                                
-                        appData = {                    
-                            ...appData,                    
-                            ...firebaseData,                    
-                            students: firebaseData.students || [],                    
-                            timetable: firebaseData.timetable || [],                    
-                            payments: firebaseData.payments || [],                    
-                            attendance: firebaseData.attendance || {},                    
-                            grades: firebaseData.grades || ['06', '07', '08', '09', '10', '11', '12']                
-                        };
-                                
-                        // Save to localStorage as backup                
-                        localStorage.setItem('classManagerData', JSON.stringify(appData));
-                            
-                    } else {                
-                        // No data in Firebase, try localStorage                
-                        console.log('ℹ️ No Firebase data, checking localStorage...');
-                                
-                        const localData = localStorage.getItem('classManagerData');               
-                        if (localData) {                    
-                            const parsedData = JSON.parse(localData);                    
-                            appData = { ...appData, ...parsedData };
-                                        
-                            // Upload to Firebase                    
-                            saveData();                    
-                            console.log('✅ Local data uploaded to Firebase');                
-                        } else {                    
-                            console.log('ℹ️ No saved data found, using defaults');                
-                        }            
-                    }
-                        
-                    hideLoadingIndicator();            
-                    populateGradeDropdowns();            
-                    updateDashboard();
-                    
-                })        
-                .catch((error) => {            
-                    console.error('❌ Firebase load error:', error);
-                        
-                    // Fallback to localStorage            
-                    const localData = localStorage.getItem('classManagerData');            
-                    if (localData) {                
-                        appData = { ...appData, ...JSON.parse(localData) };                
-                        console.log('✅ Loaded from localStorage (fallback)');            
-                    }
-                        
-                    hideLoadingIndicator();            
-                    populateGradeDropdowns();           
-                    updateDashboard();
-                        
-                    alert('⚠️ Could not sync from cloud. Using local data.');        
-                });     
-        }
-
-
-        // Loading indicator functions
-        function showLoadingIndicator() {    
-            const loader = document.getElementById('loader');    
-            if (loader) {        
-                loader.style.display = 'flex';    
-            }
-        }
-
-        function hideLoadingIndicator() {    
-            const loader = document.getElementById('loader');    
-            if (loader) {        
-                setTimeout(() => {            
-                    loader.classList.add('hide-loader');            
-                    setTimeout(() => {                
-                        loader.style.display = 'none';            
-                    }, 600);        
-                }, 500);    
-            }
-        }
-
-        function saveData() {    
-            if (!currentUserId) {        
-                console.error('No user ID available');        
-                return;    
-            }
         
-            try {        
-                const dataToSave = {            
-                    ...appData,            
-                    lastSaved: new Date().toISOString()        
-                };
-
-                updateSyncStatus('syncing');
-             
-                // Save to Firebase        
-                database.ref('users/' + currentUserId).set(dataToSave)            
-                    .then(() => {                
-                        console.log('✅ Data saved to Firebase successfully');
-                        updateSyncStatus('syncing');        
-                        // Also save to localStorage as backup                
-                        localStorage.setItem('classManagerData', JSON.stringify(dataToSave));
-                                
-                        // Update last saved time display                
-                        updateLastSavedTime();            
-                    })            
-                    .catch((error) => {                
-                        console.error('❌ Firebase save error:', error);
-                        updateSyncStatus('error');        
-                        // Fallback to localStorage               
-                        localStorage.setItem('classManagerData', JSON.stringify(dataToSave));                
-                        alert('⚠️ Could not sync to cloud. Data saved locally.');            
-                    });
-                
-                return true;    
-            } catch (error) {        
-                console.error('❌ Error saving data:', error);        
-                alert('⚠️ Error saving data.');        
-                return false;    
-            }
-        }
 
         function navigateTo(screenName) {
             document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
@@ -3944,6 +3971,7 @@
     </script>
 </body>
 </html>
+
 
 
 
