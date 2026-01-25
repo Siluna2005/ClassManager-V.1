@@ -1007,33 +1007,36 @@
         // User ID variable
         let currentUserId = null;
         
-        // Generate or get user ID
+        // ============================================
+        // 2. INITIALIZE USER FUNCTION (BEFORE EVERYTHING)
+        // ============================================
+        
         function initializeUser() {    
-            try {        
-                currentUserId = localStorage.getItem('teacherId');
+            try {       
+                // Check localStorage first        
+                let userId = localStorage.getItem('teacherId');
                 
-                if (!currentUserId || currentUserId === 'null' || currentUserId === 'undefined') {            
-                    // Generate new unique ID            
+                console.log('Checking localStorage for teacherId:', userId);
+                
+                // If no ID exists or it's invalid, create new one        
+                if (!userId || userId === 'null' || userId === 'undefined' || userId.trim() === '') {            
                     const timestamp = Date.now();            
-                    const random = Math.random().toString(36).substr(2, 9);            
-                    currentUserId = `teacher_${timestamp}_${random}`;
+                    const random = Math.random().toString(36).substr(2, 9);           
+                    userId = `teacher_${timestamp}_${random}`;
                         
-                    localStorage.setItem('teacherId', currentUserId);           
-                    console.log('✅ New teacher ID created:', currentUserId);        
+                    localStorage.setItem('teacherId', userId);            
+                    console.log('✅ NEW Teacher ID created:', userId);        
                 } else {            
-                    console.log('✅ Existing teacher ID loaded:', currentUserId);        
+                    console.log('✅ EXISTING Teacher ID found:', userId);        
                 }
                 
-                // Verify it's not null        
-                if (!currentUserId) {            
-                    throw new Error('Failed to create user ID');        
-                }        
-        
-                return currentUserId;
-            
+                // Set the global variable        
+                currentUserId = userId;
+               
+                return userId;
+           
             } catch (error) {        
-                console.error('❌ Error initializing user:', error);        
-                alert('⚠️ Error initializing user. Please refresh the page.');        
+                console.error('❌ Error in initializeUser:', error);        
                 return null;    
             }
         }
@@ -1071,7 +1074,43 @@
         };
 
         // ============================================
-        // 4. INIT FUNCTION (CORRECT ORDER)
+        // 4. PAYHERE CONFIGURATION
+        // ============================================
+        
+        // PayHere Configuration
+        const PAYHERE_CONFIG = {    
+            // SANDBOX CREDENTIALS (for testing)    
+            merchantId: '1221149',  // Replace with your Merchant ID    
+            sandbox: true,  // Set to false for production
+       
+            // Your website details   
+            returnUrl: window.location.href,   
+            cancelUrl: window.location.href,    
+            notifyUrl: 'https://yourwebsite.com/notify',  // Optional: for server-side notifications
+        
+            // Business details    
+            businessName: 'Class Manager',    
+            currency: 'LKR'
+        };
+ 
+        // Subscription prices in LKR
+        const SUBSCRIPTION_PRICES = {    
+            monthly: {        
+                amount: 1000.00,  // Rs. 2,999.00        
+                currency: 'LKR',        
+                description: 'Class Manager - Monthly Subscription'   
+            },    
+            annual: {        
+                amount: 9600.00,  // Rs. 28,799.00 (Save 20%)        
+                currency: 'LKR',
+                description: 'Class Manager - Annual Subscription'
+   
+            }
+
+        };
+
+        // ============================================
+        // 5. INIT FUNCTION (CORRECT ORDER)
         // ============================================
 
         // Debug function
@@ -1083,35 +1122,50 @@
             console.log('===========================');
         }
         
-        function init() {
+        function init() {    
             console.log('Initializing app...');
+               
+            // STEP 1: Initialize user FIRST and wait for it  
+            try {        
+                currentUserId = initializeUser();
+                
+                if (!currentUserId) {            
+                    throw new Error('Failed to initialize user');        
+                }
+                
+                console.log('✅ User initialized:', currentUserId);
+            
+            } catch (error) {        
+                console.error('❌ User initialization failed:', error);        
+                alert('⚠️ Error initializing user. Please refresh the page.');        
+                return;    
+            }
         
-            // Step 1: Initialize user    
-            initializeUser();
-
-            // Step 2: Debug info    
-            debugFirebase();
-        
-            // Step 3: Load data    
+            // STEP 2: Now load data (user is ready)    
             loadData();
         
-            // Step 4: Initialize subscription    
-            initializeSubscription();
+            // STEP 3: Initialize subscription    
+            if (typeof initializeSubscription === 'function') {        
+                initializeSubscription();    
+            }
         
-            // Step 5: Enable real-time sync    
-            enableRealtimeSync();
-        
-            // Step 6: Show app    
+            // STEP 4: Enable real-time sync    
+            if (typeof enableRealtimeSync === 'function') {        
+                enableRealtimeSync();   
+            }
+       
+            // STEP 5: Show app    
             const app = document.getElementById('app');    
             if (app) {        
                 app.classList.add('active');    
             }
-       
-            console.log('✅ App initialized successfully');
+        
+            console.log('✅ App initialized successfully');    
+            console.log('Current User ID:', currentUserId);
         }
 
         // ============================================
-        // 5. LOAD DATA FUNCTION
+        // 6. LOAD DATA FUNCTION
         // ============================================
 
         function loadData() {    
@@ -1177,7 +1231,7 @@
         }
 
         // ============================================
-        // 6. SAVE DATA FUNCTION
+        // 7. SAVE DATA FUNCTION
         // ============================================
 
         function saveData() {
@@ -1340,38 +1394,6 @@
                     alert(errorMsg);       
                 });
         }
-
-        // PayHere Configuration
-        const PAYHERE_CONFIG = {    
-            // SANDBOX CREDENTIALS (for testing)    
-            merchantId: '1221149',  // Replace with your Merchant ID    
-            sandbox: true,  // Set to false for production
-       
-            // Your website details   
-            returnUrl: window.location.href,   
-            cancelUrl: window.location.href,    
-            notifyUrl: 'https://yourwebsite.com/notify',  // Optional: for server-side notifications
-        
-            // Business details    
-            businessName: 'Class Manager',    
-            currency: 'LKR'
-        };
-
-        // Subscription prices in LKR
-        const SUBSCRIPTION_PRICES = {    
-            monthly: {        
-                amount: 1000.00,  // Rs. 2,999.00        
-                currency: 'LKR',        
-                description: 'Class Manager - Monthly Subscription'   
-            },    
-            annual: {        
-                amount: 9600.00,  // Rs. 28,799.00 (Save 20%)        
-                currency: 'LKR',
-                description: 'Class Manager - Annual Subscription'
-   
-            }
-
-        };
 
         // Display teacher ID
         function displayTeacherId() {    
@@ -4037,6 +4059,7 @@
     </script>
 </body>
 </html>
+
 
 
 
