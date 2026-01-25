@@ -1011,32 +1011,101 @@
         // 2. INITIALIZE USER FUNCTION (BEFORE EVERYTHING)
         // ============================================
         
-        function initializeUser() {    
-            try {       
-                // Check localStorage first        
-                let userId = localStorage.getItem('teacherId');
-                
-                console.log('Checking localStorage for teacherId:', userId);
-                
-                // If no ID exists or it's invalid, create new one        
-                if (!userId || userId === 'null' || userId === 'undefined' || userId.trim() === '') {            
-                    const timestamp = Date.now();            
-                    const random = Math.random().toString(36).substr(2, 9);           
-                    userId = `teacher_${timestamp}_${random}`;
-                        
-                    localStorage.setItem('teacherId', userId);            
-                    console.log('✅ NEW Teacher ID created:', userId);        
-                } else {            
-                    console.log('✅ EXISTING Teacher ID found:', userId);        
+        function initializeUser() {   
+            console.log('========================================');    
+            console.log('🔍 STARTING initializeUser()');    
+            console.log('========================================');
+        
+            try {        
+                console.log('Step 1: Checking localStorage...');
+               
+                // Check if localStorage is available        
+                if (typeof(Storage) === "undefined") {            
+                    console.error('❌ localStorage is NOT supported in this browser!');            
+                    alert('⚠️ Your browser does not support localStorage. Please use a modern browser.');            
+                    return null;       
                 }
                 
-                // Set the global variable        
-                currentUserId = userId;
+                console.log('✅ localStorage is supported');
+                
+                // Try to read existing ID        
+                let userId = null;
                
+                try {            
+                    userId = localStorage.getItem('teacherId');            
+                    console.log('Step 2: Read from localStorage:', userId);            
+                    console.log('Type of userId:', typeof userId);            
+                    console.log('Is null?', userId === null);            
+                    console.log('Is "null" string?', userId === 'null');        
+                } catch (e) {            
+                    console.error('❌ Error reading from localStorage:', e);       
+                }
+                
+                // Check if we need to create a new ID        
+                const needsNewId = !userId || 
+                                  userId === 'null' || 
+                                  userId === 'undefined' || 
+                                  userId === '' || 
+                                  userId.trim() === '';
+                
+                console.log('Step 3: Needs new ID?', needsNewId);
+                
+                if (needsNewId) {            
+                    console.log('Step 4: Creating NEW teacher ID...');
+                        
+                    // Generate new ID           
+                    const timestamp = Date.now();            
+                    const random = Math.random().toString(36).substr(2, 9);            
+                    userId = `teacher_${timestamp}_${random}`;            
+            
+                    console.log('Generated ID:', userId);
+                        
+                    // Try to save it            
+                    try {                
+                        localStorage.setItem('teacherId', userId);                
+                        console.log('✅ Saved to localStorage');
+                                
+                        // Verify it was saved                
+                        const verify = localStorage.getItem('teacherId');                
+                        console.log('Verification read:', verify);
+                                
+                        if (verify !== userId) {                    
+                            console.error('❌ Verification failed! Saved:', userId, 'Read back:', verify);               
+                        }
+                            
+                    } catch (e) {                
+                        console.error('❌ Error saving to localStorage:', e);               
+                        alert('⚠️ Cannot save data. Please check browser settings.');                
+                        return null;            
+                    }
+                        
+                    console.log('✅✅✅ NEW Teacher ID created:', userId);
+                  
+                } else {            
+                    console.log('✅✅✅ EXISTING Teacher ID found:', userId);
+                }
+        
+                // Set global variable        
+                console.log('Step 5: Setting global currentUserId...');        
+                currentUserId = userId;        
+                console.log('Global currentUserId is now:', currentUserId);
+                
+                console.log('========================================');        
+                console.log('✅ initializeUser() COMPLETED');        
+                console.log('Final userId:', userId);        
+                console.log('========================================');
+                
                 return userId;
-           
+            
             } catch (error) {        
-                console.error('❌ Error in initializeUser:', error);        
+                console.error('========================================');        
+                console.error('❌❌❌ CRITICAL ERROR in initializeUser');        
+                console.error('Error:', error);        
+                console.error('Error message:', error.message);        
+                console.error('Error stack:', error.stack);        
+                console.error('========================================');
+                
+                alert('⚠️ Critical error initializing user: ' + error.message);        
                 return null;    
             }
         }
@@ -1122,48 +1191,82 @@
             console.log('===========================');
         }
         
-        function init() {    
-            console.log('Initializing app...');
-               
-            // STEP 1: Initialize user FIRST and wait for it  
+        function init() {
+            console.log('');    
+            console.log('╔════════════════════════════════════════╗');    
+            console.log('║   STARTING APP INITIALIZATION          ║');   
+            console.log('╚════════════════════════════════════════╝');   
+            console.log('');
+     
+            // STEP 1: Initialize user   
+            console.log('📍 STEP 1: Calling initializeUser()...');
+     
+            let userId = null;
+        
             try {        
-                currentUserId = initializeUser();
-                
-                if (!currentUserId) {            
-                    throw new Error('Failed to initialize user');        
-                }
-                
-                console.log('✅ User initialized:', currentUserId);
-            
+                userId = initializeUser();        
+                console.log('📍 initializeUser() returned:', userId);
+           
             } catch (error) {        
-                console.error('❌ User initialization failed:', error);        
-                alert('⚠️ Error initializing user. Please refresh the page.');        
-                return;    
+                console.error('📍 ❌ initializeUser() threw error:', error);    
             }
         
-            // STEP 2: Now load data (user is ready)    
+            // Check what we got    
+            console.log('');    
+            console.log('📍 CHECKING RESULTS:');    
+            console.log('  - userId variable:', userId);    
+            console.log('  - global currentUserId:', currentUserId);    
+            console.log('  - Are they equal?', userId === currentUserId);    
+            console.log('');
+        
+            if (!userId || !currentUserId) {        
+                console.error('');        
+                console.error('╔════════════════════════════════════════╗');        
+                console.error('║         INITIALIZATION FAILED          ║');        
+                console.error('╚════════════════════════════════════════╝');        
+                console.error('');        
+                console.error('userId:', userId);        
+                console.error('currentUserId:', currentUserId);
+               
+                alert('❌ FAILED to create user ID!\n\nPlease:\n1. Check browser console (F12)\n2. Screenshot the errors\n3. Try a different browser\n4. Check if cookies/storage are enabled');        
+                return; 
+            }
+        
+            console.log('✅ User ID verified:', currentUserId);
+        
+            // STEP 2: Load data    
+            console.log('');    
+            console.log('📍 STEP 2: Loading data...');    
             loadData();
         
             // STEP 3: Initialize subscription    
+            console.log('📍 STEP 3: Initializing subscription...');    
             if (typeof initializeSubscription === 'function') {        
                 initializeSubscription();    
             }
         
             // STEP 4: Enable real-time sync    
+            console.log('📍 STEP 4: Enabling real-time sync...');    
             if (typeof enableRealtimeSync === 'function') {        
-                enableRealtimeSync();   
+                enableRealtimeSync();    
             }
-       
+        
             // STEP 5: Show app    
+            console.log('📍 STEP 5: Showing app...');    
             const app = document.getElementById('app');    
             if (app) {        
                 app.classList.add('active');    
             }
         
-            console.log('✅ App initialized successfully');    
-            console.log('Current User ID:', currentUserId);
-        }
+            console.log('');    
+            console.log('╔════════════════════════════════════════╗');    
+            console.log('║      APP INITIALIZED SUCCESSFULLY      ║');    
+            console.log('╚════════════════════════════════════════╝');    
+            console.log('');   
+            console.log('Final currentUserId:', currentUserId);    
+            console.log('');
 
+        }
         // ============================================
         // 6. LOAD DATA FUNCTION
         // ============================================
@@ -4057,8 +4160,67 @@
         // Initialize app
         init();
     </script>
+            <!-- DEBUG BUTTON - Add this temporarily -->
+            <button onclick="testUserInit()" style="position: fixed; bottom: 20px; right: 20px; z-index: 10000; padding: 15px; background: red; color: white; border: none; border-radius: 8px; cursor: pointer; font-weight: bold;">    
+                🔧 TEST USER INIT
+            </button>
+
+<script>
+function testUserInit() {
+    console.clear();
+    console.log('🧪 MANUAL TEST STARTED');
+    
+    // Test 1: Can we use localStorage?
+    console.log('Test 1: localStorage availability');
+    try {
+        localStorage.setItem('test123', 'hello');
+        const result = localStorage.getItem('test123');
+        console.log('✅ localStorage works! Result:', result);
+        localStorage.removeItem('test123');
+    } catch (e) {
+        console.error('❌ localStorage FAILED:', e);
+        alert('❌ localStorage is blocked or disabled!');
+        return;
+    }
+    
+    // Test 2: Can we create an ID?
+    console.log('Test 2: ID generation');
+    const timestamp = Date.now();
+    const random = Math.random().toString(36).substr(2, 9);
+    const testId = `teacher_${timestamp}_${random}`;
+    console.log('✅ Generated test ID:', testId);
+    
+    // Test 3: Can we save it?
+    console.log('Test 3: Save to localStorage');
+    try {
+        localStorage.setItem('testTeacherId', testId);
+        console.log('✅ Saved to localStorage');
+    } catch (e) {
+        console.error('❌ Save FAILED:', e);
+        return;
+    }
+    
+    // Test 4: Can we read it back?
+    console.log('Test 4: Read from localStorage');
+    const readBack = localStorage.getItem('testTeacherId');
+    console.log('Read back:', readBack);
+    console.log('Match?', readBack === testId);
+    
+    if (readBack === testId) {
+        console.log('✅✅✅ ALL TESTS PASSED!');
+        alert('✅ All tests PASSED!\n\nlocalStorage is working.\n\nThe problem is elsewhere in the code.');
+    } else {
+        console.error('❌ Tests FAILED');
+        alert('❌ Tests FAILED\n\nSaved: ' + testId + '\nRead: ' + readBack);
+    }
+    
+    // Clean up
+    localStorage.removeItem('testTeacherId');
+}
+</script>
 </body>
 </html>
+
 
 
 
