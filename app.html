@@ -4198,66 +4198,9 @@
         // Initialize app
         init();
     </script>
-            <!-- DEBUG BUTTON - Add this temporarily -->
-            <button onclick="testUserInit()" style="position: fixed; bottom: 20px; right: 20px; z-index: 10000; padding: 15px; background: red; color: white; border: none; border-radius: 8px; cursor: pointer; font-weight: bold;">    
-                🔧 TEST USER INIT
-            </button>
-
-<script>
-function testUserInit() {
-    console.clear();
-    console.log('🧪 MANUAL TEST STARTED');
-    
-    // Test 1: Can we use localStorage?
-    console.log('Test 1: localStorage availability');
-    try {
-        localStorage.setItem('test123', 'hello');
-        const result = localStorage.getItem('test123');
-        console.log('✅ localStorage works! Result:', result);
-        localStorage.removeItem('test123');
-    } catch (e) {
-        console.error('❌ localStorage FAILED:', e);
-        alert('❌ localStorage is blocked or disabled!');
-        return;
-    }
-    
-    // Test 2: Can we create an ID?
-    console.log('Test 2: ID generation');
-    const timestamp = Date.now();
-    const random = Math.random().toString(36).substr(2, 9);
-    const testId = `teacher_${timestamp}_${random}`;
-    console.log('✅ Generated test ID:', testId);
-    
-    // Test 3: Can we save it?
-    console.log('Test 3: Save to localStorage');
-    try {
-        localStorage.setItem('testTeacherId', testId);
-        console.log('✅ Saved to localStorage');
-    } catch (e) {
-        console.error('❌ Save FAILED:', e);
-        return;
-    }
-    
-    // Test 4: Can we read it back?
-    console.log('Test 4: Read from localStorage');
-    const readBack = localStorage.getItem('testTeacherId');
-    console.log('Read back:', readBack);
-    console.log('Match?', readBack === testId);
-    
-    if (readBack === testId) {
-        console.log('✅✅✅ ALL TESTS PASSED!');
-        alert('✅ All tests PASSED!\n\nlocalStorage is working.\n\nThe problem is elsewhere in the code.');
-    } else {
-        console.error('❌ Tests FAILED');
-        alert('❌ Tests FAILED\n\nSaved: ' + testId + '\nRead: ' + readBack);
-    }
-    
-    // Clean up
-    localStorage.removeItem('testTeacherId');
-}
-</script>
 </body>
 </html>
+
 
 
 
