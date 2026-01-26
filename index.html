@@ -7,6 +7,7 @@
   <link rel="stylesheet" href="style.css">
   <meta http-equiv="Content-Security-Policy" content="default-src 'self' https: data: blob: 'unsafe-inline' 'unsafe-eval';">
   <link rel="icon" type="image/x-icon" href="assets/favicon.ico">
+  <script src="https://cdn.jsdelivr.net/npm/emailjs-com@3/dist/email.min.js"></script>
 </head>
 <body>
 
@@ -101,6 +102,61 @@
 </div>
   
 <script type="module" src="auth.js"></script>
+<script type="module" >
+  // 📧 Email/Password Login - Updated for new form 
+  window.login = function (email, password, callback) {    
+    signInWithEmailAndPassword(auth, email, password)        
+      .then((userCredential) => {      
+      
+        // ✅ SEND LOGIN EMAIL      
+        sendLoginEmail(userCredential.user.email);
+      
+        // ✅ REDIRECT      
+        window.location.href = "app.html";        
+      })        
+      .catch((error) => {          
+        if (callback) callback(error.message);        
+      });
+  };
+
+  // ✍️ Sign Up - Updated for new form
+  window.signUp = function (email, password, callback) {    
+    if (password.length < 6) {        
+      if (callback) callback("Password must be at least 6 characters");       
+      return;    
+    }
+  
+    createUserWithEmailAndPassword(auth, email, password)        
+      .then((userCredential) => {     
+      
+        // ✅ SEND LOGIN EMAIL      
+        sendLoginEmail(userCredential.user.email);
+      
+        window.location.href = "app.html";       
+      })        
+      .catch((error) => {            
+        if (callback) callback(error.message);        
+      });
+  };
+  
+  // 🔵 Google Login  
+  window.googleLogin = function () {    
+    const provider = new GoogleAuthProvider();
+      
+    signInWithPopup(auth, provider)        
+      .then((result) => {      
+      
+        // ✅ SEND LOGIN EMAIL     
+        sendLoginEmail(result.user.email);
+      
+        window.location.href = "app.html";        
+      })        
+      .catch((error) => {            
+        alert("Google login failed: " + error.message);        
+      });
+  };
+
+</script>
 <script>  
   emailjs.init("rHYrJYPEObugXQPep");
   // Loading screen
@@ -207,62 +263,11 @@
     });
   }
 
-  // 📧 Email/Password Login - Updated for new form 
-  window.login = function (email, password, callback) {    
-    signInWithEmailAndPassword(auth, email, password)        
-      .then((userCredential) => {      
-      
-        // ✅ SEND LOGIN EMAIL      
-        sendLoginEmail(userCredential.user.email);
-      
-        // ✅ REDIRECT      
-        window.location.href = "app.html";        
-      })        
-      .catch((error) => {          
-        if (callback) callback(error.message);        
-      });
-  };
-
-  // ✍️ Sign Up - Updated for new form
-  window.signUp = function (email, password, callback) {    
-    if (password.length < 6) {        
-      if (callback) callback("Password must be at least 6 characters");       
-      return;    
-    }
   
-    createUserWithEmailAndPassword(auth, email, password)        
-      .then((userCredential) => {     
-      
-        // ✅ SEND LOGIN EMAIL      
-        sendLoginEmail(userCredential.user.email);
-      
-        window.location.href = "app.html";       
-      })        
-      .catch((error) => {            
-        if (callback) callback(error.message);        
-      });
-  };
-  
-  // 🔵 Google Login  
-  window.googleLogin = function () {    
-    const provider = new GoogleAuthProvider();
-      
-    signInWithPopup(auth, provider)        
-      .then((result) => {      
-      
-        // ✅ SEND LOGIN EMAIL     
-        sendLoginEmail(result.user.email);
-      
-        window.location.href = "app.html";        
-      })        
-      .catch((error) => {            
-        alert("Google login failed: " + error.message);        
-      });
-  };
-
 </script>
 </body>
 </html>
+
 
 
 
