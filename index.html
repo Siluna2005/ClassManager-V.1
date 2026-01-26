@@ -101,7 +101,8 @@
 </div>
   
 <script type="module" src="auth.js"></script>
-<script>
+<script>  
+  emailjs.init("rHYrJYPEObugXQPep");
   // Loading screen
   window.addEventListener("load", () => {
     setTimeout(() => {
@@ -197,9 +198,72 @@
       }
     });
   }
+  
+  function sendLoginEmail(userEmail) {    
+    emailjs.send("service_jcmia18", "template_c34t4jt", {    
+      user_email: userEmail,    
+      login_time: new Date().toLocaleString(),    
+      device: navigator.userAgent  
+    });
+  }
+
+  // 📧 Email/Password Login - Updated for new form 
+  window.login = function (email, password, callback) {    
+    signInWithEmailAndPassword(auth, email, password)        
+      .then((userCredential) => {      
+      
+        // ✅ SEND LOGIN EMAIL      
+        sendLoginEmail(userCredential.user.email);
+      
+        // ✅ REDIRECT      
+        window.location.href = "app.html";        
+      })        
+      .catch((error) => {          
+        if (callback) callback(error.message);        
+      });
+  };
+
+  // ✍️ Sign Up - Updated for new form
+  window.signUp = function (email, password, callback) {    
+    if (password.length < 6) {        
+      if (callback) callback("Password must be at least 6 characters");       
+      return;    
+    }
+  
+    createUserWithEmailAndPassword(auth, email, password)        
+      .then((userCredential) => {     
+      
+        // ✅ SEND LOGIN EMAIL      
+        sendLoginEmail(userCredential.user.email);
+      
+        window.location.href = "app.html";       
+      })        
+      .catch((error) => {            
+        if (callback) callback(error.message);        
+      });
+  };
+  
+  // 🔵 Google Login  
+  window.googleLogin = function () {    
+    const provider = new GoogleAuthProvider();
+      
+    signInWithPopup(auth, provider)        
+      .then((result) => {      
+      
+        // ✅ SEND LOGIN EMAIL     
+        sendLoginEmail(result.user.email);
+      
+        window.location.href = "app.html";        
+      })        
+      .catch((error) => {            
+        alert("Google login failed: " + error.message);        
+      });
+  };
+
 </script>
 </body>
 </html>
+
 
 
 
