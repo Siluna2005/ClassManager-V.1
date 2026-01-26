@@ -448,6 +448,21 @@
             box-shadow: 0 8px 20px rgba(0,0,0,0.2);
         }
 
+.logout-btn {
+  background: #2563eb;
+  color: white;
+  border: none;
+  padding: 10px 16px;
+  border-radius: 8px;
+  cursor: pointer;
+  font-weight: 600;
+}
+
+.logout-btn:hover {
+  background: #1e40af;
+}
+
+
         /* ===== CARDS ===== */
         .card {    
             background: rgba(255, 255, 255, 0.15);    
