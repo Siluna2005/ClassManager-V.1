@@ -101,97 +101,109 @@
   </form>
 </div>
   
-<script type="module" src="auth.js"></script>
-<script type="module" >
-  // 📧 Email/Password Login - Updated for new form 
-  window.login = function (email, password, callback) {    
-    signInWithEmailAndPassword(auth, email, password)        
-      .then((userCredential) => {      
-      
-        // ✅ SEND LOGIN EMAIL      
-        sendLoginEmail(userCredential.user.email);
-      
-        // ✅ REDIRECT      
-        window.location.href = "app.html";        
-      })        
-      .catch((error) => {          
-        if (callback) callback(error.message);        
-      });
+<!-- index.html -->
+<script type="module">
+  // 🔹 1️⃣ Import Firebase modules
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-app.js";
+  import { 
+    getAuth, 
+    signInWithEmailAndPassword, 
+    createUserWithEmailAndPassword, 
+    GoogleAuthProvider, 
+    signInWithPopup 
+  } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-auth.js";
+
+  // 🔹 2️⃣ Initialize Firebase
+  const firebaseConfig = {
+    apiKey: "AIzaSyD4z857J2ipSxqK8pN4tEWqU-jeK_mwA2I",
+    authDomain: "class-manager-383ad.firebaseapp.com",
+    projectId: "class-manager-383ad",
+    storageBucket: "class-manager-383ad.firebasestorage.app",
+    messagingSenderId: "1085651561679",
+    appId: "1:1085651561679:web:82ca82d59d6ff2ec671bba"
   };
 
-  // ✍️ Sign Up - Updated for new form
-  window.signUp = function (email, password, callback) {    
-    if (password.length < 6) {        
-      if (callback) callback("Password must be at least 6 characters");       
-      return;    
-    }
-  
-    createUserWithEmailAndPassword(auth, email, password)        
-      .then((userCredential) => {     
-      
-        // ✅ SEND LOGIN EMAIL      
-        sendLoginEmail(userCredential.user.email);
-      
-        window.location.href = "app.html";       
-      })        
-      .catch((error) => {            
-        if (callback) callback(error.message);        
-      });
-  };
-  
-  // 🔵 Google Login  
-  window.googleLogin = function () {    
-    const provider = new GoogleAuthProvider();
-      
-    signInWithPopup(auth, provider)        
-      .then((result) => {      
-      
-        // ✅ SEND LOGIN EMAIL     
-        sendLoginEmail(result.user.email);
-      
-        window.location.href = "app.html";        
-      })        
-      .catch((error) => {            
-        alert("Google login failed: " + error.message);        
-      });
-  };
+  const app = initializeApp(firebaseConfig);
+  const auth = getAuth(app);
 
-</script>
-<script>  
+  // 🔹 3️⃣ Initialize EmailJS
   emailjs.init("rHYrJYPEObugXQPep");
-  // Loading screen
+
+  // 🔹 4️⃣ Send login email
+  async function sendLoginEmail(userEmail) {
+    try {
+      await emailjs.send("service_jcmia18", "template_c34t4jt", {
+        user_email: userEmail,
+        login_time: new Date().toLocaleString(),
+        device: navigator.userAgent
+      });
+    } catch (err) {
+      console.error("EmailJS error:", err);
+    }
+  }
+
+  // 🔹 5️⃣ Login function
+  window.login = async function(email, password, callback) {
+    try {
+      const userCredential = await signInWithEmailAndPassword(auth, email, password);
+      await sendLoginEmail(userCredential.user.email);
+      window.location.href = "app.html";
+    } catch (error) {
+      if (callback) callback(error.message);
+    }
+  };
+
+  // 🔹 6️⃣ Signup function
+  window.signUp = async function(email, password, callback) {
+    if (password.length < 6) {
+      if (callback) callback("Password must be at least 6 characters");
+      return;
+    }
+    try {
+      const userCredential = await createUserWithEmailAndPassword(auth, email, password);
+      await sendLoginEmail(userCredential.user.email);
+      window.location.href = "app.html";
+    } catch (error) {
+      if (callback) callback(error.message);
+    }
+  };
+
+  // 🔹 7️⃣ Google login
+  window.googleLogin = async function() {
+    const provider = new GoogleAuthProvider();
+    try {
+      const result = await signInWithPopup(auth, provider);
+      await sendLoginEmail(result.user.email);
+      window.location.href = "app.html";
+    } catch (error) {
+      alert("Google login failed: " + error.message);
+    }
+  };
+
+  // 🔹 8️⃣ Loader
   window.addEventListener("load", () => {
     setTimeout(() => {
       document.getElementById("loader").classList.add("hide-loader");
     }, 2500);
   });
 
-  // Tab switching
+  // 🔹 9️⃣ Tab switching
   function switchTab(tab) {
     const tabs = document.querySelectorAll('.tab-btn');
     const forms = document.querySelectorAll('.auth-form');
-    
-    tabs.forEach(t => t.classList.remove('active'));
-    forms.forEach(f => f.classList.remove('active'));
-    
-    if (tab === 'login') {
-      tabs[0].classList.add('active');
-      document.getElementById('loginForm').classList.add('active');
-    } else {
-      tabs[1].classList.add('active');
-      document.getElementById('signupForm').classList.add('active');
-    }
-    
+
+    tabs.forEach(t => t.classList.toggle('active', t.dataset.tab === tab));
+    forms.forEach(f => f.classList.toggle('active', f.id === tab + 'Form'));
     hideAlert();
   }
 
-  // Password toggle
+  // 🔹 10️⃣ Password toggle
   function togglePassword(inputId) {
     const input = document.getElementById(inputId);
     input.type = input.type === 'password' ? 'text' : 'password';
   }
 
-  // Alert functions
+  // 🔹 11️⃣ Alert functions
   function showAlert(message, type = 'error') {
     const alert = document.getElementById('alert');
     alert.textContent = message;
@@ -199,74 +211,66 @@
   }
 
   function hideAlert() {
-    const alert = document.getElementById('alert');
-    alert.classList.remove('show');
+    document.getElementById('alert').classList.remove('show');
   }
 
-  // Login handler
-  function handleLogin(e) {
+  // 🔹 12️⃣ Login handler
+  window.handleLogin = async function(e) {
     e.preventDefault();
     hideAlert();
-    
+
     const btn = document.getElementById('loginBtn');
     const email = document.getElementById('loginEmail').value;
     const password = document.getElementById('loginPassword').value;
-    
+
     btn.disabled = true;
     btn.innerHTML = '<span class="spinner"></span><span>Logging in...</span>';
-    
-    // Call your Firebase login function
-    window.login(email, password, (error) => {
+
+    try {
+      await window.login(email, password, (error) => {
+        if (error) showAlert(error, 'error');
+      });
+    } finally {
       btn.disabled = false;
       btn.innerHTML = '<span>Login to your account</span>';
-      
-      if (error) {
-        showAlert(error, 'error');
-      }
-    });
-  }
+    }
+  };
 
-  // Signup handler
-  function handleSignup(e) {
+  // 🔹 13️⃣ Signup handler
+  window.handleSignup = async function(e) {
     e.preventDefault();
     hideAlert();
-    
+
+    const btn = document.getElementById('signupBtn');
     const email = document.getElementById('signupEmail').value;
     const password = document.getElementById('signupPassword').value;
     const confirm = document.getElementById('confirmPassword').value;
-    const btn = document.getElementById('signupBtn');
-    
+
     if (password !== confirm) {
       showAlert('Passwords do not match!', 'error');
       return;
     }
-    
+
     btn.disabled = true;
     btn.innerHTML = '<span class="spinner"></span><span>Creating account...</span>';
-    
-    // Call your Firebase signup function
-    window.signUp(email, password, (error) => {
+
+    try {
+      await window.signUp(email, password, (error) => {
+        if (error) showAlert(error, 'error');
+      });
+    } finally {
       btn.disabled = false;
       btn.innerHTML = '<span>Create account</span>';
-      
-      if (error) {
-        showAlert(error, 'error');
-      }
-    });
-  }
-  
-  function sendLoginEmail(userEmail) {    
-    emailjs.send("service_jcmia18", "template_c34t4jt", {    
-      user_email: userEmail,    
-      login_time: new Date().toLocaleString(),    
-      device: navigator.userAgent  
-    });
-  }
+    }
+  };
 
-  
+  // 🔹 14️⃣ Expose some helpers globally (optional)
+  window.switchTab = switchTab;
+  window.togglePassword = togglePassword;
 </script>
 </body>
 </html>
+
 
 
 
