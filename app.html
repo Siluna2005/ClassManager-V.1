@@ -72,9 +72,10 @@
                 <div class="menu-item" data-screen="settings" onclick="navigateTo('settings')">
                     <span>⚙️</span><span>Settings</span>
                 </div>
-                <button onclick="logout()" class="logout-btn">  
-                    Logout
-                </button>
+                <div class="menu-item"  onclick="logout()">
+                    <span>🚪</span><span>Logout</span>
+                </div>
+                
             </div>
         </div>
 
@@ -4187,21 +4188,23 @@
             document.getElementById('profilePhone').value = localStorage.getItem('userPhone') || '';
         }
 
-        
-
-
-        
-        window.logout = function () {    
-            signOut(auth).then(() => {      
-                window.location.href = "index.html";    
-            });  
-        };
+        function logout() {    
+            firebase.auth().signOut()      
+                .then(() => {       
+                    window.location.href = "index.html";      
+                })      
+                .catch((error) => {        
+                    alert("Logout failed");        
+                    console.error(error);      
+                });  
+        }
 
         // Initialize app
         init();
     </script>
 </body>
 </html>
+
 
 
 
