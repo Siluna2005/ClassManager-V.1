@@ -276,7 +276,7 @@
                     </div>
                 </div>
             </div>
-            
+
             <!-- Timetable Screen -->
             <div id="timetable" class="screen">
                 <div class="screen-header">
@@ -506,7 +506,7 @@
                     <div id="reportContent"></div>
                 </div>
             </div>
-       
+
             <!-- QR Scanner Modal -->
             <div class="modal" id="qrScannerModal">    
                 <div class="modal-content" style="max-width: 600px;">        
@@ -1363,7 +1363,7 @@
                 alert('✅ Teacher ID copied to clipboard!');    
             }
         }
-        
+
         // ============================================
         // NAVIGATION AND UI FUNCTIONS
         // ============================================
@@ -1752,7 +1752,7 @@
         
             showQRCode(selectedStudentForEdit);
         }
-        
+
         // ============================================
         // EXCEL EXPORT FUNCTIONS
         // ============================================
@@ -2441,13 +2441,9 @@
             alert('✅ Excel file downloaded!\n\nFile: ' + filename);    
         }
 
-        
         // ============================================
         // ATTENDANCE MANAGEMENT
         // ============================================
-
-        let currentAttendanceData = {};
-        let currentAttendanceStudents = [];
 
         function loadAttendanceStudents() {
             const gradeSelect = document.getElementById('attendanceClassSelect');
