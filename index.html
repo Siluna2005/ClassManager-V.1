@@ -110,13 +110,20 @@
     signInWithEmailAndPassword, 
     createUserWithEmailAndPassword, 
     GoogleAuthProvider, 
-    signInWithPopup 
+    signInWithPopup,
+    onAuthStateChanged
   } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-auth.js";
+  import { 
+    getDatabase, 
+    ref, 
+    set 
+  } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-database.js";
 
   // 🔹 2️⃣ Initialize Firebase
   const firebaseConfig = {
     apiKey: "AIzaSyD4z857J2ipSxqK8pN4tEWqU-jeK_mwA2I",
     authDomain: "class-manager-383ad.firebaseapp.com",
+    databaseURL: "https://class-manager-383ad-default-rtdb.firebaseio.com", // ADD THIS
     projectId: "class-manager-383ad",
     storageBucket: "class-manager-383ad.firebasestorage.app",
     messagingSenderId: "1085651561679",
@@ -125,11 +132,21 @@
 
   const app = initializeApp(firebaseConfig);
   const auth = getAuth(app);
+  const database = getDatabase(app);
 
-  // 🔹 3️⃣ Initialize EmailJS
+  // 🔹 3️⃣ Check if already logged in
+  onAuthStateChanged(auth, (user) => {
+    if (user) {
+      // User already logged in, redirect to app
+      console.log('User already logged in, redirecting...');
+      window.location.href = "app.html";
+    }
+  });
+
+  // 🔹 4️⃣ Initialize EmailJS
   emailjs.init("rHYrJYPEObugXQPep");
 
-  // 🔹 4️⃣ Send login email
+  // 🔹 5️⃣ Send login email
   async function sendLoginEmail(userEmail) {
     try {
       await emailjs.send("service_jcmia18", "template_c34t4jt", {
@@ -142,68 +159,112 @@
     }
   }
 
-  // 🔹 5️⃣ Login function
+  // 🔹 6️⃣ Login function
   window.login = async function(email, password, callback) {
     try {
       const userCredential = await signInWithEmailAndPassword(auth, email, password);
+      console.log('✅ Login successful:', userCredential.user.uid);
+      
       await sendLoginEmail(userCredential.user.email);
+      
+      // Redirect to app
       window.location.href = "app.html";
     } catch (error) {
+      console.error('Login error:', error);
       if (callback) callback(error.message);
     }
   };
 
-  // 🔹 6️⃣ Signup function
+  // 🔹 7️⃣ Signup function
   window.signUp = async function(email, password, callback) {
     if (password.length < 6) {
       if (callback) callback("Password must be at least 6 characters");
       return;
     }
+    
     try {
       const userCredential = await createUserWithEmailAndPassword(auth, email, password);
+      console.log('✅ Account created:', userCredential.user.uid);
+      
+      // Create user profile in database
+      await set(ref(database, 'users/' + userCredential.user.uid + '/profile'), {
+        email: email,
+        createdAt: new Date().toISOString()
+      });
+      
       await sendLoginEmail(userCredential.user.email);
+      
+      // Redirect to app
       window.location.href = "app.html";
     } catch (error) {
+      console.error('Signup error:', error);
       if (callback) callback(error.message);
     }
   };
 
-  // 🔹 7️⃣ Google login
+  // 🔹 8️⃣ Google login
   window.googleLogin = async function() {
     const provider = new GoogleAuthProvider();
     try {
       const result = await signInWithPopup(auth, provider);
+      console.log('✅ Google login successful:', result.user.uid);
+      
+      // Create/update user profile
+      await set(ref(database, 'users/' + result.user.uid + '/profile'), {
+        email: result.user.email,
+        name: result.user.displayName,
+        photoURL: result.user.photoURL,
+        lastLogin: new Date().toISOString()
+      });
+      
       await sendLoginEmail(result.user.email);
+      
+      // Redirect to app
       window.location.href = "app.html";
     } catch (error) {
+      console.error('Google login error:', error);
       alert("Google login failed: " + error.message);
     }
   };
 
-  // 🔹 8️⃣ Loader
+  // 🔹 9️⃣ Loader
   window.addEventListener("load", () => {
     setTimeout(() => {
       document.getElementById("loader").classList.add("hide-loader");
     }, 2500);
   });
 
-  // 🔹 9️⃣ Tab switching
-  function switchTab(tab) {
+  // 🔹 10️⃣ Tab switching
+  window.switchTab = function(tab) {
     const tabs = document.querySelectorAll('.tab-btn');
     const forms = document.querySelectorAll('.auth-form');
 
-    tabs.forEach(t => t.classList.toggle('active', t.dataset.tab === tab));
-    forms.forEach(f => f.classList.toggle('active', f.id === tab + 'Form'));
+    tabs.forEach(t => {
+      if (t.textContent.toLowerCase().includes(tab)) {
+        t.classList.add('active');
+      } else {
+        t.classList.remove('active');
+      }
+    });
+    
+    forms.forEach(f => {
+      if (f.id === tab + 'Form') {
+        f.classList.add('active');
+      } else {
+        f.classList.remove('active');
+      }
+    });
+    
     hideAlert();
-  }
+  };
 
-  // 🔹 10️⃣ Password toggle
-  function togglePassword(inputId) {
+  // 🔹 11️⃣ Password toggle
+  window.togglePassword = function(inputId) {
     const input = document.getElementById(inputId);
     input.type = input.type === 'password' ? 'text' : 'password';
-  }
+  };
 
-  // 🔹 11️⃣ Alert functions
+  // 🔹 12️⃣ Alert functions
   function showAlert(message, type = 'error') {
     const alert = document.getElementById('alert');
     alert.textContent = message;
@@ -214,7 +275,7 @@
     document.getElementById('alert').classList.remove('show');
   }
 
-  // 🔹 12️⃣ Login handler
+  // 🔹 13️⃣ Login handler
   window.handleLogin = async function(e) {
     e.preventDefault();
     hideAlert();
@@ -228,15 +289,19 @@
 
     try {
       await window.login(email, password, (error) => {
-        if (error) showAlert(error, 'error');
+        if (error) {
+          showAlert(error, 'error');
+          btn.disabled = false;
+          btn.innerHTML = '<span>Login to your account</span>';
+        }
       });
-    } finally {
+    } catch (err) {
       btn.disabled = false;
       btn.innerHTML = '<span>Login to your account</span>';
     }
   };
 
-  // 🔹 13️⃣ Signup handler
+  // 🔹 14️⃣ Signup handler
   window.handleSignup = async function(e) {
     e.preventDefault();
     hideAlert();
@@ -256,20 +321,21 @@
 
     try {
       await window.signUp(email, password, (error) => {
-        if (error) showAlert(error, 'error');
+        if (error) {
+          showAlert(error, 'error');
+          btn.disabled = false;
+          btn.innerHTML = '<span>Create account</span>';
+        }
       });
-    } finally {
+    } catch (err) {
       btn.disabled = false;
       btn.innerHTML = '<span>Create account</span>';
     }
   };
-
-  // 🔹 14️⃣ Expose some helpers globally (optional)
-  window.switchTab = switchTab;
-  window.togglePassword = togglePassword;
 </script>
 </body>
 </html>
+
 
 
 
