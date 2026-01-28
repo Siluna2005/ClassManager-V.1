@@ -4,360 +4,721 @@
   <meta charset="UTF-8">
   <title>Class Manager</title>
   <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
-  <link rel="stylesheet" href="style.css">
   <meta http-equiv="Content-Security-Policy" content="default-src 'self' https: data: blob: 'unsafe-inline' 'unsafe-eval';">
-  <link rel="icon" type="image/x-icon" href="assets/favicon.ico">
-  <script src="https://cdn.jsdelivr.net/npm/emailjs-com@3/dist/email.min.js"></script>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+      font-family: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    }
+
+    body {
+      min-height: 100vh;
+      background: linear-gradient(135deg, #0f4c75, #3282b8, #bbe1fa);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+      position: relative;
+      overflow: hidden;
+    }
+
+    /* Animated background shapes */
+    body::before,
+    body::after {
+      content: '';
+      position: absolute;
+      border-radius: 50%;
+      filter: blur(80px);
+      opacity: 0.2;
+      animation: float 20s infinite ease-in-out;
+    }
+
+    body::before {
+      width: 500px;
+      height: 500px;
+      background: #1b6ca8;
+      top: -100px;
+      left: -100px;
+    }
+
+    body::after {
+      width: 400px;
+      height: 400px;
+      background: #bbe1fa;
+      bottom: -100px;
+      right: -100px;
+      animation-delay: -10s;
+    }
+
+    @keyframes float {
+      0%, 100% { transform: translate(0, 0) rotate(0deg); }
+      33% { transform: translate(30px, -50px) rotate(120deg); }
+      66% { transform: translate(-20px, 20px) rotate(240deg); }
+    }
+
+    /* Loading Screen */
+    #loader {
+      position: fixed;
+      inset: 0;
+      background: linear-gradient(135deg, #0f4c75, #1b6ca8);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 9999;
+      transition: opacity 0.6s ease, visibility 0.6s ease;
+    }
+
+    #loader.hide-loader {
+      opacity: 0;
+      visibility: hidden;
+    }
+
+    .loader-content {
+      text-align: center;
+      color: #fff;
+    }
+
+    .logo-img {
+      width: 110px;
+      height: auto;
+      opacity: 0;
+      animation: logoReveal 1.4s ease forwards, logoGlow 3s infinite;
+    }
+
+    @keyframes logoReveal {
+      0% { transform: scale(0.85); opacity: 0; }
+      100% { transform: scale(1); opacity: 1; }
+    }
+
+    @keyframes logoGlow {
+      0%, 100% { filter: drop-shadow(0 0 0 rgba(255,255,255,0.2)); }
+      50% { filter: drop-shadow(0 0 18px rgba(187,225,250,0.8)); }
+    }
+
+    .dots {
+      display: flex;
+      justify-content: center;
+      margin-top: 18px;
+      gap: 8px;
+    }
+
+    .dots span {
+      width: 10px;
+      height: 10px;
+      background: #fff;
+      border-radius: 50%;
+      animation: pulse 1.4s infinite ease-in-out;
+      opacity: 0.3;
+    }
+
+    .dots span:nth-child(1) { animation-delay: 0s; }
+    .dots span:nth-child(2) { animation-delay: 0.2s; }
+    .dots span:nth-child(3) { animation-delay: 0.4s; }
+
+    @keyframes pulse {
+      0%, 100% { transform: scale(0.8); opacity: 0.3; }
+      50% { transform: scale(1.4); opacity: 1; }
+    }
+
+    .loader-content p {
+      margin-top: 16px;
+      font-size: 14px;
+      opacity: 0.85;
+    }
+
+    /* Main Container */
+    .auth-container {
+      width: 100%;
+      max-width: 440px;
+      background: rgba(255, 255, 255, 0.15);
+      backdrop-filter: blur(18px);
+      border-radius: 20px;
+      padding: 40px 35px;
+      box-shadow: 0 30px 50px rgba(0, 0, 0, 0.25);
+      position: relative;
+      z-index: 1;
+    }
+
+    .auth-header {
+      text-align: center;
+      margin-bottom: 30px;
+      color: #fff;
+    }
+
+    .auth-header h1 {
+      font-size: 32px;
+      font-weight: 700;
+      margin-bottom: 8px;
+      text-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
+    }
+
+    .auth-header p {
+      font-size: 15px;
+      opacity: 0.9;
+    }
+
+    /* Tab Switcher */
+    .tab-switcher {
+      display: flex;
+      background: rgba(255, 255, 255, 0.1);
+      border-radius: 14px;
+      padding: 5px;
+      margin-bottom: 25px;
+    }
+
+    .tab-btn {
+      flex: 1;
+      padding: 12px;
+      border: none;
+      background: transparent;
+      border-radius: 10px;
+      font-size: 15px;
+      font-weight: 600;
+      color: rgba(255, 255, 255, 0.7);
+      cursor: pointer;
+      transition: all 0.3s ease;
+    }
+
+    .tab-btn.active {
+      background: rgba(255, 255, 255, 0.25);
+      color: white;
+      box-shadow: 0 4px 15px rgba(0, 0, 0, 0.15);
+    }
+
+    /* Form */
+    .auth-form {
+      display: none;
+    }
+
+    .auth-form.active {
+      display: block;
+      animation: fadeIn 0.4s ease;
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(10px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    .input-group {
+      margin-bottom: 16px;
+      position: relative;
+    }
+
+    .input-group label {
+      display: block;
+      font-size: 13px;
+      font-weight: 600;
+      color: rgba(255, 255, 255, 0.95);
+      margin-bottom: 8px;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    .input-group input {
+      width: 100%;
+      padding: 14px 16px;
+      border-radius: 12px;
+      border: none;
+      font-size: 15px;
+      transition: all 0.3s ease;
+      background: rgba(255, 255, 255, 0.2);
+      color: #fff;
+    }
+
+    .input-group input::placeholder {
+      color: rgba(255, 255, 255, 0.6);
+    }
+
+    .input-group input:focus {
+      outline: none;
+      background: rgba(255, 255, 255, 0.25);
+      box-shadow: 0 0 0 3px rgba(187, 225, 250, 0.3);
+    }
+
+    .password-toggle {
+      position: absolute;
+      right: 16px;
+      top: 39px;
+      cursor: pointer;
+      user-select: none;
+      font-size: 18px;
+      opacity: 0.7;
+      transition: opacity 0.2s;
+    }
+
+    .password-toggle:hover {
+      opacity: 1;
+    }
+
+    .forgot-password {
+      text-align: right;
+      margin-top: -8px;
+      margin-bottom: 20px;
+    }
+
+    .forgot-password a {
+      font-size: 13px;
+      color: rgba(255, 255, 255, 0.9);
+      text-decoration: none;
+      font-weight: 500;
+    }
+
+    .forgot-password a:hover {
+      text-decoration: underline;
+    }
+
+    /* Buttons */
+    .btn {
+      width: 100%;
+      padding: 14px;
+      border-radius: 12px;
+      border: none;
+      cursor: pointer;
+      font-size: 15px;
+      font-weight: 600;
+      transition: all 0.3s ease;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+    }
+
+    .btn-primary {
+      background: #1b6ca8;
+      color: white;
+      margin-bottom: 15px;
+      box-shadow: 0 4px 15px rgba(27, 108, 168, 0.4);
+    }
+
+    .btn-primary:hover {
+      background: #145b8c;
+      transform: translateY(-2px);
+      box-shadow: 0 6px 20px rgba(27, 108, 168, 0.5);
+    }
+
+    .btn-primary:active {
+      transform: translateY(0);
+    }
+
+    .btn-primary:disabled {
+      opacity: 0.6;
+      cursor: not-allowed;
+      transform: none;
+    }
+
+    .divider {
+      display: flex;
+      align-items: center;
+      text-align: center;
+      margin: 20px 0;
+      color: rgba(255, 255, 255, 0.8);
+      font-size: 13px;
+      font-weight: 500;
+    }
+
+    .divider::before,
+    .divider::after {
+      content: '';
+      flex: 1;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.3);
+    }
+
+    .divider span {
+      padding: 0 12px;
+    }
+
+    .btn-google {
+      background: white;
+      color: #374151;
+      border: none;
+    }
+
+    .btn-google:hover {
+      background: #f3f4f6;
+      transform: translateY(-2px);
+      box-shadow: 0 4px 15px rgba(0, 0, 0, 0.15);
+    }
+
+    .btn-google img {
+      width: 20px;
+      height: 20px;
+    }
+
+    /* Alert Message */
+    .alert {
+      padding: 12px 16px;
+      border-radius: 10px;
+      margin-bottom: 20px;
+      font-size: 14px;
+      display: none;
+      animation: slideDown 0.3s ease;
+      font-weight: 500;
+    }
+
+    @keyframes slideDown {
+      from { opacity: 0; transform: translateY(-10px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    .alert.show {
+      display: block;
+    }
+
+    .alert-error {
+      background: rgba(239, 68, 68, 0.9);
+      color: white;
+    }
+
+    .alert-success {
+      background: rgba(34, 197, 94, 0.9);
+      color: white;
+    }
+
+    /* Loading spinner */
+    .spinner {
+      width: 18px;
+      height: 18px;
+      border: 2px solid rgba(255, 255, 255, 0.3);
+      border-top-color: white;
+      border-radius: 50%;
+      animation: spin 0.8s linear infinite;
+    }
+
+    @keyframes spin {
+      to { transform: rotate(360deg); }
+    }
+
+    /* Responsive */
+    @media (max-width: 480px) {
+      .auth-container {
+        padding: 35px 25px;
+      }
+
+      .auth-header h1 {
+        font-size: 28px;
+      }
+    }
+  </style>
 </head>
 <body>
 
   <!-- Loading Screen -->
-<div id="loader">
-  <div class="loader-content">
-    <img src="assets/logo.png" alt="Class Manager Logo" class="logo-img">
-    <div class="dots">
-      <span></span>
-      <span></span>
-      <span></span>
+  <div id="loader">
+    <div class="loader-content">
+      <div style="font-size: 48px; margin-bottom: 20px;">📚</div>
+      <div class="dots">
+        <span></span>
+        <span></span>
+        <span></span>
+      </div>
+      <p>Preparing your workspace</p>
     </div>
-    <p>Preparing your workspace</p>
-  </div>
-</div>
-
-<!-- Auth Container -->
-<div class="auth-container">
-  <div class="auth-header">
-    <h1>Class Manager</h1>
-    <p>Manage your classes efficiently</p>
   </div>
 
-  <!-- Tab Switcher -->
-  <div class="tab-switcher">
-    <button class="tab-btn active" onclick="switchTab('login')">Login</button>
-    <button class="tab-btn" onclick="switchTab('signup')">Sign Up</button>
+  <!-- Auth Container -->
+  <div class="auth-container">
+    <div class="auth-header">
+      <h1>Class Manager</h1>
+      <p>Manage your classes efficiently</p>
+    </div>
+
+    <!-- Tab Switcher -->
+    <div class="tab-switcher">
+      <button class="tab-btn active" onclick="switchTab('login')">Login</button>
+      <button class="tab-btn" onclick="switchTab('signup')">Sign Up</button>
+    </div>
+
+    <!-- Alert Message -->
+    <div id="alert" class="alert"></div>
+
+    <!-- Login Form -->
+    <form class="auth-form active" id="loginForm" onsubmit="handleLogin(event)">
+      <div class="input-group">
+        <label for="loginEmail">Email address</label>
+        <input type="email" id="loginEmail" placeholder="you@example.com" required>
+      </div>
+
+      <div class="input-group">
+        <label for="loginPassword">Password</label>
+        <input type="password" id="loginPassword" placeholder="Enter your password" required>
+        <span class="password-toggle" onclick="togglePassword('loginPassword')">👁️</span>
+      </div>
+
+      <div class="forgot-password">
+        <a href="#" onclick="alert('Password reset feature coming soon!'); return false;">Forgot password?</a>
+      </div>
+
+      <button type="submit" class="btn btn-primary" id="loginBtn">
+        <span>Login to your account</span>
+      </button>
+
+      <div class="divider"><span>OR</span></div>
+
+      <button type="button" class="btn btn-google" onclick="googleLogin()">
+        <img src="https://www.svgrepo.com/show/475656/google-color.svg" alt="Google">
+        <span>Continue with Google</span>
+      </button>
+    </form>
+
+    <!-- Sign Up Form -->
+    <form class="auth-form" id="signupForm" onsubmit="handleSignup(event)">
+      <div class="input-group">
+        <label for="signupEmail">Email address</label>
+        <input type="email" id="signupEmail" placeholder="you@example.com" required>
+      </div>
+
+      <div class="input-group">
+        <label for="signupPassword">Password</label>
+        <input type="password" id="signupPassword" placeholder="At least 6 characters" required minlength="6">
+        <span class="password-toggle" onclick="togglePassword('signupPassword')">👁️</span>
+      </div>
+
+      <div class="input-group">
+        <label for="confirmPassword">Confirm Password</label>
+        <input type="password" id="confirmPassword" placeholder="Re-enter your password" required minlength="6">
+        <span class="password-toggle" onclick="togglePassword('confirmPassword')">👁️</span>
+      </div>
+
+      <button type="submit" class="btn btn-primary" id="signupBtn">
+        <span>Create account</span>
+      </button>
+
+      <div class="divider"><span>OR</span></div>
+
+      <button type="button" class="btn btn-google" onclick="googleLogin()">
+        <img src="https://www.svgrepo.com/show/475656/google-color.svg" alt="Google">
+        <span>Sign up with Google</span>
+      </button>
+    </form>
   </div>
 
-  <!-- Alert Message -->
-  <div id="alert" class="alert"></div>
+  <script type="module">
+    // Import Firebase modules
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-app.js";
+    import { 
+      getAuth, 
+      signInWithEmailAndPassword, 
+      createUserWithEmailAndPassword, 
+      GoogleAuthProvider, 
+      signInWithPopup,
+      onAuthStateChanged
+    } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-auth.js";
+    import { 
+      getDatabase, 
+      ref, 
+      set 
+    } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-database.js";
 
-  <!-- Login Form -->
-  <form class="auth-form active" id="loginForm" onsubmit="handleLogin(event)">
-    <div class="input-group">
-      <label for="loginEmail">Email address</label>
-      <input type="email" id="loginEmail" placeholder="you@example.com" required>
-    </div>
+    // Firebase configuration
+    const firebaseConfig = {
+      apiKey: "AIzaSyD4z857J2ipSxqK8pN4tEWqU-jeK_mwA2I",
+      authDomain: "class-manager-383ad.firebaseapp.com",
+      databaseURL: "https://class-manager-383ad-default-rtdb.firebaseio.com",
+      projectId: "class-manager-383ad",
+      storageBucket: "class-manager-383ad.firebasestorage.app",
+      messagingSenderId: "1085651561679",
+      appId: "1:1085651561679:web:82ca82d59d6ff2ec671bba"
+    };
 
-    <div class="input-group">
-      <label for="loginPassword">Password</label>
-      <input type="password" id="loginPassword" placeholder="Enter your password" required>
-      <span class="password-toggle" onclick="togglePassword('loginPassword')">👁️</span>
-    </div>
+    // Initialize Firebase
+    const app = initializeApp(firebaseConfig);
+    const auth = getAuth(app);
+    const database = getDatabase(app);
 
-    <div class="forgot-password">
-      <a href="#" onclick="alert('Password reset feature coming soon!'); return false;">Forgot password?</a>
-    </div>
-
-    <button type="submit" class="btn btn-primary" id="loginBtn">
-      <span>Login to your account</span>
-    </button>
-
-    <div class="divider"><span>OR</span></div>
-
-    <button type="button" class="btn btn-google" onclick="googleLogin()">
-      <img src="https://www.svgrepo.com/show/475656/google-color.svg" alt="Google">
-      <span>Continue with Google</span>
-    </button>
-  </form>
-
-  <!-- Sign Up Form -->
-  <form class="auth-form" id="signupForm" onsubmit="handleSignup(event)">
-    <div class="input-group">
-      <label for="signupEmail">Email address</label>
-      <input type="email" id="signupEmail" placeholder="you@example.com" required>
-    </div>
-
-    <div class="input-group">
-      <label for="signupPassword">Password</label>
-      <input type="password" id="signupPassword" placeholder="At least 6 characters" required minlength="6">
-      <span class="password-toggle" onclick="togglePassword('signupPassword')">👁️</span>
-    </div>
-
-    <div class="input-group">
-      <label for="confirmPassword">Confirm Password</label>
-      <input type="password" id="confirmPassword" placeholder="Re-enter your password" required minlength="6">
-      <span class="password-toggle" onclick="togglePassword('confirmPassword')">👁️</span>
-    </div>
-
-    <button type="submit" class="btn btn-primary" id="signupBtn">
-      <span>Create account</span>
-    </button>
-
-    <div class="divider"><span>OR</span></div>
-
-    <button type="button" class="btn btn-google" onclick="googleLogin()">
-      <img src="https://www.svgrepo.com/show/475656/google-color.svg" alt="Google">
-      <span>Sign up with Google</span>
-    </button>
-  </form>
-
-  <!-- Logout Button (only shows when logged in) -->
-  <div id="logoutSection" style="display: none; text-align: center; margin-top: 20px;">
-    <p>You are already logged in.</p>
-    <button type="button" class="btn btn-primary" onclick="handleLogout()">
-      <span>Logout</span>
-    </button>
-  </div>
-</div>
-  
-<!-- index.html -->
-<script type="module">
-  // 🔹 1️⃣ Import Firebase modules
-  import { initializeApp } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-app.js";
-  import { 
-    getAuth, 
-    signInWithEmailAndPassword, 
-    createUserWithEmailAndPassword, 
-    GoogleAuthProvider, 
-    signInWithPopup,
-    onAuthStateChanged,
-    signOut
-  } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-auth.js";
-  import { 
-    getDatabase, 
-    ref, 
-    set 
-  } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-database.js";
-
-  // 🔹 2️⃣ Initialize Firebase
-  const firebaseConfig = {
-    apiKey: "AIzaSyD4z857J2ipSxqK8pN4tEWqU-jeK_mwA2I",
-    authDomain: "class-manager-383ad.firebaseapp.com",
-    databaseURL: "https://class-manager-383ad-default-rtdb.firebaseio.com",
-    projectId: "class-manager-383ad",
-    storageBucket: "class-manager-383ad.firebasestorage.app",
-    messagingSenderId: "1085651561679",
-    appId: "1:1085651561679:web:82ca82d59d6ff2ec671bba"
-  };
-
-  const app = initializeApp(firebaseConfig);
-  const auth = getAuth(app);
-  const database = getDatabase(app);
-
-  // 🔹 3️⃣ Check if already logged in - REMOVED AUTO REDIRECT
-  // Now just shows logout button instead of auto-redirecting
-  onAuthStateChanged(auth, (user) => {
-    if (user) {
-      console.log('User already logged in:', user.email);
-      // Show logout section instead of redirecting
-      document.getElementById('logoutSection').style.display = 'block';
-      document.querySelector('.auth-container').style.display = 'none';
-    } else {
-      document.getElementById('logoutSection').style.display = 'none';
-      document.querySelector('.auth-container').style.display = 'block';
-    }
-  });
-
-  // 🔹 4️⃣ Initialize EmailJS
-  emailjs.init("rHYrJYPEObugXQPep");
-
-  // 🔹 5️⃣ Send login email
-  async function sendLoginEmail(userEmail) {
-    try {
-      await emailjs.send("service_jcmia18", "template_c34t4jt", {
-        user_email: userEmail,
-        login_time: new Date().toLocaleString(),
-        device: navigator.userAgent
-      });
-    } catch (err) {
-      console.error("EmailJS error:", err);
-    }
-  }
-
-  // 🔹 6️⃣ Login function
-  window.login = async function(email, password, callback) {
-    try {
-      const userCredential = await signInWithEmailAndPassword(auth, email, password);
-      console.log('✅ Login successful:', userCredential.user.uid);
-      
-      await sendLoginEmail(userCredential.user.email);
-      
-      // Redirect to app
-      window.location.href = "app.html";
-    } catch (error) {
-      console.error('Login error:', error);
-      if (callback) callback(error.message);
-    }
-  };
-
-  // 🔹 7️⃣ Signup function
-  window.signUp = async function(email, password, callback) {
-    if (password.length < 6) {
-      if (callback) callback("Password must be at least 6 characters");
-      return;
-    }
-    
-    try {
-      const userCredential = await createUserWithEmailAndPassword(auth, email, password);
-      console.log('✅ Account created:', userCredential.user.uid);
-      
-      // Create user profile in database
-      await set(ref(database, 'users/' + userCredential.user.uid + '/profile'), {
-        email: email,
-        createdAt: new Date().toISOString()
-      });
-      
-      await sendLoginEmail(userCredential.user.email);
-      
-      // Redirect to app
-      window.location.href = "app.html";
-    } catch (error) {
-      console.error('Signup error:', error);
-      if (callback) callback(error.message);
-    }
-  };
-
-  // 🔹 8️⃣ Google login
-  window.googleLogin = async function() {
-    const provider = new GoogleAuthProvider();
-    try {
-      const result = await signInWithPopup(auth, provider);
-      console.log('✅ Google login successful:', result.user.uid);
-      
-      // Create/update user profile
-      await set(ref(database, 'users/' + result.user.uid + '/profile'), {
-        email: result.user.email,
-        name: result.user.displayName,
-        photoURL: result.user.photoURL,
-        lastLogin: new Date().toISOString()
-      });
-      
-      await sendLoginEmail(result.user.email);
-      
-      // Redirect to app
-      window.location.href = "app.html";
-    } catch (error) {
-      console.error('Google login error:', error);
-      alert("Google login failed: " + error.message);
-    }
-  };
-
-  // 🔹 NEW: Logout function
-  window.handleLogout = async function() {
-    try {
-      await signOut(auth);
-      console.log('✅ Logged out successfully');
-      window.location.reload(); // Reload to show login form
-    } catch (error) {
-      console.error('Logout error:', error);
-      alert("Logout failed: " + error.message);
-    }
-  };
-
-  // 🔹 9️⃣ Loader
-  window.addEventListener("load", () => {
-    setTimeout(() => {
-      document.getElementById("loader").classList.add("hide-loader");
-    }, 2500);
-  });
-
-  // 🔹 10️⃣ Tab switching
-  window.switchTab = function(tab) {
-    const tabs = document.querySelectorAll('.tab-btn');
-    const forms = document.querySelectorAll('.auth-form');
-
-    tabs.forEach(t => {
-      if (t.textContent.toLowerCase().includes(tab)) {
-        t.classList.add('active');
-      } else {
-        t.classList.remove('active');
+    // Check if already logged in
+    onAuthStateChanged(auth, (user) => {
+      if (user) {
+        console.log('User already logged in:', user.email);
+        // Uncomment to redirect to app
+        // window.location.href = "app.html";
       }
     });
-    
-    forms.forEach(f => {
-      if (f.id === tab + 'Form') {
-        f.classList.add('active');
-      } else {
-        f.classList.remove('active');
+
+    // Login function
+    window.login = async function(email, password, callback) {
+      try {
+        const userCredential = await signInWithEmailAndPassword(auth, email, password);
+        console.log('✅ Login successful:', userCredential.user.uid);
+        
+        // Redirect to app
+        // window.location.href = "app.html";
+        showAlert('Login successful!', 'success');
+      } catch (error) {
+        console.error('Login error:', error);
+        if (callback) callback(error.message);
       }
+    };
+
+    // Signup function
+    window.signUp = async function(email, password, callback) {
+      if (password.length < 6) {
+        if (callback) callback("Password must be at least 6 characters");
+        return;
+      }
+      
+      try {
+        const userCredential = await createUserWithEmailAndPassword(auth, email, password);
+        console.log('✅ Account created:', userCredential.user.uid);
+        
+        // Create user profile in database
+        await set(ref(database, 'users/' + userCredential.user.uid + '/profile'), {
+          email: email,
+          createdAt: new Date().toISOString()
+        });
+        
+        // Redirect to app
+        // window.location.href = "app.html";
+        showAlert('Account created successfully!', 'success');
+      } catch (error) {
+        console.error('Signup error:', error);
+        if (callback) callback(error.message);
+      }
+    };
+
+    // Google login
+    window.googleLogin = async function() {
+      const provider = new GoogleAuthProvider();
+      try {
+        const result = await signInWithPopup(auth, provider);
+        console.log('✅ Google login successful:', result.user.uid);
+        
+        // Create/update user profile
+        await set(ref(database, 'users/' + result.user.uid + '/profile'), {
+          email: result.user.email,
+          name: result.user.displayName,
+          photoURL: result.user.photoURL,
+          lastLogin: new Date().toISOString()
+        });
+        
+        // Redirect to app
+        // window.location.href = "app.html";
+        showAlert('Google login successful!', 'success');
+      } catch (error) {
+        console.error('Google login error:', error);
+        showAlert("Google login failed: " + error.message, 'error');
+      }
+    };
+
+    // Loader
+    window.addEventListener("load", () => {
+      setTimeout(() => {
+        document.getElementById("loader").classList.add("hide-loader");
+      }, 2500);
     });
-    
-    hideAlert();
-  };
 
-  // 🔹 11️⃣ Password toggle
-  window.togglePassword = function(inputId) {
-    const input = document.getElementById(inputId);
-    input.type = input.type === 'password' ? 'text' : 'password';
-  };
+    // Tab switching
+    window.switchTab = function(tab) {
+      const tabs = document.querySelectorAll('.tab-btn');
+      const forms = document.querySelectorAll('.auth-form');
 
-  // 🔹 12️⃣ Alert functions
-  function showAlert(message, type = 'error') {
-    const alert = document.getElementById('alert');
-    alert.textContent = message;
-    alert.className = `alert alert-${type} show`;
-  }
+      tabs.forEach(t => {
+        if (t.textContent.toLowerCase().includes(tab)) {
+          t.classList.add('active');
+        } else {
+          t.classList.remove('active');
+        }
+      });
+      
+      forms.forEach(f => {
+        if (f.id === tab + 'Form') {
+          f.classList.add('active');
+        } else {
+          f.classList.remove('active');
+        }
+      });
+      
+      hideAlert();
+    };
 
-  function hideAlert() {
-    document.getElementById('alert').classList.remove('show');
-  }
+    // Password toggle
+    window.togglePassword = function(inputId) {
+      const input = document.getElementById(inputId);
+      input.type = input.type === 'password' ? 'text' : 'password';
+    };
 
-  // 🔹 13️⃣ Login handler
-  window.handleLogin = async function(e) {
-    e.preventDefault();
-    hideAlert();
+    // Alert functions
+    function showAlert(message, type = 'error') {
+      const alert = document.getElementById('alert');
+      alert.textContent = message;
+      alert.className = `alert alert-${type} show`;
+    }
 
-    const btn = document.getElementById('loginBtn');
-    const email = document.getElementById('loginEmail').value;
-    const password = document.getElementById('loginPassword').value;
+    function hideAlert() {
+      document.getElementById('alert').classList.remove('show');
+    }
 
-    btn.disabled = true;
-    btn.innerHTML = '<span class="spinner"></span><span>Logging in...</span>';
+    // Login handler
+    window.handleLogin = async function(e) {
+      e.preventDefault();
+      hideAlert();
 
-    try {
-      await window.login(email, password, (error) => {
-        if (error) {
-          showAlert(error, 'error');
+      const btn = document.getElementById('loginBtn');
+      const email = document.getElementById('loginEmail').value;
+      const password = document.getElementById('loginPassword').value;
+
+      btn.disabled = true;
+      btn.innerHTML = '<span class="spinner"></span><span>Logging in...</span>';
+
+      try {
+        await window.login(email, password, (error) => {
+          if (error) {
+            showAlert(error, 'error');
+            btn.disabled = false;
+            btn.innerHTML = '<span>Login to your account</span>';
+          }
+        });
+        
+        // Reset button after successful login
+        setTimeout(() => {
           btn.disabled = false;
           btn.innerHTML = '<span>Login to your account</span>';
-        }
-      });
-    } catch (err) {
-      btn.disabled = false;
-      btn.innerHTML = '<span>Login to your account</span>';
-    }
-  };
+        }, 1000);
+      } catch (err) {
+        btn.disabled = false;
+        btn.innerHTML = '<span>Login to your account</span>';
+      }
+    };
 
-  // 🔹 14️⃣ Signup handler
-  window.handleSignup = async function(e) {
-    e.preventDefault();
-    hideAlert();
+    // Signup handler
+    window.handleSignup = async function(e) {
+      e.preventDefault();
+      hideAlert();
 
-    const btn = document.getElementById('signupBtn');
-    const email = document.getElementById('signupEmail').value;
-    const password = document.getElementById('signupPassword').value;
-    const confirm = document.getElementById('confirmPassword').value;
+      const btn = document.getElementById('signupBtn');
+      const email = document.getElementById('signupEmail').value;
+      const password = document.getElementById('signupPassword').value;
+      const confirm = document.getElementById('confirmPassword').value;
 
-    if (password !== confirm) {
-      showAlert('Passwords do not match!', 'error');
-      return;
-    }
+      if (password !== confirm) {
+        showAlert('Passwords do not match!', 'error');
+        return;
+      }
 
-    btn.disabled = true;
-    btn.innerHTML = '<span class="spinner"></span><span>Creating account...</span>';
+      btn.disabled = true;
+      btn.innerHTML = '<span class="spinner"></span><span>Creating account...</span>';
 
-    try {
-      await window.signUp(email, password, (error) => {
-        if (error) {
-          showAlert(error, 'error');
+      try {
+        await window.signUp(email, password, (error) => {
+          if (error) {
+            showAlert(error, 'error');
+            btn.disabled = false;
+            btn.innerHTML = '<span>Create account</span>';
+          }
+        });
+        
+        // Reset button after successful signup
+        setTimeout(() => {
           btn.disabled = false;
           btn.innerHTML = '<span>Create account</span>';
-        }
-      });
-    } catch (err) {
-      btn.disabled = false;
-      btn.innerHTML = '<span>Create account</span>';
-    }
-  };
-</script>
+        }, 1000);
+      } catch (err) {
+        btn.disabled = false;
+        btn.innerHTML = '<span>Create account</span>';
+      }
+    };
+  </script>
 </body>
 </html>
