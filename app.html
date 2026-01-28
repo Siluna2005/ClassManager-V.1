@@ -3617,10 +3617,20 @@
             if (statsTimetable) statsTimetable.textContent = appData.timetable.length;            
             if (statsAttendance) statsAttendance.textContent = Object.keys(appData.attendance || {}).length;   
         }
+
+        import { getAuth, signOut } from "firebase/auth";
+
+        function logout() {  
+            const auth = getAuth();  
+            signOut(auth).then(() => {   
+                window.location.href = "index.html"; 
+            });
+        }
            
         // Initialize app               
         init();
     </script>
 </body>
 </html>
+
 
