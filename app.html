@@ -4,23 +4,18 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <meta name="theme-color" content="#2563EB">
-    <meta name="mobile-web-app-capable" content="yes">
-    <meta name="apple-mobile-web-app-capable" content="yes">
-    <link rel="icon" type="image/x-icon" href="assets/favicon.ico">
-    <link rel="preconnect" href="https://fonts.googleapis.com"> 
+    <meta name="apple-mobile-web-app-capable" content="yes">   
+    <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link rel="stylesheet" href="appStyle.css">
-    <meta http-equiv="Content-Security-Policy" content="default-src 'self' https: data: blob: 'unsafe-inline' 'unsafe-eval'; connect-src 'self' https: wss: data: blob:;">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="icon" type="image/x-icon" href="assets/favicon.ico">
     <title>Class Manager</title>
+    <link rel="stylesheet" href="appStyle.css">
+    <script type="text/javascript" src="https://www.payhere.lk/lib/payhere.js"></script>
     <script src="https://unpkg.com/html5-qrcode@2.3.8/html5-qrcode.min.js"></script>
     <script src="https://cdn.sheetjs.com/xlsx-0.20.1/package/dist/xlsx.full.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
-    <script type="text/javascript" src="https://www.payhere.lk/lib/payhere.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-database-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-auth-compat.js"></script>
 </head>
 <body>
 
@@ -276,7 +271,7 @@
                     </div>
                 </div>
             </div>
-
+            
             <!-- Timetable Screen -->
             <div id="timetable" class="screen">
                 <div class="screen-header">
@@ -506,7 +501,7 @@
                     <div id="reportContent"></div>
                 </div>
             </div>
-
+       
             <!-- QR Scanner Modal -->
             <div class="modal" id="qrScannerModal">    
                 <div class="modal-content" style="max-width: 600px;">        
@@ -960,425 +955,112 @@
             </div>
         </div>
     </div>
-
     <script>
-        // ============================================
-        // FIREBASE CONFIGURATION
-        // ============================================
-        
-        const firebaseConfig = {          
-            apiKey: "AIzaSyD4z857J2ipSxqK8pN4tEWqU-jeK_mwA2I",          
-            authDomain: "class-manager-383ad.firebaseapp.com",          
-            databaseURL: "https://class-manager-383ad-default-rtdb.asia-southeast1.firebasedatabase.app",          
-            projectId: "class-manager-383ad",          
-            storageBucket: "class-manager-383ad.firebasestorage.app",          
-            messagingSenderId: "1085651561679",          
-            appId: "1:1085651561679:web:82ca82d59d6ff2ec671bba"    
+        let appData = {        
+            students: [],
+            grades: ['06', '07', '08', '09', '10', '11', '12'],
+            timetable: [],
+            attendance: {},
+            payments: [],
+            subjectName: 'Mathematics',
+            selectedStudent: null,
+            editingTimetable: null,
+            selectedPaymentStudent: null,
+            // ADD SUBSCRIPTION DATA
+            subscription: {
+                plan: 'free_trial',  // 'free_trial', 'monthly', 'annual'
+                status: 'active',     // 'active', 'expired', 'cancelled'
+                startDate: new Date().toISOString(),
+                endDate: null,
+                maxStudents: 10,      // Free trial limit
+                features: {
+                    students: true,
+                    attendance: true,
+                    payments: true,
+                    reports: true,
+                    backup: true
+                }
+            }
         };
 
-        // Initialize Firebase
-        firebase.initializeApp(firebaseConfig);
-        const database = firebase.database();
-        const auth = firebase.auth();
-
-        // Global variables
-        let currentUser = null;
-        let currentUserId = null;
-        let lastSyncedTimestamp = null;
-        
-        // ============================================
-        // PAYHERE & APP DATA
-        // ============================================
-        
         // PayHere Configuration
-        const PAYHERE_CONFIG = {    
-            merchantId: '1221149',
-            sandbox: true,
+        const PAYHERE_CONFIG = {
+            // SANDBOX CREDENTIALS (for testing)
+            merchantId: '1221149',  // Replace with your Merchant ID
+            sandbox: true,  // Set to false for production
+    
+            // Your website details
             returnUrl: window.location.href,
             cancelUrl: window.location.href,
-            notifyUrl: 'https://yourwebsite.com/notify',
+            notifyUrl: 'https://yourwebsite.com/notify',  // Optional: for server-side notifications
+    
+            // Business details
             businessName: 'Class Manager',
             currency: 'LKR'
         };
- 
+
         // Subscription prices in LKR
-        const SUBSCRIPTION_PRICES = {    
-            monthly: {        
-                amount: 1000.00,
-                currency: 'LKR',        
-                description: 'Class Manager - Monthly Subscription'   
-            },    
-            annual: {        
-                amount: 9600.00,
+        const SUBSCRIPTION_PRICES = {
+            monthly: {
+                amount: 1000.00,  // Rs. 2,999.00
+                currency: 'LKR',
+                description: 'Class Manager - Monthly Subscription'
+            },
+            annual: {
+                amount: 9600.00,  // Rs. 28,799.00 (Save 20%)
                 currency: 'LKR',
                 description: 'Class Manager - Annual Subscription'
             }
         };
 
-        let appData = {    
-            students: [],    
-            grades: ['06', '07', '08', '09', '10', '11', '12'],    
-            timetable: [],    
-            attendance: {},    
-            payments: [],    
-            subjectName: 'Mathematics',    
-            selectedStudent: null,    
-            editingTimetable: null,   
-            selectedPaymentStudent: null,   
-            subscription: {        
-                plan: 'free_trial',
-                status: 'active',
-                startDate: new Date().toISOString(),        
-                endDate: null,        
-                maxStudents: 10,
-                features: {            
-                    students: true,            
-                    attendance: true,            
-                    payments: true,            
-                    reports: true,            
-                    backup: true        
-                }    
-            }
-        };
-
-        // ============================================
-        // CHECK AUTHENTICATION
-        // ============================================
-
-        auth.onAuthStateChanged((user) => {    
-            if (user) {        
-                currentUser = user;        
-                currentUserId = user.uid;
-                
-                console.log('✅ User authenticated:', user.email);        
-                console.log('User ID:', currentUserId);
-                
-                setTimeout(() => {            
-                    const loader = document.getElementById('loader');            
-                    if (loader) {                
-                        loader.classList.add('hide-loader');                
-                        setTimeout(() => {                    
-                            loader.style.display = 'none';                
-                        }, 600);            
-                    }        
-                }, 1000);
-                
-                initializeApp();
-            
-            } else {        
-                console.log('❌ No user authenticated, redirecting...');        
-                window.location.href = 'index.html';    
-            }
-        });
+        function init() {
+            console.log('Initializing app...');
         
-        // ============================================
-        // LOGOUT FUNCTION
-        // ============================================
-
-        function logout() {    
-            if (!confirm('Are you sure you want to sign out?')) {        
-                return;    
-            }
-    
-            auth.signOut()        
-                .then(() => {            
-                    console.log('✅ User logged out');            
-                    window.location.href = 'index.html';        
-                })        
-                .catch((error) => {            
-                    console.error('Logout error:', error);            
-                    alert('❌ Error signing out: ' + error.message);        
-                });
-        }
-
-        // ============================================
-        // INITIALIZE APP
-        // ============================================
-
-        function initializeApp() {    
-            console.log('╔════════════════════════════════════════╗');    
-            console.log('║   APP INITIALIZATION                   ║');    
-            console.log('╚════════════════════════════════════════╝');    
-            console.log('User:', currentUser.email);    
-            console.log('UID:', currentUserId);
-        
+            // Load saved data   
             loadData();
+
+            // INITIALIZE SUBSCRIPTION    
             initializeSubscription();
-            enableRealtimeSync();
         
-            console.log('✅ App initialized');
-        }
-        
-        // ============================================
-        // SAVE DATA TO FIREBASE
-        // ============================================
-
-        function saveData() {    
-            if (!currentUserId) {        
-                console.error('❌ No user authenticated');        
-                return false;    
+            // Hide splash screen    
+            const splash = document.getElementById('splash');    
+            if (splash) {        
+                splash.style.display = 'none';        
+                console.log('Splash hidden');    
+            } else {        
+                console.warn('Splash element not found');    
             }
         
-            try {        
-                const dataToSave = {            
-                    ...appData,            
-                    lastSaved: new Date().toISOString()        
-                };
-                
-                console.log('💾 Saving data for:', currentUserId);
-                
-                updateSyncStatus('syncing');
-                
-                database.ref('users/' + currentUserId + '/data').set(dataToSave)            
-                    .then(() => {                
-                        console.log('✅ Data saved to Firebase');                
-                        localStorage.setItem('classManagerData_' + currentUserId, JSON.stringify(dataToSave));
-                        
-                        updateLastSavedTime();
-                        updateSyncStatus('synced');
-                    })            
-                    .catch((error) => {                
-                        console.error('❌ Firebase save error:', error);                
-                        localStorage.setItem('classManagerData_' + currentUserId, JSON.stringify(dataToSave));
-                        updateSyncStatus('error');            
-                    });
-                
-                return true;    
-            } catch (error) {        
-                console.error('❌ Error saving data:', error);        
-                return false;    
-            }
-        }
-
-        // ============================================
-        // LOAD DATA FUNCTION
-        // ============================================
-
-        function loadData() {    
-            if (!currentUserId) {        
-                console.error('❌ No user authenticated');        
-                return;    
+            // Show app immediately    
+            const app = document.getElementById('app');    
+            if (app) {        
+                app.classList.add('active');        
+                console.log('App shown');    
+            } else {        
+                console.error('App element not found!');    
             }
         
-            console.log('📥 Loading data for:', currentUserId);
-       
-            database.ref('users/' + currentUserId + '/data').once('value')        
-                .then((snapshot) => {            
-                    const firebaseData = snapshot.val();
-                        
-                    if (firebaseData) {                
-                        console.log('✅ Data loaded from Firebase');
-                               
-                        appData = {                    
-                            ...appData,                    
-                            ...firebaseData,                    
-                            students: firebaseData.students || [],                    
-                            timetable: firebaseData.timetable || [],                    
-                            payments: firebaseData.payments || [],                    
-                            attendance: firebaseData.attendance || {},                    
-                            grades: firebaseData.grades || ['06', '07', '08', '09', '10', '11', '12']                
-                        };
-                                
-                        localStorage.setItem('classManagerData_' + currentUserId, JSON.stringify(appData));            
-                    } else {                
-                        console.log('ℹ️ No Firebase data, checking localStorage...');
-                                
-                        const localData = localStorage.getItem('classManagerData_' + currentUserId);                
-                        if (localData) {                   
-                            const parsedData = JSON.parse(localData);                    
-                            appData = { ...appData, ...parsedData };                    
-                            saveData();                    
-                            console.log('✅ Local data uploaded to Firebase');                
-                        } else {                    
-                            console.log('ℹ️ No saved data, using defaults');                
-                        }            
-                    }
-                        
-                    populateGradeDropdowns();
-                    updateDashboard();
-                    updateSyncStatus('synced');
-                    displayTeacherId();
-                })        
-                .catch((error) => {            
-                    console.error('❌ Firebase load error:', error);
-                        
-                    const localData = localStorage.getItem('classManagerData_' + currentUserId);            
-                    if (localData) {                
-                        appData = { ...appData, ...JSON.parse(localData) };                
-                        console.log('✅ Loaded from localStorage (fallback)');            
-                    }
-                        
-                    populateGradeDropdowns();
-                    updateDashboard();
-                    updateSyncStatus('error');
-                });        
-        }
-
-        // ============================================
-        // REAL-TIME SYNC FUNCTION (FIXED)
-        // ============================================
-
-        function enableRealtimeSync() {    
-            if (!currentUserId) {        
-                console.warn('⚠️ Cannot enable sync: No user');        
-                return;    
-            }
-        
-            console.log('🔄 Real-time sync enabled');
-        
-            database.ref('users/' + currentUserId + '/data').on('value', (snapshot) => {        
-                const data = snapshot.val();
-                
-                if (data && data.lastSaved) {
-                    // Only update if the remote data is newer than what we have
-                    if (!lastSyncedTimestamp || data.lastSaved > lastSyncedTimestamp) {
-                        lastSyncedTimestamp = data.lastSaved;
-                        
-                        console.log('🔄 Data updated from cloud');
-                        
-                        appData = {                
-                            ...appData,                
-                            ...data,                
-                            students: data.students || [],                
-                            timetable: data.timetable || [],                
-                            payments: data.payments || [],                
-                            attendance: data.attendance || {},                
-                            grades: data.grades || ['06', '07', '08', '09', '10', '11', '12']            
-                        };
-                        
-                        localStorage.setItem('classManagerData_' + currentUserId, JSON.stringify(appData));
-                        
-                        // Refresh current screen
-                        const activeScreen = document.querySelector('.screen.active');           
-                        if (activeScreen) {                
-                            const screenId = activeScreen.id;                
-                            if (screenId === 'students') loadStudentsScreen();
-                            if (screenId === 'timetable') loadTimetable();
-                            if (screenId === 'payments') loadPaymentHistory();
-                            if (screenId === 'dashboard') updateDashboard();
-                        }
-                    }
-                }    
-            }, (error) => {        
-                console.error('❌ Sync error:', error);    
-            });
-        }
-
-        // ============================================
-        // HELPER FUNCTIONS
-        // ============================================
-
-        function updateSyncStatus(status) {    
-            const syncIcon = document.getElementById('syncIcon');    
-            const syncText = document.getElementById('syncText');    
-    
-            if (!syncIcon || !syncText) return;
-        
-            if (status === 'syncing') {        
-                syncIcon.textContent = '🔄';        
-                syncText.textContent = 'Syncing...';    
-            } else if (status === 'synced') {        
-                syncIcon.textContent = '☁️';        
-                syncText.textContent = 'Synced';    
-            } else if (status === 'error') {        
-                syncIcon.textContent = '⚠️';        
-                syncText.textContent = 'Offline';    
-            }
-        }
-
-        function updateLastSavedTime() {    
-            const lastSavedEl = document.getElementById('lastSavedTime');    
-            if (lastSavedEl && appData.lastSaved) {        
-                const savedDate = new Date(appData.lastSaved);        
-                lastSavedEl.textContent = savedDate.toLocaleString();    
-            }
-        }
-        
-        function manualSync() {    
-            if (!currentUserId) {        
-                alert('❌ No user ID found. Please refresh the page.');        
-                return;    
+            // Update dashboard if function exists    
+            if (typeof updateDashboard === 'function') {        
+                updateDashboard();    
             }
        
-            console.log('🔄 Manual sync started for user:', currentUserId);    
-            updateSyncStatus('syncing');
-        
-            database.ref('users/' + currentUserId + '/data').once('value')        
-                .then((snapshot) => {            
-                    const data = snapshot.val();
-                      
-                    if (data) {                
-                        console.log('✅ Data retrieved from Firebase');                
-                        appData = {                   
-                            ...appData,                    
-                            ...data,                    
-                            students: data.students || [],                    
-                            timetable: data.timetable || [],                    
-                            payments: data.payments || [],                    
-                            attendance: data.attendance || {},                    
-                            grades: data.grades || ['06', '07', '08', '09', '10', '11', '12']                
-                        };
-                               
-                        localStorage.setItem('classManagerData_' + currentUserId, JSON.stringify(appData));
-                                
-                        updateDashboard();                
-                        const activeScreen = document.querySelector('.screen.active');               
-                        if (activeScreen && activeScreen.id === 'students') {                    
-                            loadStudentsScreen();                                        
-                        }
-                                
-                        updateSyncStatus('synced');                
-                        alert('✅ Data synced successfully!');            
-                    } else {                
-                        console.log('ℹ️ No data in Firebase, uploading local data...');                
-                        saveData();                
-                        updateSyncStatus('synced');                
-                        alert('✅ Local data uploaded to cloud!');            
-                    }        
-                })        
-                .catch((error) => {            
-                    console.error('❌ Sync error:', error);            
-                    updateSyncStatus('error');
-                        
-                    let errorMsg = 'Sync failed: ' + error.message;
-                        
-                    if (error.code === 'PERMISSION_DENIED') {                
-                        errorMsg = '❌ Permission Denied\n\nPlease check:\n1. Firebase Database Rules\n2. Database URL is correct';            
-                    }
-                
-                    alert(errorMsg);       
-                });
+            console.log('App initialized');
         }
-
-        function displayTeacherId() {    
-            const teacherIdEl = document.getElementById('teacherIdDisplay');    
-            if (teacherIdEl && currentUserId) {        
-                teacherIdEl.textContent = currentUserId;    
-            }
-        }
-
-        function copyTeacherId() {    
-            if (navigator.clipboard && currentUserId) {        
-                navigator.clipboard.writeText(currentUserId);        
-                alert('✅ Teacher ID copied to clipboard!');    
-            }
-        }
-
-        // ============================================
-        // NAVIGATION AND UI FUNCTIONS
-        // ============================================
 
         function navigateTo(screenName) {
+    
             document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
             document.getElementById(screenName).classList.add('active');
-            
+    
             document.querySelectorAll('.menu-item').forEach(m => m.classList.remove('active'));
             const menuItem = document.querySelector(`.menu-item[data-screen="${screenName}"]`);
-            
+    
             if (menuItem) menuItem.classList.add('active');
-            
+    
             toggleSidebar();
-            
+    
+            // Call screen-specific functions
             if (screenName === 'students') loadStudentsScreen();
             if (screenName === 'timetable') loadTimetable();
             if (screenName === 'attendance') {
@@ -1389,6 +1071,8 @@
             }
             if (screenName === 'payments') loadPaymentHistory();
             if (screenName === 'settings') loadSettings();
+    
+            // ADD THIS FOR SUBSCRIPTION
             if (screenName === 'subscription') updateSubscriptionDisplay();
         }
 
@@ -1399,15 +1083,29 @@
 
         function populateGradeDropdowns() {
             const html = appData.grades.map(g => `<option value="${g}">Grade ${g}</option>`).join('');
-        
+    
+    
+            // Only update elements that exist
+    
             const gradeFilter = document.getElementById('gradeFilter');
+    
             if (gradeFilter) {
                 gradeFilter.innerHTML = '<option value="all">All Grades</option>' + html;
+            }
+    
+            const studentGradeFilter = document.getElementById('studentGradeFilter');
+            if (studentGradeFilter) {
+                studentGradeFilter.innerHTML = '<option value="all">All Grades</option>' + html;
             }
     
             const studentGradeInput = document.getElementById('studentGradeInput');
             if (studentGradeInput) {
                 studentGradeInput.innerHTML = '<option value="">Select Grade</option>' + html;
+            }
+    
+            const attendanceGrade = document.getElementById('attendanceGrade');
+            if (attendanceGrade) {
+                attendanceGrade.innerHTML = html;
             }
     
             const attendanceClassSelect = document.getElementById('attendanceClassSelect');
@@ -1420,15 +1118,16 @@
                 timetableGrade.innerHTML = html;
             }
     
+            const paymentGradeFilter = document.getElementById('paymentGradeFilter');
+            if (paymentGradeFilter) {
+                paymentGradeFilter.innerHTML = '<option value="all">All Grades</option>' + html;
+            }
+    
             const reportGrade = document.getElementById('reportGrade');
             if (reportGrade) {
                 reportGrade.innerHTML = '<option value="all">All Grades</option>' + html;
             }
         }
-
-        // ============================================
-        // DASHBOARD FUNCTIONS
-        // ============================================
 
         function updateDashboard() {
             const filter = document.getElementById('gradeFilter').value;
@@ -1484,13 +1183,11 @@
         }
 
         // ============================================
-        // STUDENT MANAGEMENT
+        // STUDENT MANAGEMENT - UPDATED VERSION
         // ============================================
 
         let currentSelectedGradeTab = 'all';
         let selectedStudentForEdit = null;
-        let currentAttendanceData = {};
-        let currentAttendanceStudents = [];
 
         function loadStudentsScreen() {
             populateStudentGradeDropdown();
@@ -1520,6 +1217,7 @@
         function switchGradeTab(grade) {
             currentSelectedGradeTab = grade;
             
+            // Update active tab styling
             document.querySelectorAll('.grade-tab').forEach(tab => {
                 tab.classList.remove('active');
             });
@@ -1533,10 +1231,12 @@
             
             let filtered = appData.students;
             
+            // Filter by grade tab
             if (currentSelectedGradeTab !== 'all') {
                 filtered = filtered.filter(s => s.grade === currentSelectedGradeTab);
             }
             
+            // Filter by search
             if (searchTerm) {
                 filtered = filtered.filter(s => 
                     s.name.toLowerCase().includes(searchTerm) ||
@@ -1571,7 +1271,7 @@
                         </div>                    
                         <button onclick='event.stopPropagation(); showQRCode(${JSON.stringify(s).replace(/'/g, "&apos;")})'                         
                                 style="background: #2563EB; color: white; padding: 8px 16px; border: none; border-radius: 6px; cursor: pointer; font-size: 14px; font-weight: 600;">                    
-                            📱 QR                                    
+                            ðŸ“± QR                                    
                         </button>            
                     </div>
                 </div>        
@@ -1581,6 +1281,7 @@
         function selectStudentForEdit(student) {
             selectedStudentForEdit = student;
             
+            // Fill form with student data
             document.getElementById('studentFormTitle').textContent = 'Edit Student';
             document.getElementById('studentNameInput').value = student.name;
             document.getElementById('studentBirthdayInput').value = student.birthday || '';
@@ -1590,21 +1291,27 @@
             document.getElementById('studentPhoneInput').value = student.studentPhone || '';
             document.getElementById('parentPhoneInput').value = student.parentPhone || '';
             
+            // Show student ID and QR
             document.getElementById('studentIdDisplay').value = student.id;
+            document.getElementById('qrCodeDisplay').textContent = student.id;
             document.getElementById('studentIdDisplaySection').style.display = 'block';
             
+            // Show/hide buttons
             document.getElementById('addStudentBtn').style.display = 'none';
             document.getElementById('updateStudentBtn').style.display = 'block';
             document.getElementById('deleteStudentBtn').style.display = 'block';
             
+            // Update selected styling
             filterStudentsByTab();
         }
 
         function addNewStudent() {
-            if (!canAddStudent()) {       
+           
+            if (!canAddStudent()) {        
                 return;    
             }
-            
+
+            // Get form values
             const name = document.getElementById('studentNameInput').value.trim();
             const birthday = document.getElementById('studentBirthdayInput').value;
             const gender = document.getElementById('studentGenderInput').value;
@@ -1613,6 +1320,7 @@
             const studentPhone = document.getElementById('studentPhoneInput').value.trim();
             const parentPhone = document.getElementById('parentPhoneInput').value.trim();
             
+            // Validation
             if (!name) {
                 alert('Please enter student name');
                 return;
@@ -1638,8 +1346,10 @@
                 return;
             }
             
+            // Generate student ID
             const studentId = generateStudentId(grade);
             
+            // Create student object
             const newStudent = {
                 id: studentId,
                 name: name,
@@ -1652,18 +1362,21 @@
                 qrCode: studentId
             };
             
+            // Add to array
             appData.students.push(newStudent);
             saveData();
             
+            // Refresh display
             filterStudentsByTab();
             clearStudentForm();
             
-            alert('✅ Student added successfully!\n\nStudent ID: ' + studentId);
+            alert('âœ… Student added successfully!\n\nStudent ID: ' + studentId);
         }
 
         function updateExistingStudent() {
             if (!selectedStudentForEdit) return;
             
+            // Get form values
             const name = document.getElementById('studentNameInput').value.trim();
             const birthday = document.getElementById('studentBirthdayInput').value;
             const gender = document.getElementById('studentGenderInput').value;
@@ -1672,11 +1385,13 @@
             const studentPhone = document.getElementById('studentPhoneInput').value.trim();
             const parentPhone = document.getElementById('parentPhoneInput').value.trim();
             
+            // Validation
             if (!name || !birthday || !gender || !studentClass || !grade || !parentPhone) {
                 alert('Please fill in all required fields');
                 return;
             }
             
+            // Update student
             appData.students = appData.students.map(s => {
                 if (s.id === selectedStudentForEdit.id) {
                     return {
@@ -1697,7 +1412,7 @@
             filterStudentsByTab();
             clearStudentForm();
             
-            alert('✅ Student updated successfully!');
+            alert('âœ… Student updated successfully!');
         }
 
         function deleteExistingStudent() {
@@ -1713,7 +1428,7 @@
             filterStudentsByTab();
             clearStudentForm();
             
-            alert('✅ Student deleted successfully!');
+            alert('âœ… Student deleted successfully!');
         }
 
         function clearStudentForm() {
@@ -1737,6 +1452,11 @@
             filterStudentsByTab();
         }
 
+        function printStudentQR() {
+            if (!selectedStudentForEdit) return;
+            alert('ðŸ–¨ï¸ Print QR Code\n\nStudent: ' + selectedStudentForEdit.name + '\nID: ' + selectedStudentForEdit.id + '\n\nIn a real app, this would open a print dialog with the QR code.');
+        }
+
         function generateStudentId(grade) {
             const year = new Date().getFullYear();
             const gradeStudents = appData.students.filter(s => s.grade === grade);
@@ -1753,312 +1473,7 @@
             showQRCode(selectedStudentForEdit);
         }
 
-        // ============================================
-        // EXCEL EXPORT FUNCTIONS
-        // ============================================
-
-        function exportStudentsToExcel() {    
-            try {        
-                const students = appData.students;
-               
-                if (students.length === 0) {            
-                    alert('⚠️ No students to export!\n\nPlease add students first.');            
-                    return;       
-                }
-                
-                const data = [];
-                
-                data.push([            
-                    'Student ID',            
-                    'Name',            
-                    'Birthday',            
-                    'Age',           
-                    'Gender',            
-                    'Class',            
-                    'Grade',            
-                    'Student Phone',            
-                    'Parent Phone'        
-                ]);
-            
-                students.forEach(s => {          
-                    let age = '';                               
-                    if (s.birthday) {                
-                        const birthDate = new Date(s.birthday);                
-                        const today = new Date();                
-                        age = today.getFullYear() - birthDate.getFullYear();                
-                        const monthDiff = today.getMonth() - birthDate.getMonth();                
-                        if (monthDiff < 0 || (monthDiff === 0 && today.getDate() < birthDate.getDate())) {                    
-                            age--;                
-                        }            
-                    }
-                        
-                    data.push([                
-                        s.id,                
-                        s.name,               
-                        s.birthday || '',                
-                        age,                
-                        s.gender || '',                
-                        s.class || '',                
-                        s.grade,                
-                        s.studentPhone || '',                
-                        s.parentPhone || ''            
-                    ]);        
-                });
-                
-                const wb = XLSX.utils.book_new();        
-                const ws = XLSX.utils.aoa_to_sheet(data);
-                
-                ws['!cols'] = [           
-                    { wch: 15 },
-                    { wch: 25 },
-                    { wch: 12 },
-                    { wch: 6 },
-                    { wch: 10 },
-                    { wch: 8 },
-                    { wch: 8 },
-                    { wch: 15 },
-                    { wch: 15 }
-                ];
-                
-                XLSX.utils.book_append_sheet(wb, ws, 'Students');
-                
-                const fileName = `Students_List_${new Date().toISOString().split('T')[0]}.xlsx`;        
-                XLSX.writeFile(wb, fileName);
-               
-                alert(`✅ Students exported successfully!\n\nFile: ${fileName}\nTotal Students: ${students.length}`);    
-            } catch (error) {        
-                console.error('❌ Export error:', error);        
-                alert('⚠️ Error exporting students to Excel.');    
-            }
-        }
-
-        function exportStudentsByGrade() {    
-            try {        
-                if (appData.students.length === 0) {            
-                    alert('⚠️ No students to export!');           
-                    return;        
-                }
-                
-                const wb = XLSX.utils.book_new();        
-                let totalExported = 0;        
-        
-                appData.grades.forEach(grade => {            
-                    const gradeStudents = appData.students.filter(s => s.grade === grade);
-                        
-                    if (gradeStudents.length > 0) {                
-                        const data = [];
-                                
-                        data.push([                    
-                            'Student ID',                    
-                            'Name',                    
-                            'Birthday',                    
-                            'Gender',                    
-                            'Class',                    
-                            'Student Phone',                    
-                            'Parent Phone'                
-                        ]);
-                                
-                        gradeStudents.forEach(s => {                    
-                            data.push([                      
-                                s.id,                        
-                                s.name,                        
-                                s.birthday || '',                        
-                                s.gender || '',                       
-                                s.class || '',                       
-                                s.studentPhone || '',                        
-                                s.parentPhone || ''                    
-                            ]);                
-                        });
-                               
-                        const ws = XLSX.utils.aoa_to_sheet(data);                
-                        ws['!cols'] = [                    
-                            { wch: 15 },                    
-                            { wch: 25 },                    
-                            { wch: 12 },                   
-                            { wch: 10 },                    
-                            { wch: 8 },                    
-                            { wch: 15 },                    
-                            { wch: 15 }              
-                        ];
-                                
-                        XLSX.utils.book_append_sheet(wb, ws, `Grade ${grade}`);               
-                        totalExported += gradeStudents.length;            
-                    }        
-                });        
-                
-                const fileName = `Students_By_Grade_${new Date().toISOString().split('T')[0]}.xlsx`;        
-                XLSX.writeFile(wb, fileName);   
-        
-                alert(`✅ Students exported by grade!\n\nFile: ${fileName}\nTotal Students: ${totalExported}\nGrades: ${appData.grades.length}`);   
-            } catch (error) {        
-                console.error('❌ Export error:', error);        
-                alert('⚠️ Error exporting students.');    
-            }
-        }
-
-        function exportCurrentGradeStudents() {    
-            try {        
-                const grade = currentSelectedGradeTab;
-                
-                let students;                      
-                if (grade === 'all') {          
-                    students = appData.students;        
-                } else {           
-                    students = appData.students.filter(s => s.grade === grade);       
-                }
-                
-                if (students.length === 0) {           
-                    alert('⚠️ No students in this grade!');            
-                    return;        
-                }
-                
-                const data = [];
-                
-                data.push([            
-                    'Student ID',            
-                    'Name',            
-                    'Birthday',            
-                    'Gender',            
-                    'Class',            
-                    'Student Phone',            
-                    'Parent Phone'        
-                ]);
-                
-                students.forEach(s => {            
-                    data.push([                
-                        s.id,                
-                        s.name,                
-                        s.birthday || '',                
-                        s.gender || '',                
-                        s.class || '',                
-                        s.studentPhone || '',
-                        s.parentPhone || ''            
-                    ]);        
-                });
-                
-                const wb = XLSX.utils.book_new();        
-                const ws = XLSX.utils.aoa_to_sheet(data);
-               
-                ws['!cols'] = [           
-                    { wch: 15 },            
-                    { wch: 25 },            
-                    { wch: 12 },            
-                    { wch: 10 },            
-                    { wch: 8 },            
-                    { wch: 15 },            
-                    { wch: 15 }        
-                ];        
-        
-                XLSX.utils.book_append_sheet(wb, ws, grade === 'all' ? 'All Students' : `Grade ${grade}`);       
-        
-                const fileName = `Students_${grade === 'all' ? 'All' : 'Grade_' + grade}_${new Date().toISOString().split('T')[0]}.xlsx`;       
-                XLSX.writeFile(wb, fileName);
-                
-                alert(`✅ Exported successfully!\n\nFile: ${fileName}\nStudents: ${students.length}`);    
-            } catch (error) {        
-                console.error('❌ Export error:', error);        
-                alert('⚠️ Error exporting students.');    
-            }
-        }
-
-        function exportAllDataToExcel() {   
-            try {        
-                const wb = XLSX.utils.book_new();
-                
-                // Sheet 1: Students        
-                const studentsData = [
-                    ['Student ID', 'Name', 'Birthday', 'Gender', 'Class', 'Grade', 'Student Phone', 'Parent Phone']        
-                ];        
-                appData.students.forEach(s => {            
-                    studentsData.push([                
-                        s.id,               
-                        s.name,                
-                        s.birthday || '',                
-                        s.gender || '',                
-                        s.class || '',                
-                        'Grade ' + s.grade,                
-                        s.studentPhone || '',                
-                        s.parentPhone || ''            
-                    ]);        
-                });        
-                const wsStudents = XLSX.utils.aoa_to_sheet(studentsData);        
-                XLSX.utils.book_append_sheet(wb, wsStudents, 'Students');
-                
-                // Sheet 2: Payments        
-                const paymentsData = [            
-                    ['Date', 'Student ID', 'Student Name', 'Grade', 'Month', 'Amount', 'Status']        
-                ];        
-                (appData.payments || []).forEach(p => {            
-                    paymentsData.push([                
-                        p.date,                
-                        p.studentId,                
-                        p.studentName,                
-                        p.class,                
-                        p.month,                
-                        p.amount,                
-                        p.status            
-                    ]);        
-                });        
-                const wsPayments = XLSX.utils.aoa_to_sheet(paymentsData);        
-                XLSX.utils.book_append_sheet(wb, wsPayments, 'Payments');
-                
-                // Sheet 3: Timetable        
-                const timetableData = [            
-                    ['Day', 'Time', 'Grade', 'Notes']        
-                ];        
-                appData.timetable.forEach(t => {            
-                    timetableData.push([                
-                        t.day,                
-                        t.time,                
-                        'Grade ' + t.grade,               
-                        t.notes || ''            
-                    ]);        
-                });        
-                const wsTimetable = XLSX.utils.aoa_to_sheet(timetableData);        
-                XLSX.utils.book_append_sheet(wb, wsTimetable, 'Timetable');
-               
-                // Sheet 4: Attendance Summary        
-                const attendanceData = [            
-                    ['Date', 'Grade', 'Total Students', 'Present', 'Absent', 'Rate']        
-                ];
-                
-                Object.keys(appData.attendance || {}).forEach(date => {            
-                    const dayData = appData.attendance[date];            
-                    const total = Object.keys(dayData).length;            
-                    const present = Object.values(dayData).filter(s => s === 'present').length;            
-                    const absent = total - present;            
-                    const rate = total > 0 ? Math.round((present / total) * 100) + '%' : '0%';
-                        
-                    const firstStudentId = Object.keys(dayData)[0];            
-                    const student = appData.students.find(s => s.id === firstStudentId);            
-                    const grade = student ? 'Grade ' + student.grade : 'N/A';
-                        
-                    attendanceData.push([                
-                        date,                
-                        grade,                
-                        total,                
-                        present,                
-                        absent,               
-                        rate            
-                    ]);        
-                });        
-                const wsAttendance = XLSX.utils.aoa_to_sheet(attendanceData);        
-                XLSX.utils.book_append_sheet(wb, wsAttendance, 'Attendance');
-                
-                const fileName = `ClassManager_Complete_Export_${new Date().toISOString().split('T')[0]}.xlsx`;        
-                XLSX.writeFile(wb, fileName);
-                            
-                alert('✅ All data exported to Excel!\n\nFile: ' + fileName + '\n\nSheets:\n- Students\n- Payments\n- Timetable\n- Attendance');                
-            } catch (error) {        
-                console.error('❌ Export error:', error);        
-                alert('⚠️ Error exporting data to Excel.');    
-            }
-        }
-
-        // ============================================
-        // TIMETABLE FUNCTIONS
-        // ============================================
-        
+        // TIMETABLE
         function loadTimetable() {
             const tbody = document.getElementById('timetableTableBody');
             if (appData.timetable.length === 0) {
@@ -2072,8 +1487,8 @@
                     <td><span class="badge badge-blue">Grade ${t.grade}</span></td>
                     <td>${t.notes || '-'}</td>
                     <td>
-                        <button class="icon-btn icon-btn-blue" onclick='editTimetable(${JSON.stringify(t)})'>✏️</button>
-                        <button class="icon-btn icon-btn-red" onclick="deleteTimetable('${t.id}')">🗑️</button>
+                        <button class="icon-btn icon-btn-blue" onclick='editTimetable(${JSON.stringify(t)})'>âœï¸</button>
+                        <button class="icon-btn icon-btn-red" onclick="deleteTimetable('${t.id}')">ðŸ—‘ï¸</button>
                     </td>
                 </tr>
             `).join('');
@@ -2139,6 +1554,7 @@
         // PAYMENT MANAGEMENT FUNCTIONS
         // ============================================
 
+        // Auto-fill class when student ID is entered
         document.addEventListener('DOMContentLoaded', function() {
             const studentIdInput = document.getElementById('paymentStudentId');
             if (studentIdInput) {
@@ -2155,12 +1571,27 @@
             }
         });
 
+        function scanQRForPayment() {
+            const studentId = prompt('ðŸ“· QR Scanner\n\nIn real app, camera would open.\nFor now, enter Student ID:');
+            if (studentId) {
+                document.getElementById('paymentStudentId').value = studentId;
+                
+                const student = appData.students.find(s => s.id === studentId);
+                if (student) {
+                    document.getElementById('paymentClass').value = 'Grade ' + student.grade;
+                } else {
+                    alert('Student not found!');
+                }
+            }
+        }
+
         function recordPayment() {
             const studentId = document.getElementById('paymentStudentId').value.trim();
             const month = document.getElementById('paymentMonthDropdown').value;
             const amount = document.getElementById('paymentAmountInput').value.trim();
             const status = document.getElementById('paymentStatusDropdown').value;
 
+            // Validation
             if (!studentId) {
                 alert('Please enter Student ID');
                 return;
@@ -2182,6 +1613,7 @@
                 return;
             }
 
+            // Create payment record
             const payment = {
                 id: Date.now().toString(),
                 date: new Date().toISOString().split('T')[0],
@@ -2193,12 +1625,14 @@
                 status: status
             };
 
+            // Add to payments array
             if (!appData.payments) appData.payments = [];
             appData.payments.push(payment);
             
             saveData();
             loadPaymentHistory();
 
+            // Clear form
             document.getElementById('paymentStudentId').value = '';
             document.getElementById('paymentClass').value = '';
             document.getElementById('paymentMonthDropdown').value = '';
@@ -2216,6 +1650,7 @@
                 return;
             }
 
+            // Sort by date (newest first)
             const sorted = [...appData.payments].sort((a, b) => new Date(b.date) - new Date(a.date));
 
             tbody.innerHTML = sorted.map(p => {
@@ -2243,9 +1678,399 @@
         }
 
         // ============================================
-        // REPORTS FUNCTIONS
+        // ATTENDANCE MANAGEMENT - WORKING VERSION
         // ============================================
 
+        let currentAttendanceData = {};
+        let currentAttendanceStudents = [];
+
+        function loadAttendanceStudents() {
+            const gradeSelect = document.getElementById('attendanceClassSelect');
+            const dateSelect = document.getElementById('attendanceDateSelect');
+    
+            if (!gradeSelect || !dateSelect) {
+                alert('Error: Controls not found');
+                return;    
+            }
+        
+            const grade = gradeSelect.value;    
+            const date = dateSelect.value;
+        
+            console.log('Loading attendance - Grade:', grade, 'Date:', date);
+        
+            if (!grade) {        
+                alert('âš ï¸ Please select a class first');        
+                return;    
+            }
+    
+    
+            if (!date) {        
+                alert('âš ï¸ Please select a date first');        
+                return;    
+            }
+        
+            // Get students for selected grade    
+            currentAttendanceStudents = appData.students.filter(s => s.grade === grade);        
+            console.log('Found students:', currentAttendanceStudents.length);
+        
+            if (currentAttendanceStudents.length === 0) {        
+                alert('âŒ No students in Grade ' + grade + '\n\nPlease add students first.');        
+                document.getElementById('attendanceStudentCard').style.display = 'none';        
+                return;  
+            }
+    
+            // Show attendance card   
+            document.getElementById('attendanceStudentCard').style.display = 'block';    
+    
+            // Load existing attendance data for this date    
+            if (!appData.attendance) {        
+                appData.attendance = {};    
+            }
+        
+            if (appData.attendance[date]) {        
+                currentAttendanceData = { ...appData.attendance[date] };        
+                console.log('Loaded existing attendance:', currentAttendanceData);    
+            } else {        
+                currentAttendanceData = {};        
+                console.log('No existing attendance for this date');    
+            }
+    
+    
+            // Display students    
+            displayAttendanceStudents();
+        }
+
+        function displayAttendanceStudents() {    
+            const container = document.getElementById('attendanceStudentsList');    
+    
+            if (!container) {        
+                console.error('Student list container not found');        
+                return;    
+            }
+        
+            let html = '';    
+    
+            currentAttendanceStudents.forEach(s => {        
+                const isPresent = currentAttendanceData[s.id] === 'present';        
+        
+                html += `            
+                    <div style="background: ${isPresent ? '#D1FAE5' : '#F3F4F6'}; padding: 20px; border-radius: 10px; margin-bottom: 15px; border: 2px solid ${isPresent ? '#10B981' : '#D1D5DB'}; transition: all 0.3s;">                
+                        <div style="display: flex; justify-content: space-between; align-items: center;">                    
+                            <div>                        
+                                <div style="font-weight: 700; font-size: 18px; margin-bottom: 5px; color: #1F2937;">${s.name}</div>                        
+                                <div style="color: #6B7280; font-size: 14px;">ID: ${s.id} | Grade ${s.grade}</div>
+                            </div>
+                            <button onclick="toggleAttendance('${s.id}')"                             
+                            style="background: ${isPresent ? '#10B981' : '#EF4444'}; color: white; padding: 15px 30px; border: none; border-radius: 10px; cursor: pointer; font-size: 18px; font-weight: 700; min-width: 140px; transition: all 0.3s;">
+                            ${isPresent ? 'Present' : 'Absent'}                
+                            </button>
+                        </div>
+                    </div>
+   
+                `;
+    
+            });
+    
+            container.innerHTML = html;
+    
+            updateAttendanceCounts();
+    
+            console.log('Students displayed successfully');
+        }
+   
+        function toggleAttendance(studentId) {            
+            console.log('Toggle attendance for:', studentId);
+            
+            // Toggle status            
+            if (currentAttendanceData[studentId] === 'present') {                    
+                currentAttendanceData[studentId] = 'absent';           
+            } else {                    
+                currentAttendanceData[studentId] = 'present';            
+            }
+                
+            console.log('New status:', currentAttendanceData[studentId]);
+                
+            // Refresh display            
+            displayAttendanceStudents();    
+        }
+    
+        function updateAttendanceCounts() {            
+            const total = currentAttendanceStudents.length;            
+            const present = currentAttendanceStudents.filter(s => currentAttendanceData[s.id] === 'present').length;            
+            const absent = total - present;
+                
+            const totalEl = document.getElementById('attendanceTotalCount');       
+            const presentEl = document.getElementById('attendancePresentCount');            
+            const absentEl = document.getElementById('attendanceAbsentCount');
+                
+            if (totalEl) totalEl.textContent = total;            
+            if (presentEl) presentEl.textContent = present;            
+            if (absentEl) absentEl.textContent = absent;       
+        
+            console.log('Counts updated - Total:', total, 'Present:', present, 'Absent:', absent);
+        }
+    
+        function saveAttendanceData() {            
+            const dateSelect = document.getElementById('attendanceDateSelect');    
+            const gradeSelect = document.getElementById('attendanceClassSelect');
+            
+            if (!dateSelect || !gradeSelect) {                    
+                alert('Error: Controls not found');                    
+                return;            
+            }
+                
+            const date = dateSelect.value;            
+            const grade = gradeSelect.value;        
+        
+            if (!date || !grade) {                    
+                alert('âš ï¸ Please select class and date first');                    
+                return;            
+            }
+                
+            // Save to appData            
+            if (!appData.attendance) {                   
+                appData.attendance = {};            
+            }
+                
+            appData.attendance[date] = { ...currentAttendanceData };        
+        
+            saveData();        
+        
+            // Calculate stats           
+            const present = currentAttendanceStudents.filter(s => currentAttendanceData[s.id] === 'present').length;            
+            const absent = currentAttendanceStudents.length - present;     
+        
+            alert(`✅ Attendance Saved Successfully!\n\nDate: ${date}\nClass: Grade ${grade}\n\nPresent: ${present}\nAbsent: ${absent}`);        
+        
+            console.log('Attendance saved:', appData.attendance[date]);    
+        }
+    
+        function scanQRForAttendance() {        
+            const gradeSelect = document.getElementById('attendanceClassSelect');
+            
+            if (!gradeSelect || !gradeSelect.value) {              
+                alert('âš ï¸ Please select a class first');                    
+                return;          
+            }
+            
+            const studentId = prompt('ðŸ“· QR Scanner\n\nIn real app, camera would open.\nFor now, enter Student ID:');
+                
+            if (!studentId) return;
+               
+            const student = appData.students.find(s => s.id === studentId.trim());    
+        
+            if (!student) {                    
+                alert('âŒ Student not found!\n\nID: ' + studentId);                    
+                return;            
+            }        
+        
+            if (student.grade !== gradeSelect.value) {                    
+                alert(`âŒ Wrong Class!\n\nStudent: ${student.name}\nGrade: ${student.grade}\nSelected: ${gradeSelect.value}`);                   
+                return;            
+            }    
+        
+            // Mark as present            
+            currentAttendanceData[studentId.trim()] = 'present';
+            
+            // Check if students are loaded            
+            if (currentAttendanceStudents.length === 0) {                    
+                loadAttendanceStudents();            
+            } else {                    
+                displayAttendanceStudents();            
+            }
+       
+            alert('✅ ' + student.name + ' marked as Present');    
+        }
+
+        // ============================================
+        // QR CODE GENERATION & DISPLAY
+        // ============================================
+
+        let currentQRStudent = null;
+
+        function showQRCode(student) {    
+            currentQRStudent = student;
+        
+            // Set student details    
+            document.getElementById('qrStudentName').textContent = student.name;    
+            document.getElementById('qrStudentDetails').textContent = `Grade ${student.grade} - Class ${student.class || 'N/A'}`;    
+            document.getElementById('qrStudentId').textContent = `ID: ${student.id}`;
+        
+            // Clear previous QR code    
+            const container = document.getElementById('qrcode-container');    
+            container.innerHTML = '';
+        
+            // Generate new QR code    
+            new QRCode(container, {        
+                text: student.id,        
+                width: 200,        
+                height: 200,        
+                colorDark: "#000000",        
+                colorLight: "#ffffff",        
+                correctLevel: QRCode.CorrectLevel.H    
+            });
+        
+            // Show modal   
+            document.getElementById('qrCodeDisplayModal').classList.add('active');
+        }
+
+        function closeQRCodeDisplay() {    
+            document.getElementById('qrCodeDisplayModal').classList.remove('active');    
+            currentQRStudent = null;
+        }
+
+        function downloadQRCode() {    
+            if (!currentQRStudent) return;
+        
+            // Get the QR code canvas    
+            const canvas = document.querySelector('#qrcode-container canvas');
+        
+            if (!canvas) {        
+                alert('QR Code not found');        
+                return;    
+            }
+        
+            // Convert to image and download    
+            const link = document.createElement('a');    
+            link.download = `QR_${currentQRStudent.id}_${currentQRStudent.name}.png`;    
+            link.href = canvas.toDataURL();    
+            link.click();
+        
+            alert(`✅ QR Code downloaded!\n\nFile: QR_${currentQRStudent.id}_${currentQRStudent.name}.png`);
+        }
+
+        function downloadStudentCard() {    
+            if (!currentQRStudent) return;    
+    
+            const student = currentQRStudent;
+    
+            // Create canvas - credit card size ratio    
+            const canvas = document.createElement('canvas');   
+            canvas.width = 800;    
+            canvas.height = 500;    
+            const ctx = canvas.getContext('2d');
+        
+            // Gradient background    
+            const gradient = ctx.createLinearGradient(0, 0, 800, 500);    
+            gradient.addColorStop(0, '#2563EB');    
+            gradient.addColorStop(1, '#1E40AF');    
+            ctx.fillStyle = gradient;    
+            ctx.fillRect(0, 0, 800, 500);
+        
+            // White card area    
+            ctx.fillStyle = '#FFFFFF';    
+            ctx.roundRect(20, 60, 760, 380, 15);    
+            ctx.fill();
+    
+    
+            // Header bar    
+            ctx.fillStyle = '#2563EB';    
+            ctx.roundRect(20, 60, 760, 70, [15, 15, 0, 0]);    
+            ctx.fill();
+    
+    
+            // School name    
+            ctx.fillStyle = '#FFFFFF';    
+            ctx.font = 'bold 36px Arial';    
+            ctx.textAlign = 'center';    
+            ctx.fillText('STUDENT ID CARD', 400, 110);
+    
+    
+            // Photo placeholder
+    
+            ctx.fillStyle = '#E5E7EB';    
+            ctx.roundRect(50, 160, 180, 220, 10);    
+            ctx.fill();
+       
+            ctx.fillStyle = '#9CA3AF';    
+            ctx.font = 'bold 20px Arial';    
+            ctx.textAlign = 'center';    
+            ctx.fillText('PHOTO', 140, 275);
+        
+            // Student info section    
+            ctx.fillStyle = '#1F2937';    
+            ctx.font = 'bold 32px Arial';    
+            ctx.textAlign = 'left';    
+            ctx.fillText(student.name, 260, 195);
+        
+            // Details    
+            ctx.fillStyle = '#4B5563';    
+            ctx.font = '22px Arial';
+    
+    
+            const details = [        
+                `ID: ${student.id}`,                   
+                `Grade: ${student.grade}`,                    
+                `Class: ${student.class || 'N/A'}`,                    
+                student.studentPhone ? `Phone: ${student.studentPhone}` : null            
+            ].filter(Boolean);
+                
+            details.forEach((detail, index) => {
+                ctx.fillText(detail, 260, 240 + (index * 35));            
+            });
+            
+            // QR Code section        
+            const qrCanvas = document.querySelector('#qrcode-container canvas');
+            
+            if (qrCanvas) {                    
+                // QR background                    
+                ctx.fillStyle = '#F9FAFB';                    
+                ctx.roundRect(580, 160, 180, 180, 10);                   
+                ctx.fill();
+                            
+                // QR Code                    
+                ctx.drawImage(qrCanvas, 595, 175, 150, 150);
+                            
+                // QR label        
+                ctx.fillStyle = '#6B7280';        
+                ctx.font = '14px Arial';        
+                ctx.textAlign = 'center';        
+                ctx.fillText('Scan to verify', 670, 355);    
+            }
+        
+            // Footer    
+            ctx.fillStyle = '#9CA3AF';    
+            ctx.font = 'italic 16px Arial';    
+            ctx.textAlign = 'center';    
+            ctx.fillText('Keep this card safe and bring it to class', 400, 420);
+    
+            // Outer border    
+            ctx.strokeStyle = '#2563EB';    
+            ctx.lineWidth = 3;    
+            ctx.roundRect(20, 60, 760, 380, 15);   
+            ctx.stroke();
+    
+    
+            // Download    
+            const link = document.createElement('a');    
+            link.download = `Student_ID_${student.id}_${student.name.replace(/\s+/g, '_')}.png`;    
+            link.href = canvas.toDataURL('image/png');    
+            link.click();
+        
+            alert(`✅ ID Card Downloaded!\n\n${student.name}\nID: ${student.id}`);
+        }
+
+        // Helper function for rounded rectangles (add this too)
+        CanvasRenderingContext2D.prototype.roundRect = function (x, y, width, height, radius) {    
+            if (typeof radius === 'number') {        
+                radius = [radius, radius, radius, radius];    
+            }
+    
+            this.beginPath();    
+            this.moveTo(x + radius[0], y);    
+            this.lineTo(x + width - radius[1], y);    
+            this.quadraticCurveTo(x + width, y, x + width, y + radius[1]);    
+            this.lineTo(x + width, y + height - radius[2]);    
+            this.quadraticCurveTo(x + width, y + height, x + width - radius[2], y + height);    
+            this.lineTo(x + radius[3], y + height);    
+            this.quadraticCurveTo(x, y + height, x, y + height - radius[3]);    
+            this.lineTo(x, y + radius[0]);    
+            this.quadraticCurveTo(x, y, x + radius[0], y);    
+            this.closePath();    
+            return this;
+        };
+
+        // REPORTS
         function generateReport() {
             const type = document.getElementById('reportType').value;
             const month = document.getElementById('reportMonth').value;
@@ -2324,433 +2149,146 @@
             return html;
         }
 
-        function exportToExcel() {    
-            const type = document.getElementById('reportType').value;            
-            const month = document.getElementById('reportMonth').value;            
-            const grade = document.getElementById('reportGrade').value;
-                
-            if (!month) {                    
-                alert('⚠️ Please select a month first');                    
-                return;            
-            }
-                
-            if (type === 'attendance') {                    
-                exportAttendanceToExcel(month, grade);            
-            } else if (type === 'payment') {                    
-                exportPaymentToExcel(month, grade);            
-            }    
-        }
-    
-        function exportAttendanceToExcel(month, grade) {            
-            const students = grade === 'all' ? appData.students : appData.students.filter(s => s.grade === grade);
-                
-            const data = [];
-            data.push(['Student ID', 'Name', 'Grade', 'Present Days', 'Absent Days', 'Attendance Rate']);
-        
-            students.forEach(s => {                    
-                let presentDays = 0;                    
-                let totalDays = 0;
-                            
-                Object.keys(appData.attendance || {}).forEach(date => {                            
-                    if (date.startsWith(month)) {                                    
-                        totalDays++;                                    
-                        if (appData.attendance[date][s.id] === 'present') {                    
-                            presentDays++;                
-                        }                            
-                    }        
-                });
-                            
-                const rate = totalDays > 0 ? Math.round((presentDays / totalDays) * 100) : 0;
-                    
-                data.push([                        
-                    s.id,                                        
-                    s.name,                           
-                    'Grade ' + s.grade,                            
-                    presentDays,                            
-                    totalDays - presentDays,                            
-                    rate + '%'                    
-                ]);            
-            });
-                
-            const wb = XLSX.utils.book_new();            
-            const ws = XLSX.utils.aoa_to_sheet(data);
-                
-            ws['!cols'] = [
-                { wch: 15 },
-                { wch: 25 },
-                { wch: 10 },
-                { wch: 12 },
-                { wch: 12 },
-                { wch: 15 }
-            ];
-               
-            XLSX.utils.book_append_sheet(wb, ws, 'Attendance Report');
-                
-            const filename = `Attendance_Report_${month}_${grade === 'all' ? 'All_Grades' : 'Grade_' + grade}.xlsx`;            
-            XLSX.writeFile(wb, filename);
-                
-            alert('✅ Excel file downloaded!\n\nFile: ' + filename);    
-        }
-    
-        function exportPaymentToExcel(month, grade) {            
-            const students = grade === 'all' ? appData.students : appData.students.filter(s => s.grade === grade);
-                
-            const data = [];
-            data.push(['Student ID', 'Name', 'Grade', 'Amount Paid', 'Status']);
-                
-            let totalCollected = 0;
-                
-            students.forEach(s => {                    
-                const monthPayments = (appData.payments || []).filter(p =>                             
-                    p.studentId === s.id && p.month === month                
-                );
-                    
-                const amount = monthPayments.reduce((sum, p) => sum + p.amount, 0);            
-                const status = monthPayments.length > 0 ? 'Paid' : 'Unpaid';
-                    
-                if (amount > 0) totalCollected += amount;
-                    
-                data.push([
-                    s.id,                            
-                    s.name,                            
-                    'Grade ' + s.grade,                           
-                    'Rs. ' + amount.toFixed(2),                            
-                    status                    
-                ]);            
-            });    
-        
-            data.push([]);           
-            data.push(['', '', '', 'Total Collected:', 'Rs. ' + totalCollected.toFixed(2)]);
-                
-            const wb = XLSX.utils.book_new();            
-            const ws = XLSX.utils.aoa_to_sheet(data);
-                
-            ws['!cols'] = [
-                { wch: 15 },
-                { wch: 25 },
-                { wch: 10 },
-                { wch: 15 },
-                { wch: 10 }
-            ];
-                
-            XLSX.utils.book_append_sheet(wb, ws, 'Payment Report');
-                
-            const filename = `Payment_Report_${month}_${grade === 'all' ? 'All_Grades' : 'Grade_' + grade}.xlsx`;            
-            XLSX.writeFile(wb, filename);
-                
-            alert('✅ Excel file downloaded!\n\nFile: ' + filename);    
+        function exportToExcel() {
+            alert('ðŸ“¥ Export to Excel\n\nIn a real app, this would download an Excel file.\n\nFor now, you can copy the table data above.');
         }
 
         // ============================================
-        // ATTENDANCE MANAGEMENT
-        // ============================================
-
-        function loadAttendanceStudents() {
-            const gradeSelect = document.getElementById('attendanceClassSelect');
-            const dateSelect = document.getElementById('attendanceDateSelect');
-    
-            if (!gradeSelect || !dateSelect) {
-                alert('Error: Controls not found');
-                return;    
-            }
-        
-            const grade = gradeSelect.value;    
-            const date = dateSelect.value;
-        
-            console.log('Loading attendance - Grade:', grade, 'Date:', date);
-        
-            if (!grade) {        
-                alert('⚠️ Please select a class first');        
-                return;    
-            }
-    
-            if (!date) {        
-                alert('⚠️ Please select a date first');        
-                return;    
-            }
-        
-            currentAttendanceStudents = appData.students.filter(s => s.grade === grade);        
-            console.log('Found students:', currentAttendanceStudents.length);
-        
-            if (currentAttendanceStudents.length === 0) {        
-                alert('❌ No students in Grade ' + grade + '\n\nPlease add students first.');        
-                document.getElementById('attendanceStudentCard').style.display = 'none';        
-                return;  
-            }
-    
-            document.getElementById('attendanceStudentCard').style.display = 'block';    
-    
-            if (!appData.attendance) {        
-                appData.attendance = {};    
-            }
-        
-            if (appData.attendance[date]) {        
-                currentAttendanceData = { ...appData.attendance[date] };        
-                console.log('Loaded existing attendance:', currentAttendanceData);    
-            } else {        
-                currentAttendanceData = {};        
-                console.log('No existing attendance for this date');    
-            }
-    
-            displayAttendanceStudents();
-        }
-
-        function displayAttendanceStudents() {    
-            const container = document.getElementById('attendanceStudentsList');    
-    
-            if (!container) {        
-                console.error('Student list container not found');        
-                return;    
-            }
-        
-            let html = '';    
-    
-            currentAttendanceStudents.forEach(s => {        
-                const isPresent = currentAttendanceData[s.id] === 'present';        
-        
-                html += `            
-                    <div style="background: ${isPresent ? '#D1FAE5' : '#F3F4F6'}; padding: 20px; border-radius: 10px; margin-bottom: 15px; border: 2px solid ${isPresent ? '#10B981' : '#D1D5DB'}; transition: all 0.3s;">                
-                        <div style="display: flex; justify-content: space-between; align-items: center;">                    
-                            <div>                        
-                                <div style="font-weight: 700; font-size: 18px; margin-bottom: 5px; color: #1F2937;">${s.name}</div>                        
-                                <div style="color: #6B7280; font-size: 14px;">ID: ${s.id} | Grade ${s.grade}</div>
-                            </div>
-                            <button onclick="toggleAttendance('${s.id}')"                             
-                            style="background: ${isPresent ? '#10B981' : '#EF4444'}; color: white; padding: 15px 30px; border: none; border-radius: 10px; cursor: pointer; font-size: 18px; font-weight: 700; min-width: 140px; transition: all 0.3s;">
-                            ${isPresent ? '✓ Present' : '✗ Absent'}                
-                            </button>
-                        </div>
-                    </div>
-                `;
-            });
-    
-            container.innerHTML = html;
-            updateAttendanceCounts();
-        }
-   
-        function toggleAttendance(studentId) {            
-            console.log('Toggle attendance for:', studentId);
-            
-            if (currentAttendanceData[studentId] === 'present') {                    
-                currentAttendanceData[studentId] = 'absent';           
-            } else {                    
-                currentAttendanceData[studentId] = 'present';            
-            }
-                
-            console.log('New status:', currentAttendanceData[studentId]);
-            displayAttendanceStudents();    
-        }
-    
-        function updateAttendanceCounts() {            
-            const total = currentAttendanceStudents.length;            
-            const present = currentAttendanceStudents.filter(s => currentAttendanceData[s.id] === 'present').length;            
-            const absent = total - present;
-                
-            const totalEl = document.getElementById('attendanceTotalCount');       
-            const presentEl = document.getElementById('attendancePresentCount');            
-            const absentEl = document.getElementById('attendanceAbsentCount');
-                
-            if (totalEl) totalEl.textContent = total;            
-            if (presentEl) presentEl.textContent = present;            
-            if (absentEl) absentEl.textContent = absent;       
-        
-            console.log('Counts updated - Total:', total, 'Present:', present, 'Absent:', absent);
-        }
-    
-        function saveAttendanceData() {            
-            const dateSelect = document.getElementById('attendanceDateSelect');    
-            const gradeSelect = document.getElementById('attendanceClassSelect');
-            
-            if (!dateSelect || !gradeSelect) {                    
-                alert('Error: Controls not found');                    
-                return;            
-            }
-                
-            const date = dateSelect.value;            
-            const grade = gradeSelect.value;        
-        
-            if (!date || !grade) {                    
-                alert('⚠️ Please select class and date first');                    
-                return;            
-            }
-                
-            if (!appData.attendance) {                   
-                appData.attendance = {};            
-            }
-                
-            appData.attendance[date] = { ...currentAttendanceData };        
-            saveData();        
-        
-            const present = currentAttendanceStudents.filter(s => currentAttendanceData[s.id] === 'present').length;            
-            const absent = currentAttendanceStudents.length - present;     
-        
-            alert(`✅ Attendance Saved Successfully!\n\nDate: ${date}\nClass: Grade ${grade}\n\nPresent: ${present}\nAbsent: ${absent}`);        
-        
-            console.log('Attendance saved:', appData.attendance[date]);    
-        }
-
-        function processQRForAttendance(studentId) {    
-            const student = appData.students.find(s => s.id === studentId.trim());
-        
-            if (!student) {        
-                alert('❌ Student not found!\n\nScanned ID: ' + studentId);        
-                return;    
-            }
-        
-            const gradeSelect = document.getElementById('attendanceClassSelect');    
-            const selectedClass = gradeSelect ? gradeSelect.value : '';
-        
-            if (!selectedClass) {        
-                alert('⚠️ Please select a class first before scanning');        
-                return;    
-            }
-        
-            if (student.grade !== selectedClass) {        
-                alert(`❌ Wrong Class!\n\nStudent: ${student.name}\nStudent's Grade: ${student.grade}\nSelected Grade: ${selectedClass}`);        
-                return;    
-            }
-        
-            currentAttendanceData[studentId.trim()] = 'present';
-        
-            if (currentAttendanceStudents.length === 0) {        
-                loadAttendanceStudents();    
-            } else {            
-                displayAttendanceStudents();    
-            }
-        
-            alert('✅ Success!\n\n' + student.name + '\nMarked as Present');
-        }
-
-        // ============================================
-        // QR CODE SCANNER (FIXED)
+        // QR CODE SCANNER - FIXED VERSION
         // ============================================
 
         let html5QrcodeScanner = null;
-        let qrScanMode = null;
+        let qrScanMode = null; // 'attendance' or 'payment'
         let isScannerRunning = false;
-        let currentCameraIndex = 0;
         let availableCameras = [];
+        let currentCameraIndex = 0;
         
-        function openQRScanner(mode) {        
+        function openQRScanner(mode) {                    
             qrScanMode = mode;        
             document.getElementById('qrScannerModal').classList.add('active');
-   
+                
+            // Initialize scanner                    
             html5QrcodeScanner = new Html5Qrcode("qr-reader");
-    
-            Html5Qrcode.getCameras().then(cameras => {                
-                if (cameras && cameras.length) {                     
-                    availableCameras = cameras;
-                    let selectedCamera = cameras[0];
-                    
-                    const backCamera = cameras.find(camera =>               
-                        camera.label.toLowerCase().includes('back') ||                
-                        camera.label.toLowerCase().includes('rear') ||                
-                        camera.label.toLowerCase().includes('environment')
+                
+            Html5Qrcode.getCameras().then(cameras => {                                
+                if (cameras && cameras.length) {                        
+                    // Find back camera (environment facing)            
+                    let selectedCamera = cameras[0]; // Default to first camera
+                                            
+                    // Try to find the back/rear camera            
+                    const backCamera = cameras.find(camera =>                                     
+                        camera.label.toLowerCase().includes('back') ||                                    
+                        camera.label.toLowerCase().includes('rear') ||                                    
+                        camera.label.toLowerCase().includes('environment')                            
                     );
-                       
-                    if (backCamera) {                
-                        selectedCamera = backCamera;                
-                        console.log('Using back camera:', backCamera.label);            
-                    } else {                
-                        console.log('Back camera not found, using:', selectedCamera.label);            
-                    }            
-            
-                    const cameraId = selectedCamera.id;
-                            
-                    html5QrcodeScanner.start(                
-                        cameraId,                                
-                        {                                        
-                            fps: 10,                                       
-                            qrbox: { width: 250, height: 250 },                    
-                            aspectRatio: 1.0,                  
-                            facingMode: { ideal: "environment" }                
-                        },                                
-                        onScanSuccess,                                
-                        onScanFailure                        
-                    ).then(() => {                                
-                        isScannerRunning = true;                                
-                        console.log('Scanner started successfully');                        
-                    }).catch(err => {                            
-                        console.error('Error starting scanner:', err);                                
-                        isScannerRunning = false;
                                         
-                        if (err.name === 'NotAllowedError') {                                       
-                            alert('❌ Camera Permission Denied\n\nPlease allow camera access in your browser settings and try again.');                                
-                        } else {                                        
-                            alert('❌ Cannot access camera\n\nError: ' + err.message);                                
-                        }                        
-                
-                        document.getElementById('qrScannerModal').classList.remove('active');                        
-                    });                
-                } else {                        
-                    alert('❌ No cameras found on this device');                        
-                    document.getElementById('qrScannerModal').classList.remove('active');                
-                }        
-            }).catch(err => {                
-                console.error('Error getting cameras:', err);
-               
-                if (err.name === 'NotAllowedError') {                        
-                    alert('❌ Camera Permission Denied\n\nPlease:\n1. Allow camera access when prompted\n2. Check browser settings\n3. Try again');                
-                } else {                        
-                    alert('❌ Error accessing camera\n\n' + err.message);                
+                    // Use back camera if found, otherwise use first available                            
+                    if (backCamera) {                                    
+                        selectedCamera = backCamera;                                    
+                        console.log('Using back camera:', backCamera.label);                            
+                    } else {                                   
+                        console.log('Back camera not found, using:', selectedCamera.label);                            
+                    }
+                                        
+                    const cameraId = selectedCamera.id;
+                                                                
+                    html5QrcodeScanner.start(                                                
+                        cameraId,                                                    
+                        {                                                                
+                            fps: 10,                                                                
+                            qrbox: { width: 250, height: 250 },                                            
+                            aspectRatio: 1.0,                                            
+                            // Request back camera specifically                                            
+                            facingMode: { ideal: "environment" }                                    
+                        },                                                                        
+                        onScanSuccess,                                                    
+                        onScanFailure                                                        
+                    ).then(() => {                                                    
+                        isScannerRunning = true;                                                    
+                        console.log('Scanner started successfully');                                        
+                    }).catch(err => {                                                
+                        console.error('Error starting scanner:', err);                                                    
+                        isScannerRunning = false;                                        
+                    
+                        if (err.name === 'NotAllowedError') {                                                                
+                            alert('❌ Camera Permission Denied\n\nPlease allow camera access in your browser settings and try again.');                                                    
+                        } else {                                                                
+                            alert('❌ Cannot access camera\n\nError: ' + err.message);                                                    
+                        }
+                                                            
+                        document.getElementById('qrScannerModal').classList.remove('active');                                        
+                    });                            
+                           
+                } else {                                        
+                    alert('❌ No cameras found on this device');                                        
+                    document.getElementById('qrScannerModal').classList.remove('active');                            
+                }    
+            
+            }).catch(err => {                            
+                console.error('Error getting cameras:', err);                                       
+                if (err.name === 'NotAllowedError') {                                        
+                    alert('❌ Camera Permission Denied\n\nPlease:\n1. Allow camera access when prompted\n2. Check browser settings\n3. Try again');                            
+                } else {                                        
+                    alert('❌ Error accessing camera\n\n' + err.message);                            
                 }
-                
-                document.getElementById('qrScannerModal').classList.remove('active');        
-            });
+                            
+                document.getElementById('qrScannerModal').classList.remove('active');                
+            });    
         }
-        
-        function switchCamera() {
-            if (!html5QrcodeScanner || !isScannerRunning) {
-                alert('⚠️ Scanner not running');
-                return;
-            }
-            
-            if (availableCameras.length <= 1) {
-                alert('ℹ️ Only one camera available');
-                return;
-            }
-            
-            currentCameraIndex = (currentCameraIndex + 1) % availableCameras.length;
-            
+
+        function switchCamera() {    
+            if (!html5QrcodeScanner || !isScannerRunning) return;    
+    
+            // Stop current scanner    
             html5QrcodeScanner.stop().then(() => {
-                html5QrcodeScanner.start(
-                    availableCameras[currentCameraIndex].id,
-                    {
-                        fps: 10,
-                        qrbox: { width: 250, height: 250 },
-                        aspectRatio: 1.0,
-                        facingMode: { ideal: "environment" }
-                    },
-                    onScanSuccess,
-                    onScanFailure
-                ).then(() => {
-                    console.log('Switched to camera:', availableCameras[currentCameraIndex].label);
-                }).catch(err => {
-                    console.error('Error switching camera:', err);
-                    alert('❌ Error switching camera');
-                });
+        
+                // Switch to next camera        
+                currentCameraIndex = (currentCameraIndex + 1) % availableCameras.length;        
+                const nextCamera = availableCameras[currentCameraIndex];
+                
+                console.log('Switching to camera:', nextCamera.label);
+                
+                // Start with new camera        
+                html5QrcodeScanner.start(            
+                    nextCamera.id,             
+                    {                
+                        fps: 10,                
+                        qrbox: { width: 250, height: 250 },                
+                        aspectRatio: 1.0            
+                    },            
+                    onScanSuccess,            
+                    onScanFailure        
+                ).then(() => {            
+                    console.log('Switched to:', nextCamera.label);        
+                }).catch(err => {            
+                    console.error('Error switching camera:', err);            
+                    alert('❌ Could not switch camera');        
+                });    
             });
         }
-        
+
         function onScanSuccess(decodedText, decodedResult) {
             console.log('QR Code scanned:', decodedText);
         
+            // Show scanned result    
             document.getElementById('qr-scanned-id').textContent = decodedText;
             document.getElementById('qr-result').style.display = 'block';
         
+            // Process based on mode    
             if (qrScanMode === 'attendance') {        
                 processQRForAttendance(decodedText);    
             } else if (qrScanMode === 'payment') {    
                 processQRForPayment(decodedText);    
             }
         
+            // Close scanner after 2 seconds    
             setTimeout(() => {        
                 closeQRScanner();    
             }, 2000);
         }
 
         function onScanFailure(error) {
-            // Normal - scanner is trying to detect QR
+            // Scanner is trying to detect QR - this is normal, don't show errors
         }
 
         function closeQRScanner() {
@@ -2776,21 +2314,56 @@
             }
         }
 
+        function processQRForAttendance(studentId) {    
+            const student = appData.students.find(s => s.id === studentId.trim());
+        
+            if (!student) {        
+                alert('âŒ Student not found!\n\nScanned ID: ' + studentId);        
+                return;    
+            }
+        
+            const gradeSelect = document.getElementById('attendanceClassSelect');    
+            const selectedClass = gradeSelect ? gradeSelect.value : '';
+        
+            if (!selectedClass) {        
+                alert('âš ï¸ Please select a class first before scanning');        
+                return;    
+            }
+        
+            if (student.grade !== selectedClass) {        
+                alert(`âŒ Wrong Class!\n\nStudent: ${student.name}\nStudent's Grade: ${student.grade}\nSelected Grade: ${selectedClass}`);        
+                return;    
+            }
+        
+            // Mark as present    
+            currentAttendanceData[studentId.trim()] = 'present';
+        
+            if (currentAttendanceStudents.length === 0) {        
+                loadAttendanceStudents();    
+            } else {            
+                displayAttendanceStudents();    
+            }
+        
+            alert('âœ… Success!\n\n' + student.name + '\nMarked as Present');
+        }
+
         function processQRForPayment(studentId) {
             const student = appData.students.find(s => s.id === studentId.trim());
         
             if (!student) {        
-                alert('❌ Student not found!\n\nScanned ID: ' + studentId);        
+                alert('âŒ Student not found!\n\nScanned ID: ' + studentId);        
                 return;    
             }
         
+            // Fill in the payment form    
             const studentIdInput = document.getElementById('paymentStudentId');    
             const classInput = document.getElementById('paymentClass');
         
             if (studentIdInput) studentIdInput.value = studentId;    
             if (classInput) classInput.value = 'Grade ' + student.grade;
         
-            alert('✅ Student Loaded!\n\n' + student.name + '\nGrade ' + student.grade + '\n\nPlease fill in payment details below.');
+            alert('âœ… Student Loaded!\n\n' + student.name + '\nGrade ' + student.grade + '\n\nPlease fill in payment details below.');
+
         }
 
         function manualQRInput(mode) {    
@@ -2806,374 +2379,462 @@
         }
 
         // ============================================
-        // QR CODE GENERATION & DISPLAY
+        // EXPORT STUDENTS FUNCTIONS (WITHOUT QR CARDS)
         // ============================================
 
-        let currentQRStudent = null;
-
-        function showQRCode(student) {    
-            currentQRStudent = student;
+        // Export all students to Excel
+        function exportStudentsToExcel() {    
+            try {        
+                const students = appData.students;
         
-            document.getElementById('qrStudentName').textContent = student.name;    
-            document.getElementById('qrStudentDetails').textContent = `Grade ${student.grade} - Class ${student.class || 'N/A'}`;    
-            document.getElementById('qrStudentId').textContent = `ID: ${student.id}`;
         
-            const container = document.getElementById('qrcode-container');    
-            container.innerHTML = '';
-        
-            new QRCode(container, {        
-                text: student.id,        
-                width: 200,        
-                height: 200,        
-                colorDark: "#000000",        
-                colorLight: "#ffffff",        
-                correctLevel: QRCode.CorrectLevel.H    
-            });
-        
-            document.getElementById('qrCodeDisplayModal').classList.add('active');
-        }
-
-        function closeQRCodeDisplay() {    
-            document.getElementById('qrCodeDisplayModal').classList.remove('active');    
-            currentQRStudent = null;
-        }
-
-        function downloadQRCode() {    
-            if (!currentQRStudent) return;
-        
-            const canvas = document.querySelector('#qrcode-container canvas');
-        
-            if (!canvas) {        
-                alert('QR Code not found');        
-                return;    
-            }
-        
-            const link = document.createElement('a');    
-            link.download = `QR_${currentQRStudent.id}_${currentQRStudent.name}.png`;    
-            link.href = canvas.toDataURL();    
-            link.click();
-        
-            alert(`✅ QR Code downloaded!\n\nFile: QR_${currentQRStudent.id}_${currentQRStudent.name}.png`);
-        }
-
-        function downloadStudentCard() {    
-            if (!currentQRStudent) return;    
-    
-            const student = currentQRStudent;
-    
-            const canvas = document.createElement('canvas');   
-            canvas.width = 800;    
-            canvas.height = 500;    
-            const ctx = canvas.getContext('2d');
-        
-            const gradient = ctx.createLinearGradient(0, 0, 800, 500);    
-            gradient.addColorStop(0, '#2563EB');    
-            gradient.addColorStop(1, '#1E40AF');    
-            ctx.fillStyle = gradient;    
-            ctx.fillRect(0, 0, 800, 500);
-        
-            ctx.fillStyle = '#FFFFFF';    
-            ctx.roundRect(20, 60, 760, 380, 15);    
-            ctx.fill();
-    
-            ctx.fillStyle = '#2563EB';    
-            ctx.roundRect(20, 60, 760, 70, [15, 15, 0, 0]);    
-            ctx.fill();
-    
-            ctx.fillStyle = '#FFFFFF';    
-            ctx.font = 'bold 36px Arial';    
-            ctx.textAlign = 'center';    
-            ctx.fillText('STUDENT ID CARD', 400, 110);
-    
-            ctx.fillStyle = '#E5E7EB';    
-            ctx.roundRect(50, 160, 180, 220, 10);    
-            ctx.fill();
-       
-            ctx.fillStyle = '#9CA3AF';    
-            ctx.font = 'bold 20px Arial';    
-            ctx.textAlign = 'center';    
-            ctx.fillText('PHOTO', 140, 275);
-        
-            ctx.fillStyle = '#1F2937';    
-            ctx.font = 'bold 32px Arial';    
-            ctx.textAlign = 'left';    
-            ctx.fillText(student.name, 260, 195);
-        
-            ctx.fillStyle = '#4B5563';    
-            ctx.font = '22px Arial';
-    
-            const details = [        
-                `ID: ${student.id}`,                   
-                `Grade: ${student.grade}`,                    
-                `Class: ${student.class || 'N/A'}`,                    
-                student.studentPhone ? `Phone: ${student.studentPhone}` : null            
-            ].filter(Boolean);
-                
-            details.forEach((detail, index) => {
-                ctx.fillText(detail, 260, 240 + (index * 35));            
-            });
-            
-            const qrCanvas = document.querySelector('#qrcode-container canvas');
-            
-            if (qrCanvas) {                    
-                ctx.fillStyle = '#F9FAFB';                    
-                ctx.roundRect(580, 160, 180, 180, 10);                   
-                ctx.fill();
-                            
-                ctx.drawImage(qrCanvas, 595, 175, 150, 150);
-                            
-                ctx.fillStyle = '#6B7280';        
-                ctx.font = '14px Arial';        
-                ctx.textAlign = 'center';        
-                ctx.fillText('Scan to verify', 670, 355);    
-            }
-        
-            ctx.fillStyle = '#9CA3AF';    
-            ctx.font = 'italic 16px Arial';    
-            ctx.textAlign = 'center';    
-            ctx.fillText('Keep this card safe and bring it to class', 400, 420);
-    
-            ctx.strokeStyle = '#2563EB';    
-            ctx.lineWidth = 3;    
-            ctx.roundRect(20, 60, 760, 380, 15);   
-            ctx.stroke();
-    
-            const link = document.createElement('a');    
-            link.download = `Student_ID_${student.id}_${student.name.replace(/\s+/g, '_')}.png`;    
-            link.href = canvas.toDataURL('image/png');    
-            link.click();
-        
-            alert(`✅ ID Card Downloaded!\n\n${student.name}\nID: ${student.id}`);
-        }
-
-        CanvasRenderingContext2D.prototype.roundRect = function (x, y, width, height, radius) {    
-            if (typeof radius === 'number') {        
-                radius = [radius, radius, radius, radius];    
-            }
-    
-            this.beginPath();    
-            this.moveTo(x + radius[0], y);    
-            this.lineTo(x + width - radius[1], y);    
-            this.quadraticCurveTo(x + width, y, x + width, y + radius[1]);    
-            this.lineTo(x + width, y + height - radius[2]);    
-            this.quadraticCurveTo(x + width, y + height, x + width - radius[2], y + height);    
-            this.lineTo(x + radius[3], y + height);    
-            this.quadraticCurveTo(x, y + height, x, y + height - radius[3]);    
-            this.lineTo(x, y + radius[0]);    
-            this.quadraticCurveTo(x, y, x + radius[0], y);    
-            this.closePath();    
-            return this;
-        };
-
-        // ============================================
-        // SUBSCRIPTION SYSTEM
-        // ============================================
-
-        function initializeSubscription() {    
-            if (!appData.subscription) {        
-                appData.subscription = {           
-                    plan: 'free_trial',            
-                    status: 'active',            
-                    startDate: new Date().toISOString(),            
-                    endDate: null,            
-                    maxStudents: 10,            
-                    features: {                
-                        students: true,                
-                        attendance: true,                
-                        payments: true,               
-                        reports: true,                
-                        backup: true            
-                    }        
-                };        
-                saveData();
-            }    
-    
-            checkSubscriptionStatus();
-        }
-
-        function checkSubscriptionStatus() {    
-            const sub = appData.subscription;
-        
-            if (sub.endDate) {        
-                const endDate = new Date(sub.endDate);        
-                const now = new Date();
-                
-                if (now > endDate) {            
-                    sub.status = 'expired';            
-                    sub.plan = 'free_trial';            
-                    sub.maxStudents = 10;            
-                    saveData();        
-                }    
-            }
-        
-            if (sub.plan === 'free_trial' && appData.students.length >= sub.maxStudents) {        
-                return false;    
-            }    
-    
-            return sub.status === 'active';
-        }
-
-        function updateSubscriptionDisplay() {    
-            const sub = appData.subscription;
-        
-            const planNames = {        
-                'free_trial': 'Free Trial',        
-                'monthly': 'Monthly Plan',        
-                'annual': 'Annual Plan'    
-            };
-        
-            const currentPlanEl = document.getElementById('currentPlanName');    
-            if (currentPlanEl) {        
-                currentPlanEl.textContent = planNames[sub.plan] || 'Free Trial';    
-            }
-        
-            const statusEl = document.getElementById('subscriptionStatus');    
-            if (statusEl) {        
-                statusEl.textContent = sub.status.charAt(0).toUpperCase() + sub.status.slice(1);        
-                statusEl.style.color = sub.status === 'active' ? '#D1FAE5' : '#FEE2E2';    
-            }
-        
-            const currentStudentsEl = document.getElementById('currentStudents');    
-            const maxStudentsEl = document.getElementById('maxStudents');    
-            if (currentStudentsEl) currentStudentsEl.textContent = appData.students.length;    
-            if (maxStudentsEl) {        
-                maxStudentsEl.textContent = sub.plan === 'free_trial' ? sub.maxStudents : '∞';    
-            }
-        
-            const endDateEl = document.getElementById('subscriptionEndDate');    
-            if (endDateEl) {        
-                if (sub.endDate) {            
-                    const date = new Date(sub.endDate);           
-                    endDateEl.textContent = date.toLocaleDateString();        
-                } else {            
-                    endDateEl.textContent = sub.plan === 'free_trial' ? 'No expiry' : '-';        
-                }    
-            }
-        
-            const warningEl = document.getElementById('subscriptionWarning');    
-            const warningMsgEl = document.getElementById('warningMessage');    
-    
-            if (sub.plan === 'free_trial' && appData.students.length >= sub.maxStudents - 2) {        
-                warningEl.style.display = 'block';        
-                warningMsgEl.textContent = `You're using ${appData.students.length} of ${sub.maxStudents} free students. Upgrade to add unlimited students!`;    
-            } else if (sub.status === 'expired') {        
-                warningEl.style.display = 'block';       
-                warningMsgEl.textContent = 'Your subscription has expired. Please renew to continue using premium features.';    
-            } else {        
-                warningEl.style.display = 'none';   
-            }
-        
-            updateSubscriptionButtons();
-        }
-
-        function updateSubscriptionButtons() {    
-            const sub = appData.subscription;
-        
-            const btnFreeTrial = document.getElementById('btnFreeTrial');    
-            const btnMonthly = document.getElementById('btnMonthly');    
-            const btnAnnual = document.getElementById('btnAnnual');
-        
-            if (btnFreeTrial) {        
-                btnFreeTrial.className = 'btn btn-secondary';        
-                btnFreeTrial.textContent = 'Select Plan';    
-            }    
-            if (btnMonthly) {        
-                btnMonthly.className = 'btn btn-success';        
-                btnMonthly.textContent = 'Subscribe Monthly';   
-            }    
-            if (btnAnnual) {        
-                btnAnnual.className = 'btn btn-primary';        
-                btnAnnual.textContent = 'Subscribe Annual';    
-            }
-        
-            if (sub.plan === 'free_trial' && btnFreeTrial) {        
-                btnFreeTrial.className = 'btn btn-secondary';        
-                btnFreeTrial.textContent = 'Current Plan';        
-                btnFreeTrial.disabled = true;        
-                btnFreeTrial.style.opacity = '0.6';
-    
-            } else if (sub.plan === 'monthly' && btnMonthly) {        
-                btnMonthly.className = 'btn btn-success';        
-                btnMonthly.textContent = 'Current Plan';        
-                btnMonthly.disabled = true;        
-                btnMonthly.style.opacity = '0.6';
-    
-            } else if (sub.plan === 'annual' && btnAnnual) {        
-                btnAnnual.className = 'btn btn-primary';        
-                btnAnnual.textContent = 'Current Plan';        
-                btnAnnual.disabled = true;        
-                btnAnnual.style.opacity = '0.6';                
-            }
-            
-            displayPaymentHistory();
-        }
-
-        function selectPlan(plan) {    
-            const sub = appData.subscription;
-       
-            if (plan === sub.plan) {        
-                alert('ℹ️ You are already on this plan.');        
-                return;    
-            }
-        
-            if (plan === 'free_trial') {        
-                if (!confirm('⬇️ Downgrade to Free Trial?\n\n⚠️ You will be limited to 10 students\n⚠️ Some premium features will be disabled')) {            
+                if (students.length === 0) {            
+                    alert('⚠️ No students to export!\n\nPlease add students first.');            
                     return;        
                 }
-              
-                appData.subscription.plan = 'free_trial';        
-                appData.subscription.status = 'active';        
-                appData.subscription.maxStudents = 10;        
-                appData.subscription.endDate = null;
-             
-                saveData();        
-                updateSubscriptionDisplay();
+                
+                // Prepare data        
+                const data = [];
+                
+                // Add headers        
+                data.push([             
+                    'Student ID',            
+                    'Name',            
+                    'Birthday',            
+                    'Age',            
+                    'Gender',            
+                    'Class',            
+                    'Grade',            
+                    'Student Phone',
+                    'Parent Phone'       
+                ]);
+                
+                // Add student rows        
+                students.forEach(s => {            
+                    // Calculate age from birthday            
+                    let age = '';            
+                    if (s.birthday) {                
+                        const birthDate = new Date(s.birthday);                
+                        const today = new Date();                
+                        age = today.getFullYear() - birthDate.getFullYear();                
+                        const monthDiff = today.getMonth() - birthDate.getMonth();                
+                        if (monthDiff < 0 || (monthDiff === 0 && today.getDate() < birthDate.getDate())) {                    
+                            age--;                
+                        }            
+                    }
+                        
+                    data.push([
+                        s.id,                
+                        s.name,                
+                        s.birthday || '',                
+                        age,                
+                        s.gender || '',                
+                        s.class || '',                
+                        s.grade,                                
+                        s.studentPhone || '',                                
+                        s.parentPhone || ''            
+                    ]);        
+                });
+                
+                // Create workbook        
+                const wb = XLSX.utils.book_new();        
+                const ws = XLSX.utils.aoa_to_sheet(data);
                
-                alert('✅ Downgraded to Free Trial\n\nYou can now add up to 10 students.');    
-            } else {        
-                initiatePayment(plan);    
+                // Set column widths        
+                ws['!cols'] = [
+                    { wch: 15 }, // Student ID            
+                    { wch: 25 }, // Name            
+                    { wch: 12 }, // Birthday            
+                    { wch: 6 },  // Age            
+                    { wch: 10 }, // Gender           
+                    { wch: 8 },  // Class            
+                    { wch: 8 },  // Grade            
+                    { wch: 15 }, // Student Phone            
+                    { wch: 15 }  // Parent Phone        
+                ];        
+        
+                XLSX.utils.book_append_sheet(wb, ws, 'Students');        
+        
+                // Save file        
+                const fileName = `Students_List_${new Date().toISOString().split('T')[0]}.xlsx`;        
+                XLSX.writeFile(wb, fileName);       
+        
+                alert(`✅ Students exported successfully!\n\nFile: ${fileName}\nTotal Students: ${students.length}`);    
+            } catch (error) {        
+                console.error('❌ Export error:', error);        
+                alert('⚠️ Error exporting students to Excel.');    
             }
         }
 
-        function canAddStudent() {    
-            const sub = appData.subscription;
-        
-            if (sub.plan === 'free_trial' && appData.students.length >= sub.maxStudents) {        
-                if (confirm(`⚠️ Student Limit Reached!\n\nYou've reached the limit of ${sub.maxStudents} students on the Free Trial.\n\nWould you like to upgrade to add unlimited students?`)) {            
-                    navigateTo('subscription');        
-                }        
-                return false;   
-            }    
-    
-            return true;
+        // Export students grouped by grade (each grade in separate sheet)
+        function exportStudentsByGrade() {    
+            try {        
+                if (appData.students.length === 0) {            
+                    alert('⚠️ No students to export!');            
+                    return;        
+                }
+                                
+                const wb = XLSX.utils.book_new();        
+                let totalExported = 0;
+                
+                // Create a sheet for each grade       
+                appData.grades.forEach(grade => {            
+                    const gradeStudents = appData.students.filter(s => s.grade === grade);            
+            
+                    if (gradeStudents.length > 0) {                
+                        const data = [];
+                                
+                        // Headers                
+                        data.push([
+                            'Student ID',
+                            'Name',
+                            'Birthday',
+                            'Gender',
+                            'Class',
+                            'Student Phone',
+                            'Parent Phone'                
+                        ]);
+                                
+                        // Students                
+                        gradeStudents.forEach(s => {                    
+                            data.push([
+                                s.id,
+                                s.name,
+                                s.birthday || '',
+                                s.gender || '',
+                                s.class || '',
+                                s.studentPhone || '',
+                                s.parentPhone || ''
+                            ]);
+                        });
+                                
+                        const ws = XLSX.utils.aoa_to_sheet(data);                
+                        ws['!cols'] = [
+                            { wch: 15 },
+                            { wch: 25 },
+                            { wch: 12 },
+                            { wch: 10 },
+                            { wch: 8 },
+                            { wch: 15 },
+                            { wch: 15 }               
+                        ];
+                                 
+                        XLSX.utils.book_append_sheet(wb, ws, `Grade ${grade}`);                
+                        totalExported += gradeStudents.length;            
+                    }        
+                });
+                
+                // Save file        
+                const fileName = `Students_By_Grade_${new Date().toISOString().split('T')[0]}.xlsx`;        
+                XLSX.writeFile(wb, fileName);
+                
+                alert(`✅ Students exported by grade!\n\nFile: ${fileName}\nTotal Students: ${totalExported}\nGrades: ${appData.grades.length}`);    
+            } catch (error) {        
+                console.error('❌ Export error:', error);        
+                alert('⚠️ Error exporting students.');    
+            }
         }
 
-        function displayPaymentHistory() {    
-            const tbody = document.getElementById('paymentHistoryTableBody');
+        // Export only students from current selected tab
+        function exportCurrentGradeStudents() {    
+            try {        
+                const grade = currentSelectedGradeTab;
+                
+                let students;        
+                if (grade === 'all') {            
+                    students = appData.students;        
+                } else {            
+                    students = appData.students.filter(s => s.grade === grade);        
+                }
+                
+                if (students.length === 0) {            
+                    alert('⚠️ No students in this grade!');            
+                    return;        
+                }
+                
+                // Prepare data        
+                const data = [];
+                
+                // Headers       
+                data.push([
+                    'Student ID',
+                    'Name',
+                    'Birthday',
+                    'Gender',
+                    'Class',
+                    'Student Phone',
+                    'Parent Phone'
+                ]);
         
-            if (!tbody) return;    
+                // Students
+                students.forEach(s => {
+                    data.push([
+                        s.id,
+                        s.name,
+                        s.birthday || '',
+                        s.gender || '',
+                        s.class || '',
+                        s.studentPhone || '',
+                        s.parentPhone || ''
+                    ]);
+                });
+        
+                // Create workbook
+                const wb = XLSX.utils.book_new();
+                const ws = XLSX.utils.aoa_to_sheet(data);
+        
+                // Set column widths
+                ws['!cols'] = [
+                    { wch: 15 },
+                    { wch: 25 },
+                    { wch: 12 },
+                    { wch: 10 },
+                    { wch: 8 },
+                    { wch: 15 },
+                    { wch: 15 }
+                ];
+        
+                XLSX.utils.book_append_sheet(wb, ws, grade === 'all' ? 'All Students' : `Grade ${grade}`);
+        
+                // Save file
+                const fileName = `Students_${grade === 'all' ? 'All' : 'Grade_' + grade}_${new Date().toISOString().split('T')[0]}.xlsx`;
+                XLSX.writeFile(wb, fileName);
+        
+                alert(`✅ Exported successfully!\n\nFile: ${fileName}\nStudents: ${students.length}`);
+            } catch (error) {
+                console.error('❌ Export error:', error);
+                alert('⚠️ Error exporting students.');
+            }
+        }
+
+        // ============================================
+        // PAYHERE PAYMENT INTEGRATION
+        // ============================================
+
+        // Initialize PayHere payment
+        function initiatePayment(plan) {
+            const sub = appData.subscription;
+    
+            // Check if already on this plan
+            if (sub.plan === plan && sub.status === 'active') {
+                alert('ℹ️ You are already on this plan.');
+                return;
+            }
+    
+            // Get plan details
+            const planDetails = SUBSCRIPTION_PRICES[plan];
+    
+            if (!planDetails) {
+                alert('❌ Invalid plan selected');
+                return;
+            }
+    
+            // Confirm payment
+            const confirmMsg = `💳 Proceed to Payment?\n\nPlan: ${plan === 'monthly' ? 'Monthly' : 'Annual'}\nAmount: Rs. ${planDetails.amount.toLocaleString()}\n\n✓ Unlimited students\n✓ All premium features\n✓ Priority support`;
+    
+            if (!confirm(confirmMsg)) {
+                return;
+            }
+    
+            // Generate unique order ID
+            const orderId = generateOrderId(plan);
+    
+            // Prepare payment data
+            const payment = {
+                sandbox: PAYHERE_CONFIG.sandbox,
+                merchant_id: PAYHERE_CONFIG.merchantId,
+                return_url: PAYHERE_CONFIG.returnUrl,
+                cancel_url: PAYHERE_CONFIG.cancelUrl,
+                notify_url: PAYHERE_CONFIG.notifyUrl,
+                order_id: orderId,
+                items: planDetails.description,
+                amount: planDetails.amount.toFixed(2),
+                currency: planDetails.currency,
+                first_name: getUserName(),
+                last_name: '',
+                email: getUserEmail(),
+                phone: getUserPhone(),
+                address: '',
+                city: 'Colombo',
+                country: 'Sri Lanka',
+                // Custom fields to track subscription
+                custom_1: plan,  // Plan type
+                custom_2: new Date().toISOString()  // Purchase date
+            };
+            
+            // Store pending payment
+            storePendingPayment(orderId, plan, planDetails.amount);
+            
+            // Show PayHere payment window
+            payhere.startPayment(payment);
+        }        
+        
+        // Generate unique order ID
+        function generateOrderId(plan) {
+            const timestamp = Date.now();
+            const random = Math.floor(Math.random() * 1000);
+            return `CM_${plan.toUpperCase()}_${timestamp}_${random}`;
+        }
+
+        // Get user details (you can customize these)
+        function getUserName() {
+            // Try to get from stored data or prompt
+            let userName = localStorage.getItem('userName');
+            if (!userName) {
+                userName = prompt('Enter your name:', 'Teacher') || 'Teacher';
+                localStorage.setItem('userName', userName);
+            }
+            return userName;
+        }
+
+        function getUserEmail() {
+            let userEmail = localStorage.getItem('userEmail');
+            if (!userEmail) {
+                userEmail = prompt('Enter your email:', 'teacher@school.com') || 'teacher@school.com';
+                localStorage.setItem('userEmail', userEmail);
+            }
+            return userEmail;
+        }
+
+        function getUserPhone() {
+            let userPhone = localStorage.getItem('userPhone');
+            if (!userPhone) {
+                userPhone = prompt('Enter your phone number:', '0771234567') || '0771234567';
+                localStorage.setItem('userPhone', userPhone);
+            }
+            return userPhone;
+        }
+
+        // Store pending payment
+        function storePendingPayment(orderId, plan, amount) {
+            const pendingPayments = JSON.parse(localStorage.getItem('pendingPayments') || '[]');
+    
+            pendingPayments.push({
+                orderId: orderId,
+                plan: plan,
+                amount: amount,
+                timestamp: new Date().toISOString(),
+                status: 'pending'
+            });
+    
+            localStorage.setItem('pendingPayments', JSON.stringify(pendingPayments));
+        }
+
+        // PayHere callback handlers
+        payhere.onCompleted = function onCompleted(orderId) {
+            console.log('Payment completed. OrderID:', orderId);
+    
+            // Get payment details
+            const pendingPayments = JSON.parse(localStorage.getItem('pendingPayments') || '[]');
+            const payment = pendingPayments.find(p => p.orderId === orderId);
+    
+            if (payment) {
+                // Activate subscription
+                activateSubscription(payment.plan, orderId);
+        
+                // Update payment status
+                payment.status = 'completed';
+                payment.completedDate = new Date().toISOString();
+                localStorage.setItem('pendingPayments', JSON.stringify(pendingPayments));
+        
+                // Show success message
+                alert(`✅ Payment Successful!\n\nOrder ID: ${orderId}\nPlan: ${payment.plan === 'monthly' ? 'Monthly' : 'Annual'}\n\nYour subscription is now active!`);
+                
+                // Refresh subscription display
+                updateSubscriptionDisplay();
+                
+                // Store payment record
+                storePaymentRecord(payment);
+            } else {
+                alert('✅ Payment Successful!\n\nYour subscription is now active!');
+            }
+        };        
+
+        payhere.onDismissed = function onDismissed() {
+            console.log('Payment dismissed');
+            alert('❌ Payment Cancelled\n\nYou cancelled the payment process.');
+        };
+
+        payhere.onError = function onError(error) {
+            console.log('Payment error:', error);
+            alert(`❌ Payment Failed\n\nError: ${error}\n\nPlease try again or contact support.`);
+        };
+
+        // Activate subscription after successful payment
+        function activateSubscription(plan, orderId) {
+            appData.subscription.plan = plan;
+            appData.subscription.status = 'active';
+            appData.subscription.startDate = new Date().toISOString();
+            appData.subscription.orderId = orderId;
+            appData.subscription.maxStudents = Infinity;
+    
+            // Set expiry date
+            const endDate = new Date();
+            if (plan === 'monthly') {
+                endDate.setMonth(endDate.getMonth() + 1);
+            } else if (plan === 'annual') {
+                endDate.setFullYear(endDate.getFullYear() + 1);
+            }
+            appData.subscription.endDate = endDate.toISOString();
+            
+            // Enable all features
+            appData.subscription.features = {
+                students: true,
+                attendance: true,
+                payments: true,
+                reports: true,
+                backup: true,
+                export: true,
+                priority_support: true
+            };
+            
+            saveData();
+        }
+
+        // Store payment record for history
+        function storePaymentRecord(payment) {
+            if (!appData.paymentHistory) {
+                appData.paymentHistory = [];
+            }
+    
+            appData.paymentHistory.push({
+                orderId: payment.orderId,
+                plan: payment.plan,
+                amount: payment.amount,
+                date: payment.completedDate || new Date().toISOString(),
+                status: 'completed'
+            });
+    
+            saveData();
+        }
+
+        // Display payment history
+        function displayPaymentHistory() {
+            const tbody = document.getElementById('paymentHistoryTableBody');
+    
+            if (!tbody) return;
     
             const history = appData.paymentHistory || [];
-       
-            if (history.length === 0) {        
-                tbody.innerHTML = `           
+    
+            if (history.length === 0) {
+                tbody.innerHTML = `
                     <tr>
                         <td colspan="5" style="text-align: center; padding: 40px; color: rgba(255,255,255,0.7);">
                             No payment history yet
-                        </td>
+                                </td>
                     </tr>
-                `;       
-                return;  
+                `;
+                return;
             }
-       
-            tbody.innerHTML = history.reverse().map(p => {        
-                const date = new Date(p.date).toLocaleDateString();        
-                const planName = p.plan === 'monthly' ? 'Monthly' : 'Annual';        
-                const statusBadge = p.status === 'completed'             
-                    ? '<span class="badge badge-green">Completed</span>'            
+    
+            tbody.innerHTML = history.reverse().map(p => {
+                const date = new Date(p.date).toLocaleDateString();
+                const planName = p.plan === 'monthly' ? 'Monthly' : 'Annual';
+                const statusBadge = p.status === 'completed' 
+                    ? '<span class="badge badge-green">Completed</span>'
                     : '<span class="badge badge-amber">Pending</span>';
-               
-                return `           
+        
+                return `
                     <tr>
                         <td>${date}</td>
                         <td style="font-family: monospace; font-size: 12px;">${p.orderId}</td>
@@ -3181,213 +2842,219 @@
                         <td>Rs. ${p.amount.toLocaleString('en-LK', { minimumFractionDigits: 2 })}</td>
                         <td>${statusBadge}</td>
                     </tr>
-                `;   
+                `;
             }).join('');
         }
-
-        // ============================================
-        // PAYHERE PAYMENT INTEGRATION
-        // ============================================
-
-        function initiatePayment(plan) {    
-            const sub = appData.subscription;
-        
-            if (sub.plan === plan && sub.status === 'active') {       
-                alert('ℹ️ You are already on this plan.');       
-                return;    
-            }
-        
-            const planDetails = SUBSCRIPTION_PRICES[plan];
-        
-            if (!planDetails) {        
-                alert('❌ Invalid plan selected');        
-                return;    
-            }
-       
-            const confirmMsg = `💳 Proceed to Payment?\n\nPlan: ${plan === 'monthly' ? 'Monthly' : 'Annual'}\nAmount: Rs. ${planDetails.amount.toLocaleString()}\n\n✓ Unlimited students\n✓ All premium features\n✓ Priority support`;
-       
-            if (!confirm(confirmMsg)) {        
-                return;    
-            }
-        
-            const orderId = generateOrderId(plan);
-        
-            const payment = {       
-                sandbox: PAYHERE_CONFIG.sandbox,        
-                merchant_id: PAYHERE_CONFIG.merchantId,        
-                return_url: PAYHERE_CONFIG.returnUrl,        
-                cancel_url: PAYHERE_CONFIG.cancelUrl,        
-                notify_url: PAYHERE_CONFIG.notifyUrl,        
-                order_id: orderId,        
-                items: planDetails.description,        
-                amount: planDetails.amount.toFixed(2),       
-                currency: planDetails.currency,
-        
-                first_name: getUserName(),        
-                last_name: '',        
-                email: getUserEmail(),       
-                phone: getUserPhone(),        
-                address: '',        
-                city: 'Colombo',      
-                country: 'Sri Lanka',
-
-                custom_1: plan,
-                custom_2: new Date().toISOString()
-            };
-        
-            storePendingPayment(orderId, plan, planDetails.amount);
-            payhere.startPayment(payment);
-        }
-
-        function generateOrderId(plan) {    
-            const timestamp = Date.now();    
-            const random = Math.floor(Math.random() * 1000);    
-            return `CM_${plan.toUpperCase()}_${timestamp}_${random}`;
-        }
-
-        function getUserName() {    
-            let userName = localStorage.getItem('userName');    
-            if (!userName) {        
-                userName = prompt('Enter your name:', 'Teacher') || 'Teacher';        
-                localStorage.setItem('userName', userName);    
-            }    
-            return userName;
-        }
-
-        function getUserEmail() {    
-            let userEmail = localStorage.getItem('userEmail');    
-            if (!userEmail) {        
-                userEmail = prompt('Enter your email:', 'teacher@school.com') || 'teacher@school.com';        
-                localStorage.setItem('userEmail', userEmail);    
-            }                
-            return userEmail;
-        }
-
-        function getUserPhone() {    
-            let userPhone = localStorage.getItem('userPhone');    
-            if (!userPhone) {        
-                userPhone = prompt('Enter your phone number:', '0771234567') || '0771234567';        
-                localStorage.setItem('userPhone', userPhone);    
-            }    
-            return userPhone;
-        }
-
-        function storePendingPayment(orderId, plan, amount) {    
-            const pendingPayments = JSON.parse(localStorage.getItem('pendingPayments') || '[]');
-       
-            pendingPayments.push({        
-                orderId: orderId,        
-                plan: plan,        
-                amount: amount,        
-                timestamp: new Date().toISOString(),       
-                status: 'pending'   
-            });
-       
-            localStorage.setItem('pendingPayments', JSON.stringify(pendingPayments));
-        }
-
-        payhere.onCompleted = function onCompleted(orderId) {    
-            console.log('Payment completed. OrderID:', orderId);
-        
-            const pendingPayments = JSON.parse(localStorage.getItem('pendingPayments') || '[]');    
-            const payment = pendingPayments.find(p => p.orderId === orderId);
-        
-            if (payment) {       
-                activateSubscription(payment.plan, orderId);
-                
-                payment.status = 'completed';       
-                payment.completedDate = new Date().toISOString();        
-                localStorage.setItem('pendingPayments', JSON.stringify(pendingPayments));
-                
-                alert(`✅ Payment Successful!\n\nOrder ID: ${orderId}\nPlan: ${payment.plan === 'monthly' ? 'Monthly' : 'Annual'}\n\nYour subscription is now active!`);
-                
-                updateSubscriptionDisplay();
-                storePaymentRecord(payment);    
-            } else {        
-                alert('✅ Payment Successful!\n\nYour subscription is now active!');    
-            }
-        };
-
-        payhere.onDismissed = function onDismissed() {    
-            console.log('Payment dismissed');    
-            alert('❌ Payment Cancelled\n\nYou cancelled the payment process.');
-        };
-
-        payhere.onError = function onError(error) {    
-            console.log('Payment error:', error);    
-            alert(`❌ Payment Failed\n\nError: ${error}\n\nPlease try again or contact support.`);
-        };
-
-        function activateSubscription(plan, orderId) {    
-            appData.subscription.plan = plan;    
-            appData.subscription.status = 'active';    
-            appData.subscription.startDate = new Date().toISOString();    
-            appData.subscription.orderId = orderId;    
-            appData.subscription.maxStudents = Infinity;
-       
-            const endDate = new Date();   
-            if (plan === 'monthly') {        
-                endDate.setMonth(endDate.getMonth() + 1);    
-            } else if (plan === 'annual') {        
-                endDate.setFullYear(endDate.getFullYear() + 1);   
-            }    
-            appData.subscription.endDate = endDate.toISOString();    
     
-            appData.subscription.features = {       
-                students: true,       
-                attendance: true,        
-                payments: true,        
-                reports: true,        
-                backup: true,        
-                export: true,        
-                priority_support: true    
-            };   
+        // ============================================    
+        // EXCEL EXPORT    
+        // ============================================
     
-            saveData();
-        }
-
-        function storePaymentRecord(payment) {    
-            if (!appData.paymentHistory) {        
-                appData.paymentHistory = [];   
+        function exportToExcel() {            
+            const type = document.getElementById('reportType').value;            
+            const month = document.getElementById('reportMonth').value;            
+            const grade = document.getElementById('reportGrade').value;
+                
+            if (!month) {                    
+                alert('âš ï¸ Please select a month first');                    
+                return;            
             }
-        
-            appData.paymentHistory.push({        
-                orderId: payment.orderId,        
-                plan: payment.plan,       
-                amount: payment.amount,        
-                date: payment.completedDate || new Date().toISOString(),        
-                status: 'completed'    
-            });
-        
-            saveData();
+                
+            if (type === 'attendance') {                    
+                exportAttendanceToExcel(month, grade);            
+            } else if (type === 'payment') {                    
+                exportPaymentToExcel(month, grade);            
+            }    
         }
-
-        // ============================================
-        // SETTINGS FUNCTIONS
-        // ============================================
-
+    
+        function exportAttendanceToExcel(month, grade) {            
+            const students = grade === 'all' ? appData.students : appData.students.filter(s => s.grade === grade);
+                
+            // Prepare data            
+            const data = [];
+                
+            // Add headers            
+            data.push(['Student ID', 'Name', 'Grade', 'Present Days', 'Absent Days', 'Attendance Rate']);
+        
+        
+            // Add student rows            
+            students.forEach(s => {                    
+                let presentDays = 0;                    
+                let totalDays = 0;
+                            
+                Object.keys(appData.attendance || {}).forEach(date => {                            
+                    if (date.startsWith(month)) {                                    
+                        totalDays++;                                    
+                        if (appData.attendance[date][s.id] === 'present') {                    
+                        presentDays++;                
+                        }                            
+                    }        
+                });
+                            
+                const rate = totalDays > 0 ? Math.round((presentDays / totalDays) * 100) : 0;
+                    
+                data.push([                        
+                    s.id,                                        
+                    s.name,                           
+                    'Grade ' + s.grade,                            
+                    presentDays,                            
+                    totalDays - presentDays,                            
+                    rate + '%'                    
+                ]);            
+            });
+                
+            // Create workbook            
+            const wb = XLSX.utils.book_new();            
+            const ws = XLSX.utils.aoa_to_sheet(data);
+                
+            // Set column widths            
+            ws['!cols'] = [
+                { wch: 15 }, // Student ID                    
+                { wch: 25 }, // Name                    
+                { wch: 10 }, // Grade                    
+                { wch: 12 }, // Present                    
+                { wch: 12 }, // Absent                    
+                { wch: 15 }  // Rate           
+            ];
+               
+            XLSX.utils.book_append_sheet(wb, ws, 'Attendance Report');
+                
+            // Save file            
+            const filename = `Attendance_Report_${month}_${grade === 'all' ? 'All_Grades' : 'Grade_' + grade}.xlsx`;            
+            XLSX.writeFile(wb, filename);
+                
+            alert('âœ… Excel file downloaded!\n\nFile: ' + filename);    
+        }
+    
+        function exportPaymentToExcel(month, grade) {            
+            const students = grade === 'all' ? appData.students : appData.students.filter(s => s.grade === grade);
+                
+            // Prepare data            
+            const data = [];
+                
+            // Add headers            
+            data.push(['Student ID', 'Name', 'Grade', 'Amount Paid', 'Status']);
+                
+            let totalCollected = 0;
+                
+            // Add student rows            
+            students.forEach(s => {                    
+                const monthPayments = (appData.payments || []).filter(p =>                             
+                    p.studentId === s.id && p.month === month                
+                );
+                    
+                const amount = monthPayments.reduce((sum, p) => sum + p.amount, 0);            
+                const status = monthPayments.length > 0 ? 'Paid' : 'Unpaid';
+                    
+                if (amount > 0) totalCollected += amount;
+                    
+                data.push([
+                    s.id,                            
+                    s.name,                            
+                    'Grade ' + s.grade,                           
+                    'Rs. ' + amount.toFixed(2),                            
+                    status                    
+                ]);            
+            });    
+        
+            // Add total row            
+            data.push([]);           
+            data.push(['', '', '', 'Total Collected:', 'Rs. ' + totalCollected.toFixed(2)]);
+                
+            // Create workbook            
+            const wb = XLSX.utils.book_new();            
+            const ws = XLSX.utils.aoa_to_sheet(data);
+                
+            // Set column widths    
+            ws['!cols'] = [
+                { wch: 15 }, // Student ID                    
+                { wch: 25 }, // Name                    
+                { wch: 10 }, // Grade                    
+                { wch: 15 }, // Amount                    
+                { wch: 10 }  // Status            
+            ];
+                
+            XLSX.utils.book_append_sheet(wb, ws, 'Payment Report');
+                
+            // Save file            
+            const filename = `Payment_Report_${month}_${grade === 'all' ? 'All_Grades' : 'Grade_' + grade}.xlsx`;            
+            XLSX.writeFile(wb, filename);
+                
+            alert('âœ… Excel file downloaded!\n\nFile: ' + filename);    
+        }
+    
+        // Export Student List    
+        function exportStudentListToExcel() {            
+            const data = [];
+                
+            // Add headers            
+            data.push(['Student ID', 'Name', 'Birthday', 'Gender', 'Class', 'Grade', 'Student Phone', 'Parent Phone']);
+                
+            // Add student rows            
+            appData.students.forEach(s => {                    
+                data.push([
+                    s.id,                       
+                    s.name,                           
+                    s.birthday || '',                            
+                    s.gender || '',                            
+                    s.class || '',                            
+                    'Grade ' + s.grade,                            
+                    s.studentPhone || '',                            
+                    s.parentPhone || ''                    
+                ]);            
+            });
+                
+            // Create workbook            
+            const wb = XLSX.utils.book_new();            
+            const ws = XLSX.utils.aoa_to_sheet(data);
+                
+            // Set column widths            
+            ws['!cols'] = [
+                { wch: 15 },                    
+                { wch: 25 },                    
+                { wch: 12 },                    
+                { wch: 10 },                    
+                { wch: 8 },                    
+                { wch: 10 },                    
+                { wch: 15 },                    
+                { wch: 15 }            
+            ];
+                
+            XLSX.utils.book_append_sheet(wb, ws, 'Student List');        
+        
+            // Save file            
+            XLSX.writeFile(wb, 'Student_List.xlsx');       
+        
+            alert('âœ… Student list exported to Excel!');    
+        }
+        
+        // SETTINGS
         function loadSettings() {    
-            document.getElementById('subjectNameInput').value = appData.subjectName;   
+            // Load subject name    
+            document.getElementById('subjectNameInput').value = appData.subjectName;    
             document.getElementById('subjectDisplay').textContent = 'Subject: ' + appData.subjectName;
         
+            // Load grades list    
             const list = document.getElementById('gradesList');    
-            list.innerHTML = appData.grades.map(g => `        
-                <div style="display: flex; justify-content: space-between; align-items: center; padding: 12px; background: rgba(255,255,255,0.1); border-radius: 8px; margin-bottom: 8px;">            
+            list.innerHTML = appData.grades.map(g => `
+                <div style="display: flex; justify-content: space-between; align-items: center; padding: 12px; background: rgba(255,255,255,0.1); border-radius: 8px; margin-bottom: 8px;">
                     <span style="font-weight: 600; color: #fff;">Grade ${g}</span>
                     <button class="icon-btn icon-btn-red" onclick="deleteGrade('${g}')">🗑️ Remove</button>
-                </div>
+                </div>         
             `).join('');
         
+            // Update last saved time    
             updateLastSavedTime();
         
+            // Update last backup time    
             const lastBackup = localStorage.getItem('lastBackupTime');    
             const backupTimeEl = document.getElementById('lastBackupTime');    
             if (backupTimeEl) {        
                 backupTimeEl.textContent = lastBackup || 'Never';    
             }
         
+            // Update data statistics    
             updateDataStatistics();
-            displayTeacherId();
         }
 
         function addGrade() {
@@ -3443,39 +3110,302 @@
             alert('Subject saved!');
         }
 
-        function updateDataStatistics() {    
-            const statsStudents = document.getElementById('statsStudents');    
-            const statsPayments = document.getElementById('statsPayments');    
-            const statsTimetable = document.getElementById('statsTimetable');    
-            const statsAttendance = document.getElementById('statsAttendance');
-        
-            if (statsStudents) statsStudents.textContent = appData.students.length;    
-            if (statsPayments) statsPayments.textContent = (appData.payments || []).length;   
-            if (statsTimetable) statsTimetable.textContent = appData.timetable.length;    
-            if (statsAttendance) statsAttendance.textContent = Object.keys(appData.attendance || {}).length;
+        function backupData() {
+            const dataStr = JSON.stringify(appData, null, 2);
+            const dataBlob = new Blob([dataStr], { type: 'application/json' });
+            const url = URL.createObjectURL(dataBlob);
+            const link = document.createElement('a');
+            link.href = url;
+            link.download = `class-manager-backup-${new Date().toISOString().split('T')[0]}.json`;
+            link.click();
+            
+            const now = new Date().toLocaleString();
+            localStorage.setItem('lastBackup', now);
+            document.getElementById('lastBackup').textContent = now;
+            alert('Backup downloaded!');
         }
 
         // ============================================
-        // BACKUP AND DATA MANAGEMENT
+        // SUBSCRIPTION SYSTEM
         // ============================================
 
+        // Initialize subscription on load
+        function initializeSubscription() {
+            // Check if subscription exists in appData
+            if (!appData.subscription) {
+                appData.subscription = {
+                    plan: 'free_trial',
+                    status: 'active',
+                    startDate: new Date().toISOString(),
+                    endDate: null,
+                    maxStudents: 10,
+                    features: {
+                        students: true,
+                        attendance: true,
+                        payments: true,
+                        reports: true,
+                        backup: true
+                    }
+                };
+                saveData();
+            }
+    
+            // Check subscription status
+            checkSubscriptionStatus();
+        }
+
+        // Check if subscription is valid
+        function checkSubscriptionStatus() {
+            const sub = appData.subscription;
+    
+            // Check expiration
+            if (sub.endDate) {
+                const endDate = new Date(sub.endDate);
+                const now = new Date();
+        
+                if (now > endDate) {
+                    sub.status = 'expired';
+                    // Revert to free trial
+                    sub.plan = 'free_trial';
+                    sub.maxStudents = 10;
+                    saveData();
+                }
+            }
+    
+            // Check student limit
+            if (sub.plan === 'free_trial' && appData.students.length >= sub.maxStudents) {
+                return false;
+            }
+    
+            return sub.status === 'active';
+        }
+
+        // Update subscription display
+        function updateSubscriptionDisplay() {
+            const sub = appData.subscription;
+    
+            // Update current plan name
+            const planNames = {
+                'free_trial': 'Free Trial',
+                'monthly': 'Monthly Plan',
+                'annual': 'Annual Plan'
+            };
+    
+            const currentPlanEl = document.getElementById('currentPlanName');
+            if (currentPlanEl) {
+                currentPlanEl.textContent = planNames[sub.plan] || 'Free Trial';
+            }
+    
+            // Update status
+            const statusEl = document.getElementById('subscriptionStatus');
+            if (statusEl) {
+                statusEl.textContent = sub.status.charAt(0).toUpperCase() + sub.status.slice(1);
+                statusEl.style.color = sub.status === 'active' ? '#D1FAE5' : '#FEE2E2';
+            }
+    
+            // Update student count
+            const currentStudentsEl = document.getElementById('currentStudents');
+            const maxStudentsEl = document.getElementById('maxStudents');
+            if (currentStudentsEl) currentStudentsEl.textContent = appData.students.length;
+            if (maxStudentsEl) {
+                maxStudentsEl.textContent = sub.plan === 'free_trial' ? sub.maxStudents : '∞';
+            }
+    
+            // Update end date
+            const endDateEl = document.getElementById('subscriptionEndDate');
+            if (endDateEl) {
+                if (sub.endDate) {
+                    const date = new Date(sub.endDate);
+                    endDateEl.textContent = date.toLocaleDateString();
+                } else {
+                    endDateEl.textContent = sub.plan === 'free_trial' ? 'No expiry' : '-';
+                }
+            }
+    
+            // Show warning if needed
+            const warningEl = document.getElementById('subscriptionWarning');
+            const warningMsgEl = document.getElementById('warningMessage');
+    
+            if (sub.plan === 'free_trial' && appData.students.length >= sub.maxStudents - 2) {
+                warningEl.style.display = 'block';
+                warningMsgEl.textContent = `You're using ${appData.students.length} of ${sub.maxStudents} free students. Upgrade to add unlimited students!`;
+            } else if (sub.status === 'expired') {
+                warningEl.style.display = 'block';
+                warningMsgEl.textContent = 'Your subscription has expired. Please renew to continue using premium features.';
+            } else {
+                warningEl.style.display = 'none';
+            }
+    
+            // Update button states
+            updateSubscriptionButtons();
+            displayPaymentHistory();
+        }
+
+        // Update subscription buttons
+        function updateSubscriptionButtons() {
+            const sub = appData.subscription;
+    
+            const btnFreeTrial = document.getElementById('btnFreeTrial');
+            const btnMonthly = document.getElementById('btnMonthly');
+            const btnAnnual = document.getElementById('btnAnnual');
+    
+            // Reset all buttons
+            if (btnFreeTrial) {
+                btnFreeTrial.className = 'btn btn-secondary';
+                btnFreeTrial.textContent = 'Select Plan';
+            }
+            if (btnMonthly) {
+                btnMonthly.className = 'btn btn-success';
+                btnMonthly.textContent = 'Subscribe Monthly';
+            }
+            if (btnAnnual) {
+                btnAnnual.className = 'btn btn-primary';
+                btnAnnual.textContent = 'Subscribe Annual';
+            }
+    
+            // Highlight current plan
+            if (sub.plan === 'free_trial' && btnFreeTrial) {
+                btnFreeTrial.className = 'btn btn-secondary';
+                btnFreeTrial.textContent = 'Current Plan';
+                btnFreeTrial.disabled = true;
+                btnFreeTrial.style.opacity = '0.6';
+            } else if (sub.plan === 'monthly' && btnMonthly) {
+                btnMonthly.className = 'btn btn-success';
+                btnMonthly.textContent = 'Current Plan';
+                btnMonthly.disabled = true;
+                btnMonthly.style.opacity = '0.6';
+            } else if (sub.plan === 'annual' && btnAnnual) {
+                btnAnnual.className = 'btn btn-primary';
+                btnAnnual.textContent = 'Current Plan';
+                btnAnnual.disabled = true;
+                btnAnnual.style.opacity = '0.6';
+            }
+        }
+
+        
+        // Select a subscription plan (updated for PayHere)
+        function selectPlan(plan) {
+            if (plan === 'free_trial') {
+                // Downgrade to free
+                if (!confirm('⬇️ Downgrade to Free Trial?\n\n⚠️ You will be limited to 10 students\n⚠️ Some premium features will be disabled')) {
+                    return;
+                }
+        
+                appData.subscription.plan = 'free_trial';
+                appData.subscription.status = 'active';
+                appData.subscription.maxStudents = 10;
+                appData.subscription.endDate = null;
+        
+                saveData();
+                updateSubscriptionDisplay();
+        
+                alert('✅ Downgraded to Free Trial\n\nYou can now add up to 10 students.');
+            } else {
+                // Redirect to payment
+                initiatePayment(plan);
+            }
+        }
+
+        // Check before adding student
+        function canAddStudent() {
+            const sub = appData.subscription;
+    
+            if (sub.plan === 'free_trial' && appData.students.length >= sub.maxStudents) {
+                if (confirm(`⚠️ Student Limit Reached!\n\nYou've reached the limit of ${sub.maxStudents} students on the Free Trial.\n\nWould you like to upgrade to add unlimited students?`)) {
+                    navigateTo('subscription');
+                }
+                return false;
+            }
+    
+            return true;
+        }
+
+        // ============================================
+        // ENHANCED DATA SAVING SYSTEM
+        // ============================================
+
+        // Save data to localStorage with timestamp
+        function saveData() {    
+            try {        
+                const dataToSave = {            
+                    ...appData,            
+                    lastSaved: new Date().toISOString()        
+                };
+               
+                localStorage.setItem('classManagerData', JSON.stringify(dataToSave));
+                
+                // Update last saved time display        
+                updateLastSavedTime();
+                
+                console.log('✅ Data saved successfully');        
+                return true;    
+            } catch (error) {        
+                console.error('❌ Error saving data:', error);        
+                alert('⚠️ Error saving data. Your storage might be full.');        
+                return false;    
+            }
+        }
+
+        // Load data from localStorage
+        function loadData() {    
+            try {       
+                const saved = localStorage.getItem('classManagerData');        
+                if (saved) {            
+                    const parsedData = JSON.parse(saved);            
+                    appData = {                 
+                        ...appData,                 
+                        ...parsedData,                
+                        // Ensure arrays exist                
+                        students: parsedData.students || [],                
+                        timetable: parsedData.timetable || [],                
+                        payments: parsedData.payments || [],                
+                        attendance: parsedData.attendance || {},                
+                        grades: parsedData.grades || ['06', '07', '08', '09', '10', '11', '12']            
+                    };
+
+                    console.log('✅ Data loaded successfully');            
+                    updateLastSavedTime();        
+                } else {            
+                    console.log('ℹ️ No saved data found, using defaults');       
+                }    
+            } catch (error) {        
+                console.error('❌ Error loading data:', error);        
+                alert('⚠️ Error loading saved data. Starting fresh.');    
+            }    
+    
+            populateGradeDropdowns();    
+            updateDashboard();
+        }
+
+        // Update last saved time display
+        function updateLastSavedTime() {    
+            const lastSavedEl = document.getElementById('lastSavedTime');    
+            if (lastSavedEl && appData.lastSaved) {        
+                const savedDate = new Date(appData.lastSaved);        
+                lastSavedEl.textContent = savedDate.toLocaleString();    
+            }
+        }
+
+        // Download backup file (JSON)
         function downloadBackup() {    
-            try {    
+            try {        
                 const dataToBackup = {            
                     ...appData,            
-                    backupDate: new Date().toISOString(),
+                    backupDate: new Date().toISOString(),            
                     appVersion: '1.0'        
-                };                
+                };
+                
                 const dataStr = JSON.stringify(dataToBackup, null, 2);        
                 const dataBlob = new Blob([dataStr], { type: 'application/json' });        
                 const url = URL.createObjectURL(dataBlob);        
                 const link = document.createElement('a');        
                 const fileName = `ClassManager_Backup_${new Date().toISOString().split('T')[0]}.json`;
                 
-                link.href = url;
+                link.href = url;        
                 link.download = fileName;        
-                link.click();        
-        
+                link.click();
+                
+                // Update last backup time        
                 const now = new Date().toLocaleString();        
                 localStorage.setItem('lastBackupTime', now);        
                 const backupTimeEl = document.getElementById('lastBackupTime');        
@@ -3488,29 +3418,33 @@
             }
         }
 
-        function uploadBackup() {                
+        // Upload and restore backup file
+        function uploadBackup() {    
             const input = document.createElement('input');    
             input.type = 'file';    
-            input.accept = '.json';    
-    
-            input.onchange = (e) => {      
-                const file = e.target.files[0];        
-                if (!file) return;        
+            input.accept = '.json';
         
+            input.onchange = (e) => {        
+                const file = e.target.files[0];        
+                if (!file) return;
+                
                 const reader = new FileReader();
                 
                 reader.onload = (event) => {            
                     try {                
                         const restored = JSON.parse(event.target.result);
                                 
+                        // Validate data structure                
                         if (!restored.students || !Array.isArray(restored.students)) {                    
                             throw new Error('Invalid backup file format');                
                         }
                                 
+                        // Confirm before restoring                
                         if (!confirm('⚠️ Restore data from backup?\n\nThis will replace all current data!\n\nStudents: ' + (restored.students?.length || 0) + '\nPayments: ' + (restored.payments?.length || 0))) {                    
                             return;                
                         }
                                 
+                        // Restore data                
                         appData = {                    
                             students: restored.students || [],                    
                             grades: restored.grades || ['06', '07', '08', '09', '10', '11', '12'],                    
@@ -3520,69 +3454,172 @@
                             subjectName: restored.subjectName || 'Mathematics',                    
                             selectedStudent: null,                    
                             editingTimetable: null,                    
-                            selectedPaymentStudent: null,
-                            subscription: restored.subscription || appData.subscription               
+                            selectedPaymentStudent: null                
                         };
                                 
                         saveData();                
                         populateGradeDropdowns();                
                         updateDashboard();
-                               
-                        const activeScreen = document.querySelector('.screen.active');               
+                                
+                        // Refresh current screen                
+                        const activeScreen = document.querySelector('.screen.active');                
                         if (activeScreen) {                    
                             const screenId = activeScreen.id;                    
                             if (screenId === 'students') loadStudentsScreen();                    
                             if (screenId === 'timetable') loadTimetable();                    
-                            if (screenId === 'payments') loadPaymentHistory();                   
+                            if (screenId === 'payments') loadPaymentHistory();                    
                             if (screenId === 'settings') loadSettings();                
                         }
                                 
-                        alert('✅ Data restored successfully!\n\nStudents: ' + appData.students.length + '\nPayments: ' + appData.payments.length);                              
+                        alert('✅ Data restored successfully!\n\nStudents: ' + appData.students.length + '\nPayments: ' + appData.payments.length);                                
                     } catch (err) {                
                         console.error('❌ Restore error:', err);                
-                        alert('⚠️ Invalid backup file!\n\nPlease select a valid Class Manager backup file.');           
+                        alert('⚠️ Invalid backup file!\n\nPlease select a valid Class Manager backup file.');            
                     }        
                 };
                 
                 reader.onerror = () => {            
                     alert('⚠️ Error reading backup file.');        
                 };
-                
+                    
                 reader.readAsText(file);    
             };
         
             input.click();
         }
 
-        function clearAllData() {    
-            if (!confirm('⚠️ DELETE ALL DATA?\n\nThis will permanently delete:\n- All students\n- All payments\n- All attendance records\n- All timetable entries\n\nThis CANNOT be undone!')) {        
-                return;    
-            }
+        // Export all data to Excel
+        function exportAllDataToExcel() {    
+            try {        
+                const wb = XLSX.utils.book_new();
+                
+                // Sheet 1: Students        
+                const studentsData = [           
+                    ['Student ID', 'Name', 'Birthday', 'Gender', 'Class', 'Grade', 'Student Phone', 'Parent Phone']        
+                ];        
+                appData.students.forEach(s => {            
+                    studentsData.push([                
+                        s.id,                                    
+                        s.name,                                    
+                        s.birthday || '',                                    
+                        s.gender || '',                                    
+                        s.class || '',                                    
+                        'Grade ' + s.grade,                                    
+                        s.studentPhone || '',                                        
+                        s.parentPhone || ''                            
+                    ]);                        
+                });                    
+                const wsStudents = XLSX.utils.aoa_to_sheet(studentsData);                    
+                XLSX.utils.book_append_sheet(wb, wsStudents, 'Students');
+                            
+                // Sheet 2: Payments                    
+                const paymentsData = [
+                    ['Date', 'Student ID', 'Student Name', 'Grade', 'Month', 'Amount', 'Status']                   
+                ];        
+                (appData.payments || []).forEach(p => {            
+                    paymentsData.push([                
+                        p.date,                
+                        p.studentId,                
+                        p.studentName,                
+                        p.class,                
+                        p.month,                
+                        p.amount,                
+                        p.status            
+                    ]);        
+                });        
+                const wsPayments = XLSX.utils.aoa_to_sheet(paymentsData);        
+                XLSX.utils.book_append_sheet(wb, wsPayments, 'Payments');
+                
+                // Sheet 3: Timetable        
+                const timetableData = [            
+                    ['Day', 'Time', 'Grade', 'Notes']                    
+                ];        
+                appData.timetable.forEach(t => {            
+                    timetableData.push([
+                        t.day,
+                        t.time,
+                        'Grade ' + t.grade,
+                        t.notes || ''            
+                    ]);        
+                });        
+                const wsTimetable = XLSX.utils.aoa_to_sheet(timetableData);        
+                XLSX.utils.book_append_sheet(wb, wsTimetable, 'Timetable');
         
-            if (!confirm('⚠️ Are you ABSOLUTELY SURE?\n\nThis is your last chance to cancel!')) {        
-                return;    
-            }
         
-            // Clear Firebase
-            if (currentUserId) {
-                database.ref('users/' + currentUserId).remove()
-                    .then(() => {
-                        console.log('✅ Firebase data cleared');
-                    })
-                    .catch((error) => {
-                        console.error('❌ Error clearing Firebase:', error);
-                    });
-            }
-
-            // Clear localStorage
-            localStorage.clear();
-        
-            alert('✅ All data cleared!\n\nThe app will now reload.');
-        
-            location.reload();
+                // Sheet 4: Attendance Summary        
+                const attendanceData = [
+                    ['Date', 'Grade', 'Total Students', 'Present', 'Absent', 'Rate']        
+                ];
+                
+                Object.keys(appData.attendance || {}).forEach(date => {            
+                    const dayData = appData.attendance[date];            
+                    const total = Object.keys(dayData).length;            
+                    const present = Object.values(dayData).filter(s => s === 'present').length;            
+                    const absent = total - present;            
+                    const rate = total > 0 ? Math.round((present / total) * 100) + '%' : '0%';
+                        
+                    // Get grade from first student            
+                    const firstStudentId = Object.keys(dayData)[0];            
+                    const student = appData.students.find(s => s.id === firstStudentId);            
+                    const grade = student ? 'Grade ' + student.grade : 'N/A';
+                        
+                    attendanceData.push([                
+                        date,                
+                        grade,                
+                        total,                
+                        present,                
+                        absent,                
+                        rate                            
+                    ]);                    
+                });                    
+                const wsAttendance = XLSX.utils.aoa_to_sheet(attendanceData);                    
+                XLSX.utils.book_append_sheet(wb, wsAttendance, 'Attendance');
+                            
+                // Download file                    
+                const fileName = `ClassManager_Complete_Export_${new Date().toISOString().split('T')[0]}.xlsx`;                   
+                XLSX.writeFile(wb, fileName);
+                            
+                alert('✅ All data exported to Excel!\n\nFile: ' + fileName + '\n\nSheets:\n- Students\n- Payments\n- Timetable\n- Attendance');            
+            } catch (error) {                   
+                console.error('❌ Export error:', error);                    
+                alert('⚠️ Error exporting data to Excel.');                    
+            }    
         }
+    
+        // Clear all data    
+        function clearAllData() {            
+            if (!confirm('⚠️ DELETE ALL DATA?\n\nThis will permanently delete:\n- All students\n- All payments\n- All attendance records\n- All timetable entries\n\nThis CANNOT be undone!')) {                    
+                return;            
+            }
+                
+            if (!confirm('⚠️ Are you ABSOLUTELY SURE?\n\nThis is your last chance to cancel!')) {                    
+                return;            
+            }
+                
+            // Clear localStorage            
+            localStorage.clear();
+                
+            alert('✅ All data cleared!\n\nThe app will now reload.');
+                
+            // Reload page            
+            location.reload();    
+        }
+    
+        // Update data statistics in settings    
+        function updateDataStatistics() {            
+            const statsStudents = document.getElementById('statsStudents');            
+            const statsPayments = document.getElementById('statsPayments');            
+            const statsTimetable = document.getElementById('statsTimetable');            
+            const statsAttendance = document.getElementById('statsAttendance');        
+        
+            if (statsStudents) statsStudents.textContent = appData.students.length;            
+            if (statsPayments) statsPayments.textContent = (appData.payments || []).length;            
+            if (statsTimetable) statsTimetable.textContent = appData.timetable.length;            
+            if (statsAttendance) statsAttendance.textContent = Object.keys(appData.attendance || {}).length;   
+        }
+           
+        // Initialize app               
+        init();
     </script>
 </body>
 </html>
-
-
