@@ -394,13 +394,18 @@
       }
     }
 
-    .app-footer {                          
-          text-align: center;                            
-          padding: 12px;                               
-          font-size: 14px;                               
-          color: #6b7280;                              
-          background: #f3f4f6;                              
-          border-top: 1px solid #e5e7eb;      
+    html, body {            
+          height: 100%;        
     }
+        
+    body {                
+          display: flex;                 
+          flex-direction: column;        
+    }
+
+    .app-footer {                
+          margin-top: auto;        
+    }
+
 
 
