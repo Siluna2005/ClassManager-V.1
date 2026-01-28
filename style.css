@@ -423,9 +423,106 @@ body {
 
 /* Optional: highlight your brand */
 .app-footer span {
+  color: html, body {
+  height: 100%;
+  margin: 0;
+}
+
+body {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh; /* ensures full viewport height */
+}
+
+.app-footer {
+  width: 100%;
+  padding: 12px 10px;
+  text-align: center;
+  font-size: 13px;
+  font-weight: 500;
+  color: html, body {
+  height: 100%;
+  margin: 0;
+}
+
+body {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh; /* ensures full viewport height */
+}
+
+.app-footer {
+  width: 100%;
+  padding: 12px 10px;
+  text-align: center;
+  font-size: 13px;
+  font-weight: 500;
+  color: #6b7280;  /* soft gray text */
+  background: transparent;
+  border: none;
+
+  /* Stick to bottom */
+  margin-top: auto;
+
+  user-select: none;
+}
+
+/* Optional: highlight your brand */
+.app-footer span {
   color: #2563eb; /* brand blue */
   font-weight: 600;
 }
+;  /* soft gray text */
+  background: transparent;
+  border: none;
+
+  /* Stick to bottom */
+  margin-top: auto;
+
+  user-select: none;
+}
+
+/* Optional: highlight your brand */
+.app-footer span {
+  color: html, body {
+  height: 100%;
+  margin: 0;
+}
+
+body {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh; /* ensures full viewport height */
+}
+
+.app-footer {
+  width: 100%;
+  padding: 12px 10px;
+  text-align: center;
+  font-size: 13px;
+  font-weight: 500;
+  color: #FFFFFF;  /* soft gray text */
+  background: transparent;
+  border: none;
+
+  /* Stick to bottom */
+  margin-top: auto;
+
+  user-select: none;
+}
+
+/* Optional: highlight your brand */
+.app-footer span {
+  color: #FFFFFF; /* brand blue */
+  font-weight: 600;
+}
+; /* brand blue */
+  font-weight: 600;
+}
+; /* brand blue */
+  font-weight: 600;
+}
+
 
 
 
