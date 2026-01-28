@@ -99,6 +99,14 @@
       <span>Sign up with Google</span>
     </button>
   </form>
+
+  <!-- Logout Button (only shows when logged in) -->
+  <div id="logoutSection" style="display: none; text-align: center; margin-top: 20px;">
+    <p>You are already logged in.</p>
+    <button type="button" class="btn btn-primary" onclick="handleLogout()">
+      <span>Logout</span>
+    </button>
+  </div>
 </div>
   
 <!-- index.html -->
@@ -111,7 +119,8 @@
     createUserWithEmailAndPassword, 
     GoogleAuthProvider, 
     signInWithPopup,
-    onAuthStateChanged
+    onAuthStateChanged,
+    signOut
   } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-auth.js";
   import { 
     getDatabase, 
@@ -123,7 +132,7 @@
   const firebaseConfig = {
     apiKey: "AIzaSyD4z857J2ipSxqK8pN4tEWqU-jeK_mwA2I",
     authDomain: "class-manager-383ad.firebaseapp.com",
-    databaseURL: "https://class-manager-383ad-default-rtdb.firebaseio.com", // ADD THIS
+    databaseURL: "https://class-manager-383ad-default-rtdb.firebaseio.com",
     projectId: "class-manager-383ad",
     storageBucket: "class-manager-383ad.firebasestorage.app",
     messagingSenderId: "1085651561679",
@@ -134,12 +143,17 @@
   const auth = getAuth(app);
   const database = getDatabase(app);
 
-  // 🔹 3️⃣ Check if already logged in
+  // 🔹 3️⃣ Check if already logged in - REMOVED AUTO REDIRECT
+  // Now just shows logout button instead of auto-redirecting
   onAuthStateChanged(auth, (user) => {
     if (user) {
-      // User already logged in, redirect to app
-      console.log('User already logged in, redirecting...');
-      window.location.href = "app.html";
+      console.log('User already logged in:', user.email);
+      // Show logout section instead of redirecting
+      document.getElementById('logoutSection').style.display = 'block';
+      document.querySelector('.auth-container').style.display = 'none';
+    } else {
+      document.getElementById('logoutSection').style.display = 'none';
+      document.querySelector('.auth-container').style.display = 'block';
     }
   });
 
@@ -224,6 +238,18 @@
     } catch (error) {
       console.error('Google login error:', error);
       alert("Google login failed: " + error.message);
+    }
+  };
+
+  // 🔹 NEW: Logout function
+  window.handleLogout = async function() {
+    try {
+      await signOut(auth);
+      console.log('✅ Logged out successfully');
+      window.location.reload(); // Reload to show login form
+    } catch (error) {
+      console.error('Logout error:', error);
+      alert("Logout failed: " + error.message);
     }
   };
 
@@ -335,12 +361,3 @@
 </script>
 </body>
 </html>
-
-
-
-
-
-
-
-
-
