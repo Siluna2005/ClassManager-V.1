@@ -955,6 +955,9 @@
             </div>
         </div>
     </div>
+    <script type="module">     
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-app.js";
+    </script>
     <script>
         let appData = {        
             students: [],
@@ -3618,8 +3621,7 @@
             if (statsAttendance) statsAttendance.textContent = Object.keys(appData.attendance || {}).length;   
         }
 
-        import { getAuth, signOut } from "firebase/auth";
-
+        
         function logout() {  
             const auth = getAuth();  
             signOut(auth).then(() => {   
@@ -3632,5 +3634,6 @@
     </script>
 </body>
 </html>
+
 
 
