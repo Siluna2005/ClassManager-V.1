@@ -530,26 +530,26 @@
     const database = getDatabase(app);
 
     // Check if already logged in
-    onAuthStateChanged(auth, (user) => {
-      if (user) {
-        console.log('User already logged in:', user.email);
-        // Uncomment to redirect to app
-        // window.location.href = "app.html";
+    onAuthStateChanged(auth, (user) => {  
+      if (user) {    
+        console.log('User already logged in:', user.email);    
+        // Uncomment to redirect to app    
+        window.location.href = "app.html";  // ← UNCOMMENT THIS LINE  
       }
     });
 
     // Login function
-    window.login = async function(email, password, callback) {
-      try {
-        const userCredential = await signInWithEmailAndPassword(auth, email, password);
+    window.login = async function(email, password, callback) {  
+      try {    
+        const userCredential = await signInWithEmailAndPassword(auth, email, password);    
         console.log('✅ Login successful:', userCredential.user.uid);
         
-        // Redirect to app
-        // window.location.href = "app.html";
-        showAlert('Login successful!', 'success');
-      } catch (error) {
-        console.error('Login error:', error);
-        if (callback) callback(error.message);
+        // Redirect to app    
+        window.location.href = "app.html";  // ← UNCOMMENT THIS LINE    
+        //showAlert('Login successful!', 'success');  // ← DELETE OR COMMENT THIS LINE  
+      } catch (error) {    
+        console.error('Login error:', error);    
+        if (callback) callback(error.message);  
       }
     };
 
@@ -571,8 +571,8 @@
         });
         
         // Redirect to app
-        // window.location.href = "app.html";
-        showAlert('Account created successfully!', 'success');
+         window.location.href = "app.html";
+        //showAlert('Account created successfully!', 'success');
       } catch (error) {
         console.error('Signup error:', error);
         if (callback) callback(error.message);
@@ -595,8 +595,8 @@
         });
         
         // Redirect to app
-        // window.location.href = "app.html";
-        showAlert('Google login successful!', 'success');
+         window.location.href = "app.html";
+        //showAlert('Google login successful!', 'success');
       } catch (error) {
         console.error('Google login error:', error);
         showAlert("Google login failed: " + error.message, 'error');
@@ -723,4 +723,5 @@
   </script>
 </body>
 </html>
+
 
