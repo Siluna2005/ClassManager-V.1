@@ -842,3 +842,12 @@
             color: #fff;    
             padding: 10px;
         }
+
+        .app-footer {  
+               text-align: center; 
+               padding: 12px;  
+               font-size: 14px;  
+               color: #6b7280;  
+               background: #f3f4f6; 
+               border-top: 1px solid #e5e7eb;
+        }
