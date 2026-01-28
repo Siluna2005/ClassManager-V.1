@@ -956,6 +956,9 @@
             </div>
         </div>
     </div>
+    <footer class="app-footer">  
+        © <span id="year"></span> Class Manager WebApp. All rights reserved.
+    </footer>
     <script type="module">     
         import { initializeApp } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-app.js";
     </script>
@@ -3633,8 +3636,12 @@
         // Initialize app               
         init();
     </script>
+    <script>  
+        document.getElementById("year").textContent = new Date().getFullYear();
+    </script>
 </body>
 </html>
+
 
 
 
