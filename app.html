@@ -1271,7 +1271,7 @@
                         </div>                    
                         <button onclick='event.stopPropagation(); showQRCode(${JSON.stringify(s).replace(/'/g, "&apos;")})'                         
                                 style="background: #2563EB; color: white; padding: 8px 16px; border: none; border-radius: 6px; cursor: pointer; font-size: 14px; font-weight: 600;">                    
-                            ðŸ“± QR                                    
+                            📱 QR                                    
                         </button>            
                     </div>
                 </div>        
@@ -1370,7 +1370,7 @@
             filterStudentsByTab();
             clearStudentForm();
             
-            alert('âœ… Student added successfully!\n\nStudent ID: ' + studentId);
+            alert('✅ Student added successfully!\n\nStudent ID: ' + studentId);
         }
 
         function updateExistingStudent() {
@@ -1412,7 +1412,7 @@
             filterStudentsByTab();
             clearStudentForm();
             
-            alert('âœ… Student updated successfully!');
+            alert('✅ Student updated successfully!');
         }
 
         function deleteExistingStudent() {
@@ -1428,7 +1428,7 @@
             filterStudentsByTab();
             clearStudentForm();
             
-            alert('âœ… Student deleted successfully!');
+            alert('✅ Student deleted successfully!');
         }
 
         function clearStudentForm() {
@@ -1454,7 +1454,7 @@
 
         function printStudentQR() {
             if (!selectedStudentForEdit) return;
-            alert('ðŸ–¨ï¸ Print QR Code\n\nStudent: ' + selectedStudentForEdit.name + '\nID: ' + selectedStudentForEdit.id + '\n\nIn a real app, this would open a print dialog with the QR code.');
+            alert('🖨️ Print QR Code\n\nStudent: ' + selectedStudentForEdit.name + '\nID: ' + selectedStudentForEdit.id + '\n\nIn a real app, this would open a print dialog with the QR code.');
         }
 
         function generateStudentId(grade) {
@@ -1487,8 +1487,8 @@
                     <td><span class="badge badge-blue">Grade ${t.grade}</span></td>
                     <td>${t.notes || '-'}</td>
                     <td>
-                        <button class="icon-btn icon-btn-blue" onclick='editTimetable(${JSON.stringify(t)})'>âœï¸</button>
-                        <button class="icon-btn icon-btn-red" onclick="deleteTimetable('${t.id}')">ðŸ—‘ï¸</button>
+                        <button class="icon-btn icon-btn-blue" onclick='editTimetable(${JSON.stringify(t)})'>✏️</button>
+                        <button class="icon-btn icon-btn-red" onclick="deleteTimetable('${t.id}')">🗑️</button>
                     </td>
                 </tr>
             `).join('');
@@ -1572,7 +1572,7 @@
         });
 
         function scanQRForPayment() {
-            const studentId = prompt('ðŸ“· QR Scanner\n\nIn real app, camera would open.\nFor now, enter Student ID:');
+            const studentId = prompt('📷 QR Scanner\n\nIn real app, camera would open.\nFor now, enter Student ID:');
             if (studentId) {
                 document.getElementById('paymentStudentId').value = studentId;
                 
@@ -1699,13 +1699,13 @@
             console.log('Loading attendance - Grade:', grade, 'Date:', date);
         
             if (!grade) {        
-                alert('âš ï¸ Please select a class first');        
+                alert('⚠️ Please select a class first');        
                 return;    
             }
     
     
             if (!date) {        
-                alert('âš ï¸ Please select a date first');        
+                alert('⚠️ Please select a date first');        
                 return;    
             }
         
@@ -1823,7 +1823,7 @@
             const grade = gradeSelect.value;        
         
             if (!date || !grade) {                    
-                alert('âš ï¸ Please select class and date first');                    
+                alert('⚠️ Please select class and date first');                    
                 return;            
             }
                 
@@ -1849,23 +1849,23 @@
             const gradeSelect = document.getElementById('attendanceClassSelect');
             
             if (!gradeSelect || !gradeSelect.value) {              
-                alert('âš ï¸ Please select a class first');                    
+                alert('⚠️ Please select a class first');                    
                 return;          
             }
             
-            const studentId = prompt('ðŸ“· QR Scanner\n\nIn real app, camera would open.\nFor now, enter Student ID:');
+            const studentId = prompt('📷 QR Scanner\n\nIn real app, camera would open.\nFor now, enter Student ID:');
                 
             if (!studentId) return;
                
             const student = appData.students.find(s => s.id === studentId.trim());    
         
             if (!student) {                    
-                alert('âŒ Student not found!\n\nID: ' + studentId);                    
+                alert('❌ Student not found!\n\nID: ' + studentId);                    
                 return;            
             }        
         
             if (student.grade !== gradeSelect.value) {                    
-                alert(`âŒ Wrong Class!\n\nStudent: ${student.name}\nGrade: ${student.grade}\nSelected: ${gradeSelect.value}`);                   
+                alert(`❌ Wrong Class!\n\nStudent: ${student.name}\nGrade: ${student.grade}\nSelected: ${gradeSelect.value}`);                   
                 return;            
             }    
         
@@ -2150,7 +2150,7 @@
         }
 
         function exportToExcel() {
-            alert('ðŸ“¥ Export to Excel\n\nIn a real app, this would download an Excel file.\n\nFor now, you can copy the table data above.');
+            alert('📥 Export to Excel\n\nIn a real app, this would download an Excel file.\n\nFor now, you can copy the table data above.');
         }
 
         // ============================================
@@ -2318,7 +2318,7 @@
             const student = appData.students.find(s => s.id === studentId.trim());
         
             if (!student) {        
-                alert('âŒ Student not found!\n\nScanned ID: ' + studentId);        
+                alert('❌ Student not found!\n\nScanned ID: ' + studentId);        
                 return;    
             }
         
@@ -2326,12 +2326,12 @@
             const selectedClass = gradeSelect ? gradeSelect.value : '';
         
             if (!selectedClass) {        
-                alert('âš ï¸ Please select a class first before scanning');        
+                alert('⚠️ Please select a class first before scanning');        
                 return;    
             }
         
             if (student.grade !== selectedClass) {        
-                alert(`âŒ Wrong Class!\n\nStudent: ${student.name}\nStudent's Grade: ${student.grade}\nSelected Grade: ${selectedClass}`);        
+                alert(`❌ Wrong Class!\n\nStudent: ${student.name}\nStudent's Grade: ${student.grade}\nSelected Grade: ${selectedClass}`);        
                 return;    
             }
         
@@ -2344,14 +2344,14 @@
                 displayAttendanceStudents();    
             }
         
-            alert('âœ… Success!\n\n' + student.name + '\nMarked as Present');
+            alert('✅ Success!\n\n' + student.name + '\nMarked as Present');
         }
 
         function processQRForPayment(studentId) {
             const student = appData.students.find(s => s.id === studentId.trim());
         
             if (!student) {        
-                alert('âŒ Student not found!\n\nScanned ID: ' + studentId);        
+                alert('❌ Student not found!\n\nScanned ID: ' + studentId);        
                 return;    
             }
         
@@ -2362,7 +2362,7 @@
             if (studentIdInput) studentIdInput.value = studentId;    
             if (classInput) classInput.value = 'Grade ' + student.grade;
         
-            alert('âœ… Student Loaded!\n\n' + student.name + '\nGrade ' + student.grade + '\n\nPlease fill in payment details below.');
+            alert('✅ Student Loaded!\n\n' + student.name + '\nGrade ' + student.grade + '\n\nPlease fill in payment details below.');
 
         }
 
@@ -2856,7 +2856,7 @@
             const grade = document.getElementById('reportGrade').value;
                 
             if (!month) {                    
-                alert('âš ï¸ Please select a month first');                    
+                alert('⚠️ Please select a month first');                    
                 return;            
             }
                 
@@ -2923,7 +2923,7 @@
             const filename = `Attendance_Report_${month}_${grade === 'all' ? 'All_Grades' : 'Grade_' + grade}.xlsx`;            
             XLSX.writeFile(wb, filename);
                 
-            alert('âœ… Excel file downloaded!\n\nFile: ' + filename);    
+            alert('✅ Excel file downloaded!\n\nFile: ' + filename);    
         }
     
         function exportPaymentToExcel(month, grade) {            
@@ -2980,7 +2980,7 @@
             const filename = `Payment_Report_${month}_${grade === 'all' ? 'All_Grades' : 'Grade_' + grade}.xlsx`;            
             XLSX.writeFile(wb, filename);
                 
-            alert('âœ… Excel file downloaded!\n\nFile: ' + filename);    
+            alert('✅ Excel file downloaded!\n\nFile: ' + filename);    
         }
     
         // Export Student List    
@@ -3025,7 +3025,7 @@
             // Save file            
             XLSX.writeFile(wb, 'Student_List.xlsx');       
         
-            alert('âœ… Student list exported to Excel!');    
+            alert('✅ Student list exported to Excel!');    
         }
         
         // SETTINGS
@@ -3623,3 +3623,4 @@
     </script>
 </body>
 </html>
+
