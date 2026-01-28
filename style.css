@@ -394,37 +394,32 @@
       }
     }
 
-    /* ===== App Footer ===== */
+  /* Page layout */
+html, body {
+  height: 100%;
+  margin: 0;
+}
+
+body {
+  display: flex;
+  flex-direction: column;
+}
+
+/* Footer */
 .app-footer {
+  margin-top: auto;
   width: 100%;
   padding: 14px 10px;
-  text-align: center;
 
+  text-align: center;
   font-size: 13px;
   font-weight: 500;
-  letter-spacing: 0.3px;
 
-  color: #6b7280;              /* Soft gray text */
-  background-color: #f9fafb;  /* Light modern background */
-
+  color: #6b7280;
+  background-color: #f9fafb;
   border-top: 1px solid #e5e7eb;
-
-  user-select: none;
 }
 
-/* Footer text highlight */
-.app-footer span {
-  color: #2563eb;              /* Primary blue */
-  font-weight: 600;
-}
-
-/* Mobile optimization */
-@media (max-width: 600px) {
-  .app-footer {
-    font-size: 12px;
-    padding: 12px 8px;
-  }
-}
 
 
 
