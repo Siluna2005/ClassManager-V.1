@@ -533,8 +533,8 @@
     onAuthStateChanged(auth, (user) => {  
       if (user) {    
         console.log('User already logged in:', user.email);    
-        // Uncomment to redirect to app    
-        window.location.href = "app.html";  // ← UNCOMMENT THIS LINE  
+        // DO NOT redirect here - let them see the login page    
+        // window.location.href = "app.html";  // ← KEEP THIS COMMENTED  
       }
     });
 
@@ -723,5 +723,6 @@
   </script>
 </body>
 </html>
+
 
 
