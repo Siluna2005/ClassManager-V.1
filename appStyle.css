@@ -860,7 +860,7 @@ body {
   text-align: center;
   font-size: 13px;
   font-weight: 500;
-  color: #6b7280;  /* soft gray text */
+  color: #FFFFFF;  /* soft gray text */
   background: transparent;
   border: none;
 
@@ -872,6 +872,6 @@ body {
 
 /* Optional: highlight your brand */
 .app-footer span {
-  color: #2563eb; /* brand blue */
+  color: #FFFFFF; /* brand blue */
   font-weight: 600;
 }
