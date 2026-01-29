@@ -963,6 +963,31 @@
         import { initializeApp } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-app.js";
     </script>
     <script>
+
+        // ============================================
+        // FIREBASE CONFIGURATION
+        // ============================================
+
+        const firebaseConfig = {
+            apiKey: "AIzaSyD4z857J2ipSxqK8pN4tEWqU-jeK_mwA2I",
+            authDomain: "class-manager-383ad.firebaseapp.com",
+            databaseURL: "https://class-manager-383ad-default-rtdb.asia-southeast1.firebasedatabase.app",
+            projectId: "class-manager-383ad",
+            storageBucket: "class-manager-383ad.firebasestorage.app",
+            messagingSenderId: "1085651561679",
+            appId: "1:1085651561679:web:82ca82d59d6ff2ec671bba"
+        };
+
+        // Initialize Firebase
+        firebase.initializeApp(firebaseConfig);
+        const database = firebase.database();
+        const auth = firebase.auth();
+
+        // Global variables
+        let currentUser = null;
+        let currentUserId = null;
+        let lastSyncedTimestamp = null;
+        
         let appData = {        
             students: [],
             grades: ['06', '07', '08', '09', '10', '11', '12'],
@@ -1053,6 +1078,234 @@
             }
        
             console.log('App initialized');
+        }
+
+        // ============================================
+        // CHECK AUTHENTICATION
+        // ============================================
+
+        auth.onAuthStateChanged((user) => {
+            if (user) {
+                // ✅ User is logged in
+                currentUser = user;
+                currentUserId = user.uid;  // ← THIS IS THE UNIQUE USER ID
+        
+                console.log('✅ User authenticated:', user.email);
+                console.log('User ID:', currentUserId);
+        
+                // Hide loading screen
+                setTimeout(() => {
+                    const loader = document.getElementById('loader');
+                    if (loader) {
+                        loader.classList.add('hide-loader');
+                        setTimeout(() => {
+                            loader.style.display = 'none';
+                        }, 600);
+                    }
+                }, 1000);
+        
+                // Initialize the app with user's data
+                initializeApp();
+    
+            } else {
+                // ❌ No user logged in - redirect to login page
+                console.log('❌ No user authenticated, redirecting...');
+                window.location.href = 'index.html';
+            }
+        });
+
+        // ============================================
+        // INITIALIZE APP
+        // ============================================
+
+        function initializeApp() {
+            console.log('╔════════════════════════════════════════╗');
+            console.log('║   APP INITIALIZATION                   ║');
+            console.log('╚════════════════════════════════════════╝');
+            console.log('User:', currentUser.email);
+            console.log('UID:', currentUserId);
+
+            loadData();                // ← Load THIS user's data
+            initializeSubscription();  // ← Load subscription info
+            enableRealtimeSync();      // ← Enable real-time updates
+
+            console.log('✅ App initialized');
+        }
+
+        // ============================================
+        // LOAD DATA FUNCTION
+        // ============================================
+
+        function loadData() {
+            // Check if user is authenticated
+            if (!currentUserId) {
+                console.error('❌ No user authenticated');
+                return;
+            }
+
+            console.log('📥 Loading data for:', currentUserId);
+   
+            // ⭐ LOAD FROM FIREBASE - User-specific path
+            // Path format: /users/{uniqueUserId}/data
+            database.ref('users/' + currentUserId + '/data').once('value')
+                .then((snapshot) => {
+                    const firebaseData = snapshot.val();
+                
+                    if (firebaseData) {
+                        // ✅ Data exists in Firebase - Load it
+                        console.log('✅ Data loaded from Firebase');
+                       
+                        appData = {
+                            ...appData,
+                            ...firebaseData,
+                            students: firebaseData.students || [],
+                            timetable: firebaseData.timetable || [],
+                            payments: firebaseData.payments || [],
+                            attendance: firebaseData.attendance || {},
+                            grades: firebaseData.grades || ['06', '07', '08', '09', '10', '11', '12']
+                        };
+                        
+                        // Save to localStorage as backup
+                        localStorage.setItem('classManagerData_' + currentUserId, JSON.stringify(appData));
+            
+                    } else {
+                        // ℹ️ No Firebase data - Check localStorage
+                        console.log('ℹ️ No Firebase data, checking localStorage...');
+                        
+                        const localData = localStorage.getItem('classManagerData_' + currentUserId);
+                        if (localData) {
+                            // Found local data - Upload to Firebase
+                            const parsedData = JSON.parse(localData);
+                            appData = { ...appData, ...parsedData };
+                            saveData();  // Upload to Firebase
+                            console.log('✅ Local data uploaded to Firebase');
+                        } else {
+                            // No data anywhere - Use defaults
+                            console.log('ℹ️ No saved data, using defaults');
+                        }
+                    }
+                
+                    // Update the UI
+                    populateGradeDropdowns();
+                    updateDashboard();
+                    updateSyncStatus('synced');
+                    displayTeacherId();
+                })
+                .catch((error) => {
+                    // ❌ Firebase error - Use localStorage as fallback
+                    console.error('❌ Firebase load error:', error);
+                
+                    const localData = localStorage.getItem('classManagerData_' + currentUserId);
+                    if (localData) {
+                        appData = { ...appData, ...JSON.parse(localData) };
+                        console.log('✅ Loaded from localStorage (fallback)');
+                    }
+                
+                    populateGradeDropdowns();
+                    updateDashboard();
+                    updateSyncStatus('error');
+                });
+        }
+
+        // ============================================
+        // SAVE DATA TO FIREBASE
+        // ============================================
+
+        function saveData() {
+            // Check if user is authenticated
+            if (!currentUserId) {
+                console.error('❌ No user authenticated');
+                return false;
+            }
+
+            try {
+                const dataToSave = {
+                    ...appData,
+                    lastSaved: new Date().toISOString()
+                };
+        
+                console.log('💾 Saving data for:', currentUserId);
+        
+                updateSyncStatus('syncing');
+        
+                // ⭐ SAVE TO FIREBASE - User-specific path
+                // Path format: /users/{uniqueUserId}/data
+                database.ref('users/' + currentUserId + '/data').set(dataToSave)
+                    .then(() => {
+                        console.log('✅ Data saved to Firebase');
+                
+                        // Also save to localStorage as backup
+                        localStorage.setItem('classManagerData_' + currentUserId, JSON.stringify(dataToSave));
+                
+                        updateLastSavedTime();
+                        updateSyncStatus('synced');
+                    })
+                    .catch((error) => {
+                        console.error('❌ Firebase save error:', error);
+                
+                        // Fallback: Save to localStorage
+                        localStorage.setItem('classManagerData_' + currentUserId, JSON.stringify(dataToSave));
+                        updateSyncStatus('error');
+                    });
+        
+                return true;
+            } catch (error) {
+                console.error('❌ Error saving data:', error);
+                return false;
+            }
+        }
+
+        // ============================================
+        // REAL-TIME SYNC FUNCTION
+        // ============================================
+
+        function enableRealtimeSync() {
+            // Check if user is authenticated
+            if (!currentUserId) {
+                console.warn('⚠️ Cannot enable sync: No user');
+                return;
+            }
+
+            console.log('🔄 Real-time sync enabled');
+
+            // ⭐ LISTEN FOR CHANGES - User-specific path
+            // Path format: /users/{uniqueUserId}/data
+            database.ref('users/' + currentUserId + '/data').on('value', (snapshot) => {
+                const data = snapshot.val();
+        
+                if (data && data.lastSaved) {
+                    // Only update if the remote data is newer than what we have
+                    if (!lastSyncedTimestamp || data.lastSaved > lastSyncedTimestamp) {
+                        lastSyncedTimestamp = data.lastSaved;
+                
+                        console.log('🔄 Data updated from cloud');
+                
+                        // Update local appData
+                        appData = {
+                            ...appData,
+                            ...data,
+                            students: data.students || [],
+                            timetable: data.timetable || [],
+                            payments: data.payments || [],
+                            attendance: data.attendance || {},
+                            grades: data.grades || ['06', '07', '08', '09', '10', '11', '12']
+                        };
+                
+                        // Update localStorage
+                        localStorage.setItem('classManagerData_' + currentUserId, JSON.stringify(appData));
+                
+                        // Refresh current screen
+                        const activeScreen = document.querySelector('.screen.active');
+                        if (activeScreen) {
+                            const screenId = activeScreen.id;
+                            if (screenId === 'students') loadStudentsScreen();
+                            if (screenId === 'timetable') loadTimetable();
+                            if (screenId === 'payments') loadPaymentHistory();
+                            if (screenId === 'dashboard') updateDashboard();
+                        }
+                    }
+                }
+            });
         }
 
         function navigateTo(screenName) {
@@ -1369,9 +1622,12 @@
                 qrCode: studentId
             };
             
-            // Add to array
+            // Add to appData 
             appData.students.push(newStudent);
-            saveData();
+    
+            // ⭐ Save to Firebase - User-specific path
+            saveData();  // This saves to /users/{currentUserId}/data
+    
             
             // Refresh display
             filterStudentsByTab();
@@ -1631,7 +1887,7 @@
                 amount: status === 'Free Card' ? 0 : parseFloat(amount),
                 status: status
             };
-
+    
             // Add to payments array
             if (!appData.payments) appData.payments = [];
             appData.payments.push(payment);
@@ -3327,63 +3583,6 @@
             return true;
         }
 
-        // ============================================
-        // ENHANCED DATA SAVING SYSTEM
-        // ============================================
-
-        // Save data to localStorage with timestamp
-        function saveData() {    
-            try {        
-                const dataToSave = {            
-                    ...appData,            
-                    lastSaved: new Date().toISOString()        
-                };
-               
-                localStorage.setItem('classManagerData', JSON.stringify(dataToSave));
-                
-                // Update last saved time display        
-                updateLastSavedTime();
-                
-                console.log('✅ Data saved successfully');        
-                return true;    
-            } catch (error) {        
-                console.error('❌ Error saving data:', error);        
-                alert('⚠️ Error saving data. Your storage might be full.');        
-                return false;    
-            }
-        }
-
-        // Load data from localStorage
-        function loadData() {    
-            try {       
-                const saved = localStorage.getItem('classManagerData');        
-                if (saved) {            
-                    const parsedData = JSON.parse(saved);            
-                    appData = {                 
-                        ...appData,                 
-                        ...parsedData,                
-                        // Ensure arrays exist                
-                        students: parsedData.students || [],                
-                        timetable: parsedData.timetable || [],                
-                        payments: parsedData.payments || [],                
-                        attendance: parsedData.attendance || {},                
-                        grades: parsedData.grades || ['06', '07', '08', '09', '10', '11', '12']            
-                    };
-
-                    console.log('✅ Data loaded successfully');            
-                    updateLastSavedTime();        
-                } else {            
-                    console.log('ℹ️ No saved data found, using defaults');       
-                }    
-            } catch (error) {        
-                console.error('❌ Error loading data:', error);        
-                alert('⚠️ Error loading saved data. Starting fresh.');    
-            }    
-    
-            populateGradeDropdowns();    
-            updateDashboard();
-        }
-
         // Update last saved time display
         function updateLastSavedTime() {    
             const lastSavedEl = document.getElementById('lastSavedTime');    
@@ -3641,6 +3840,7 @@
     </script>
 </body>
 </html>
+
 
 
 
