@@ -996,9 +996,9 @@
             };
   
             // Initialize Firebase     
-            firebase.initializeApp(firebaseConfig);      
-            window.database = firebase.database();
-            window.auth = firebase.auth();
+            firebase.initializeApp(firebaseConfig);           
+            var database = firebase.database();
+            var auth = firebase.auth();
      
             // Global variables        
             let currentUser = null;        
@@ -3859,6 +3859,7 @@
     </script>
 </body>
 </html>
+
 
 
 
