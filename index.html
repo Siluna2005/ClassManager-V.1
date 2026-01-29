@@ -145,69 +145,89 @@
       }
     });
 
-    // Login function
-    window.login = async function(email, password, callback) {  
-      try {    
-        const userCredential = await signInWithEmailAndPassword(auth, email, password);    
-        console.log('✅ Login successful:', userCredential.user.uid);
+    // ============================================
+    // LOGIN FUNCTION
+    // ============================================
+
+    window.login = async function(email, password, callback) {
+        try {
+            // Sign in with Firebase Authentication
+            const userCredential = await signInWithEmailAndPassword(auth, email, password);
+            console.log('✅ Login successful:', userCredential.user.uid);
+            
+            // Send login notification email
+            await sendLoginEmail(userCredential.user.email);
         
-        // Redirect to app    
-        window.location.href = "app.html";  // ← UNCOMMENT THIS LINE    
-        //showAlert('Login successful!', 'success');  // ← DELETE OR COMMENT THIS LINE  
-      } catch (error) {    
-        console.error('Login error:', error);    
-        if (callback) callback(error.message);  
-      }
+            // Redirect to app - app.html will load user's data
+            window.location.href = "app.html";
+        } catch (error) {
+            console.error('Login error:', error);
+            if (callback) callback(error.message);
+        }
     };
 
-    // Signup function
+    // ============================================
+    // SIGNUP FUNCTION
+    // ============================================
+
     window.signUp = async function(email, password, callback) {
-      if (password.length < 6) {
-        if (callback) callback("Password must be at least 6 characters");
-        return;
-      }
-      
-      try {
-        const userCredential = await createUserWithEmailAndPassword(auth, email, password);
-        console.log('✅ Account created:', userCredential.user.uid);
+        if (password.length < 6) {
+            if (callback) callback("Password must be at least 6 characters");
+            return;
+        }
+    
+        try {
+            // Create new user account
+            const userCredential = await createUserWithEmailAndPassword(auth, email, password);
+            console.log('✅ Account created:', userCredential.user.uid);
         
-        // Create user profile in database
-        await set(ref(database, 'users/' + userCredential.user.uid + '/profile'), {
-          email: email,
-          createdAt: new Date().toISOString()
-        });
+            // ⭐ CREATE USER PROFILE IN DATABASE
+            // Path format: /users/{uniqueUserId}/profile
+            await set(ref(database, 'users/' + userCredential.user.uid + '/profile'), {
+                email: email,
+                createdAt: new Date().toISOString()
+            });
         
-        // Redirect to app
-         window.location.href = "app.html";
-        //showAlert('Account created successfully!', 'success');
-      } catch (error) {
-        console.error('Signup error:', error);
-        if (callback) callback(error.message);
-      }
+            // Send welcome email
+            await sendLoginEmail(userCredential.user.email);
+        
+            // Redirect to app - app.html will initialize with empty data
+            window.location.href = "app.html";
+        } catch (error) {
+            console.error('Signup error:', error);
+            if (callback) callback(error.message);
+        }
     };
 
-    // Google login
+    // ============================================
+    // GOOGLE LOGIN FUNCTION
+    // ============================================
+
     window.googleLogin = async function() {
-      const provider = new GoogleAuthProvider();
-      try {
-        const result = await signInWithPopup(auth, provider);
-        console.log('✅ Google login successful:', result.user.uid);
+        const provider = new GoogleAuthProvider();
+        try {
+            // Sign in with Google popup
+            const result = await signInWithPopup(auth, provider);
+            console.log('✅ Google login successful:', result.user.uid);
         
-        // Create/update user profile
-        await set(ref(database, 'users/' + result.user.uid + '/profile'), {
-          email: result.user.email,
-          name: result.user.displayName,
-          photoURL: result.user.photoURL,
-          lastLogin: new Date().toISOString()
-        });
+            // ⭐ CREATE/UPDATE USER PROFILE
+            // Path format: /users/{uniqueUserId}/profile
+            await set(ref(database, 'users/' + result.user.uid + '/profile'), {
+                email: result.user.email,
+                name: result.user.displayName,
+                photoURL: result.user.photoURL,
+                lastLogin: new Date().toISOString()
+            });
         
-        // Redirect to app
-         window.location.href = "app.html";
-        //showAlert('Google login successful!', 'success');
-      } catch (error) {
-        console.error('Google login error:', error);
-        showAlert("Google login failed: " + error.message, 'error');
-      }
+            // Send login notification
+            await sendLoginEmail(result.user.email);
+        
+            // Redirect to app
+            window.location.href = "app.html";
+        } catch (error) {
+            console.error('Google login error:', error);
+            alert("Google login failed: " + error.message);
+        }
     };
 
     // Loader
@@ -333,6 +353,7 @@
   </script>
 </body>
 </html>
+
 
 
 
