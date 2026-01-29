@@ -1084,7 +1084,7 @@
                 }, 1000);
         
                 // Initialize the app with user's data
-                TeacherIdDisplay();
+                teacherIdDisplay();
                 initializeApp();
     
             } else {
@@ -1137,19 +1137,9 @@
         
             // Load saved data   
             loadData();
-
             // INITIALIZE SUBSCRIPTION    
             initializeSubscription();
-        
-            // Hide splash screen    
-            const splash = document.getElementById('splash');    
-            if (splash) {        
-                splash.style.display = 'none';        
-                console.log('Splash hidden');    
-            } else {        
-                console.warn('Splash element not found');    
-            }
-        
+     
             // Show app immediately    
             const app = document.getElementById('app');    
             if (app) {        
@@ -1224,7 +1214,7 @@
                     populateGradeDropdowns();
                     updateDashboard();
                     updateSyncStatus('synced');
-                    TeacherIdDisplay();
+                    teacherIdDisplay();
                 })
                 .catch((error) => {
                     // ❌ Firebase error - Use localStorage as fallback
@@ -1423,10 +1413,8 @@
 
         function populateGradeDropdowns() {
             const html = appData.grades.map(g => `<option value="${g}">Grade ${g}</option>`).join('');
-    
-    
-            // Only update elements that exist
-    
+        
+            // Only update elements that exist    
             const gradeFilter = document.getElementById('gradeFilter');
     
             if (gradeFilter) {
@@ -3903,6 +3891,7 @@
     </script>
 </body>
 </html>
+
 
 
 
