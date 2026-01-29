@@ -1084,6 +1084,7 @@
                 }, 1000);
         
                 // Initialize the app with user's data
+                TeacherIdDisplay();
                 initializeApp();
     
             } else {
@@ -1223,7 +1224,7 @@
                     populateGradeDropdowns();
                     updateDashboard();
                     updateSyncStatus('synced');
-                    displayTeacherId();
+                    TeacherIdDisplay();
                 })
                 .catch((error) => {
                     // ❌ Firebase error - Use localStorage as fallback
@@ -1342,6 +1343,51 @@
             });
         }
 
+        function updateSyncStatus(status) {
+            const syncIcon = document.getElementById('syncIcon');
+            const syncText = document.getElementById('syncText');
+            if (!syncIcon || !syncText) return;
+    
+            if (status === 'syncing') {
+                syncIcon.textContent = '🔄';
+                syncText.textContent = 'Syncing...';
+            } else if (status === 'synced') {
+                syncIcon.textContent = '☁️';
+                syncText.textContent = 'Synced';
+            } else if (status === 'error') {
+                syncIcon.textContent = '⚠️';
+                syncText.textContent = 'Offline';
+            }
+        }
+
+        function updateLastSavedTime() {
+            const lastSavedEl = document.getElementById('lastSavedTime');
+            if (lastSavedEl && appData.lastSaved) {
+                const savedDate = new Date(appData.lastSaved);
+                lastSavedEl.textContent = savedDate.toLocaleString();
+            }
+        }
+
+        function TeacherIdDisplay() { 
+            if (!currentUserId) {
+                console.warn("Teacher ID not available yet");
+                return; 
+            }
+  
+            const el = document.getElementById("TeacherIdDisplay"); 
+            if (el) {  
+                el.textContent = currentUserId;   
+            }
+        }
+        
+        function copyTeacherId() {   
+            if (!currentUserId) return;
+   
+            navigator.clipboard.writeText(currentUserId)        
+                .then(() => alert("✅ Teacher ID copied"))     
+                .catch(() => alert("❌ Copy failed"));
+        }
+        
         function navigateTo(screenName) {
     
             document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
@@ -3617,15 +3663,6 @@
             return true;
         }
 
-        // Update last saved time display
-        function updateLastSavedTime() {    
-            const lastSavedEl = document.getElementById('lastSavedTime');    
-            if (lastSavedEl && appData.lastSaved) {        
-                const savedDate = new Date(appData.lastSaved);        
-                lastSavedEl.textContent = savedDate.toLocaleString();    
-            }
-        }
-
         // Download backup file (JSON)
         function downloadBackup() {    
             try {        
@@ -3866,6 +3903,7 @@
     </script>
 </body>
 </html>
+
 
 
 
