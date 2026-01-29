@@ -966,73 +966,41 @@
     <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-database-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-auth-compat.js"></script>
     <script>
-        // Wait for Firebase scripts to load  
-        window.addEventListener('load', function() {        
-            // Check if firebase is loaded       
-            if (typeof firebase === 'undefined') {            
-                console.error('❌ Firebase failed to load!');        
-                alert('Error: Firebase libraries failed to load. Please refresh the page.');    
-                return;    
-            }
-        
-            console.log('✅ Firebase loaded successfully');        
-            initializeFirebase();    
-        });
-   
-        function initializeFirebase() {
-                
-            // ============================================        
-            // FIREBASE CONFIGURATION        
-            // ============================================
+        // ============================================
+        // DECLARE GLOBAL VARIABLES FIRST
+        // ============================================
     
-            const firebaseConfig = { 
-                apiKey: "AIzaSyD4z857J2ipSxqK8pN4tEWqU-jeK_mwA2I", 
-                authDomain: "class-manager-383ad.firebaseapp.com",  
-                databaseURL: "https://class-manager-383ad-default-rtdb.asia-southeast1.firebasedatabase.app",  
-                projectId: "class-manager-383ad",   
-                storageBucket: "class-manager-383ad.firebasestorage.app",   
-                messagingSenderId: "1085651561679",  
-                appId: "1:1085651561679:web:82ca82d59d6ff2ec671bba"      
-            };
-  
-            // Initialize Firebase     
-            firebase.initializeApp(firebaseConfig);           
-            const database = firebase.database();
-            const auth = firebase.auth();
-     
-            // Global variables        
-            let currentUser = null;        
-            let currentUserId = null;     
-            let lastSyncedTimestamp = null;
-        
-        }     
-        
-        let appData = {        
-            students: [],
-            grades: ['06', '07', '08', '09', '10', '11', '12'],
-            timetable: [],
-            attendance: {},
-            payments: [],
-            subjectName: 'Mathematics',
-            selectedStudent: null,
-            editingTimetable: null,
-            selectedPaymentStudent: null,
-            // ADD SUBSCRIPTION DATA
-            subscription: {
-                plan: 'free_trial',  // 'free_trial', 'monthly', 'annual'
-                status: 'active',     // 'active', 'expired', 'cancelled'
-                startDate: new Date().toISOString(),
-                endDate: null,
-                maxStudents: 10,      // Free trial limit
-                features: {
-                    students: true,
-                    attendance: true,
-                    payments: true,
-                    reports: true,
-                    backup: true
-                }
-            }
+        var database;  // Global Firebase database reference
+        var auth;      // Global Firebase auth reference
+        var currentUser = null;
+        var currentUserId = null;
+        var lastSyncedTimestamp = null;
+   
+                
+        // ============================================        
+        // FIREBASE CONFIGURATION        
+        // ============================================
+    
+        const firebaseConfig = {    
+            apiKey: "AIzaSyD4z857J2ipSxqK8pN4tEWqU-jeK_mwA2I", 
+            authDomain: "class-manager-383ad.firebaseapp.com",  
+            databaseURL: "https://class-manager-383ad-default-rtdb.asia-southeast1.firebasedatabase.app",  
+            projectId: "class-manager-383ad",   
+            storageBucket: "class-manager-383ad.firebasestorage.app",   
+            messagingSenderId: "1085651561679",  
+            appId: "1:1085651561679:web:82ca82d59d6ff2ec671bba"         
         };
+              
+        // Initialize Firebase     
+        firebase.initializeApp(firebaseConfig);           
+        database = firebase.database();
+        auth = firebase.auth();
+
+        console.log('✅ Firebase initialized successfully');
+
+        // ============================================    
+        // PAYHERE & APP DATA   
+        // ============================================
 
         // PayHere Configuration
         const PAYHERE_CONFIG = {
@@ -1063,41 +1031,33 @@
                 description: 'Class Manager - Annual Subscription'
             }
         };
-
-        function init() {
-            console.log('Initializing app...');
-        
-            // Load saved data   
-            loadData();
-
-            // INITIALIZE SUBSCRIPTION    
-            initializeSubscription();
-        
-            // Hide splash screen    
-            const splash = document.getElementById('splash');    
-            if (splash) {        
-                splash.style.display = 'none';        
-                console.log('Splash hidden');    
-            } else {        
-                console.warn('Splash element not found');    
+    
+        let appData = {        
+            students: [],
+            grades: ['06', '07', '08', '09', '10', '11', '12'],
+            timetable: [],
+            attendance: {},
+            payments: [],
+            subjectName: 'Mathematics',
+            selectedStudent: null,
+            editingTimetable: null,
+            selectedPaymentStudent: null,
+            // ADD SUBSCRIPTION DATA
+            subscription: {
+                plan: 'free_trial',  // 'free_trial', 'monthly', 'annual'
+                status: 'active',     // 'active', 'expired', 'cancelled'
+                startDate: new Date().toISOString(),
+                endDate: null,
+                maxStudents: 10,      // Free trial limit
+                features: {
+                    students: true,
+                    attendance: true,
+                    payments: true,
+                    reports: true,
+                    backup: true
+                }
             }
-        
-            // Show app immediately    
-            const app = document.getElementById('app');    
-            if (app) {        
-                app.classList.add('active');        
-                console.log('App shown');    
-            } else {        
-                console.error('App element not found!');    
-            }
-        
-            // Update dashboard if function exists    
-            if (typeof updateDashboard === 'function') {        
-                updateDashboard();    
-            }
-       
-            console.log('App initialized');
-        }
+        };
 
         // ============================================
         // CHECK AUTHENTICATION
@@ -1134,6 +1094,26 @@
         });
 
         // ============================================
+        // LOGOUT FUNCTION
+        // ============================================
+
+        function logout() {    
+            if (!confirm('Are you sure you want to sign out?')) {        
+                return;    
+            }
+
+            auth.signOut()        
+                .then(() => {            
+                    console.log('✅ User logged out');            
+                    window.location.href = 'index.html';        
+                })        
+                .catch((error) => {            
+                    console.error('Logout error:', error);            
+                    alert('❌ Error signing out: ' + error.message);        
+                });
+        }
+
+        // ============================================
         // INITIALIZE APP
         // ============================================
 
@@ -1149,6 +1129,41 @@
             enableRealtimeSync();      // ← Enable real-time updates
 
             console.log('✅ App initialized');
+        }
+
+        function init() {
+            console.log('Initializing app...');
+        
+            // Load saved data   
+            loadData();
+
+            // INITIALIZE SUBSCRIPTION    
+            initializeSubscription();
+        
+            // Hide splash screen    
+            const splash = document.getElementById('splash');    
+            if (splash) {        
+                splash.style.display = 'none';        
+                console.log('Splash hidden');    
+            } else {        
+                console.warn('Splash element not found');    
+            }
+        
+            // Show app immediately    
+            const app = document.getElementById('app');    
+            if (app) {        
+                app.classList.add('active');        
+                console.log('App shown');    
+            } else {        
+                console.error('App element not found!');    
+            }
+        
+            // Update dashboard if function exists    
+            if (typeof updateDashboard === 'function') {        
+                updateDashboard();    
+            }
+       
+            console.log('App initialized');
         }
 
         // ============================================
@@ -3842,15 +3857,7 @@
             if (statsTimetable) statsTimetable.textContent = appData.timetable.length;            
             if (statsAttendance) statsAttendance.textContent = Object.keys(appData.attendance || {}).length;   
         }
-
-        
-        function logout() {  
-            const auth = getAuth();  
-            signOut(auth).then(() => {   
-                window.location.href = "index.html"; 
-            });
-        }
-           
+                   
         // Initialize app               
         init();
     </script>
@@ -3859,6 +3866,7 @@
     </script>
 </body>
 </html>
+
 
 
 
