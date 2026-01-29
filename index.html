@@ -4,359 +4,338 @@
   <meta charset="UTF-8">
   <title>Class Manager</title>
   <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+  <link rel="stylesheet" href="style.css">
   <meta http-equiv="Content-Security-Policy" content="default-src 'self' https: data: blob: 'unsafe-inline' 'unsafe-eval';">
   <link rel="icon" type="image/x-icon" href="assets/favicon.ico">
-  <link rel="stylesheet" href="style.css">
+  <script src="https://cdn.jsdelivr.net/npm/emailjs-com@3/dist/email.min.js"></script>
 </head>
 <body>
 
   <!-- Loading Screen -->
-  <div id="loader">
-    <div class="loader-content">
-      <img src="assets/logo.png" alt="Class Manager Logo" class="logo-img">
-      <div class="dots">
-        <span></span>
-        <span></span>
-        <span></span>
-      </div>
-      <p>Preparing your workspace</p>
+<div id="loader">
+  <div class="loader-content">
+    <img src="assets/logo.png" alt="Class Manager Logo" class="logo-img">
+    <div class="dots">
+      <span></span>
+      <span></span>
+      <span></span>
     </div>
+    <p>Preparing your workspace</p>
+  </div>
+</div>
+
+<!-- Auth Container -->
+<div class="auth-container">
+  <div class="auth-header">
+    <h1>Class Manager</h1>
+    <p>Manage your classes efficiently</p>
   </div>
 
-  <!-- Auth Container -->
-  <div class="auth-container">
-    <div class="auth-header">
-      <h1>Class Manager</h1>
-      <p>Manage your classes efficiently</p>
-    </div>
-
-    <!-- Tab Switcher -->
-    <div class="tab-switcher">
-      <button class="tab-btn active" onclick="switchTab('login')">Login</button>
-      <button class="tab-btn" onclick="switchTab('signup')">Sign Up</button>
-    </div>
-
-    <!-- Alert Message -->
-    <div id="alert" class="alert"></div>
-
-    <!-- Login Form -->
-    <form class="auth-form active" id="loginForm" onsubmit="handleLogin(event)">
-      <div class="input-group">
-        <label for="loginEmail">Email address</label>
-        <input type="email" id="loginEmail" placeholder="you@example.com" required>
-      </div>
-
-      <div class="input-group">
-        <label for="loginPassword">Password</label>
-        <input type="password" id="loginPassword" placeholder="Enter your password" required>
-        <span class="password-toggle" onclick="togglePassword('loginPassword')">👁️</span>
-      </div>
-
-      <div class="forgot-password">
-        <a href="#" onclick="alert('Password reset feature coming soon!'); return false;">Forgot password?</a>
-      </div>
-
-      <button type="submit" class="btn btn-primary" id="loginBtn">
-        <span>Login to your account</span>
-      </button>
-
-      <div class="divider"><span>OR</span></div>
-
-      <button type="button" class="btn btn-google" onclick="googleLogin()">
-        <img src="https://www.svgrepo.com/show/475656/google-color.svg" alt="Google">
-        <span>Continue with Google</span>
-      </button>
-    </form>
-
-    <!-- Sign Up Form -->
-    <form class="auth-form" id="signupForm" onsubmit="handleSignup(event)">
-      <div class="input-group">
-        <label for="signupEmail">Email address</label>
-        <input type="email" id="signupEmail" placeholder="you@example.com" required>
-      </div>
-
-      <div class="input-group">
-        <label for="signupPassword">Password</label>
-        <input type="password" id="signupPassword" placeholder="At least 6 characters" required minlength="6">
-        <span class="password-toggle" onclick="togglePassword('signupPassword')">👁️</span>
-      </div>
-
-      <div class="input-group">
-        <label for="confirmPassword">Confirm Password</label>
-        <input type="password" id="confirmPassword" placeholder="Re-enter your password" required minlength="6">
-        <span class="password-toggle" onclick="togglePassword('confirmPassword')">👁️</span>
-      </div>
-
-      <button type="submit" class="btn btn-primary" id="signupBtn">
-        <span>Create account</span>
-      </button>
-
-      <div class="divider"><span>OR</span></div>
-
-      <button type="button" class="btn btn-google" onclick="googleLogin()">
-        <img src="https://www.svgrepo.com/show/475656/google-color.svg" alt="Google">
-        <span>Sign up with Google</span>
-      </button>
-    </form>
+  <!-- Tab Switcher -->
+  <div class="tab-switcher">
+    <button class="tab-btn active" onclick="switchTab('login')">Login</button>
+    <button class="tab-btn" onclick="switchTab('signup')">Sign Up</button>
   </div>
-  <footer class="app-footer">  
-    © <span id="year"></span> Class Manager WebApp. All rights reserved.
-  </footer>
 
-  <script type="module">
-    // Import Firebase modules
-    import { initializeApp } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-app.js";
-    import { 
-      getAuth, 
-      signInWithEmailAndPassword, 
-      createUserWithEmailAndPassword, 
-      GoogleAuthProvider, 
-      signInWithPopup,
-      onAuthStateChanged
-    } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-auth.js";
-    import { 
-      getDatabase, 
-      ref, 
-      set 
-    } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-database.js";
+  <!-- Alert Message -->
+  <div id="alert" class="alert"></div>
 
-    // Firebase configuration
-    const firebaseConfig = {
-      apiKey: "AIzaSyD4z857J2ipSxqK8pN4tEWqU-jeK_mwA2I",
-      authDomain: "class-manager-383ad.firebaseapp.com",
-      databaseURL: "https://class-manager-383ad-default-rtdb.firebaseio.com",
-      projectId: "class-manager-383ad",
-      storageBucket: "class-manager-383ad.firebasestorage.app",
-      messagingSenderId: "1085651561679",
-      appId: "1:1085651561679:web:82ca82d59d6ff2ec671bba"
-    };
+  <!-- Login Form -->
+  <form class="auth-form active" id="loginForm" onsubmit="handleLogin(event)">
+    <div class="input-group">
+      <label for="loginEmail">Email address</label>
+      <input type="email" id="loginEmail" placeholder="you@example.com" required>
+    </div>
 
-    // Initialize Firebase
-    const app = initializeApp(firebaseConfig);
-    const auth = getAuth(app);
-    const database = getDatabase(app);
+    <div class="input-group">
+      <label for="loginPassword">Password</label>
+      <input type="password" id="loginPassword" placeholder="Enter your password" required>
+      <span class="password-toggle" onclick="togglePassword('loginPassword')">👁️</span>
+    </div>
 
-    // Check if already logged in
-    onAuthStateChanged(auth, (user) => {  
-      if (user) {    
-        console.log('User already logged in:', user.email);    
-        // DO NOT redirect here - let them see the login page    
-        // window.location.href = "app.html";  // ← KEEP THIS COMMENTED  
+    <div class="forgot-password">
+      <a href="#" onclick="alert('Password reset feature coming soon!'); return false;">Forgot password?</a>
+    </div>
+
+    <button type="submit" class="btn btn-primary" id="loginBtn">
+      <span>Login to your account</span>
+    </button>
+
+    <div class="divider"><span>OR</span></div>
+
+    <button type="button" class="btn btn-google" onclick="googleLogin()">
+      <img src="https://www.svgrepo.com/show/475656/google-color.svg" alt="Google">
+      <span>Continue with Google</span>
+    </button>
+  </form>
+
+  <!-- Sign Up Form -->
+  <form class="auth-form" id="signupForm" onsubmit="handleSignup(event)">
+    <div class="input-group">
+      <label for="signupEmail">Email address</label>
+      <input type="email" id="signupEmail" placeholder="you@example.com" required>
+    </div>
+
+    <div class="input-group">
+      <label for="signupPassword">Password</label>
+      <input type="password" id="signupPassword" placeholder="At least 6 characters" required minlength="6">
+      <span class="password-toggle" onclick="togglePassword('signupPassword')">👁️</span>
+    </div>
+
+    <div class="input-group">
+      <label for="confirmPassword">Confirm Password</label>
+      <input type="password" id="confirmPassword" placeholder="Re-enter your password" required minlength="6">
+      <span class="password-toggle" onclick="togglePassword('confirmPassword')">👁️</span>
+    </div>
+
+    <button type="submit" class="btn btn-primary" id="signupBtn">
+      <span>Create account</span>
+    </button>
+
+    <div class="divider"><span>OR</span></div>
+
+    <button type="button" class="btn btn-google" onclick="googleLogin()">
+      <img src="https://www.svgrepo.com/show/475656/google-color.svg" alt="Google">
+      <span>Sign up with Google</span>
+    </button>
+  </form>
+</div>
+  
+<!-- index.html -->
+<script type="module">
+  // 🔹 1️⃣ Import Firebase modules
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-app.js";
+  import { 
+    getAuth, 
+    signInWithEmailAndPassword, 
+    createUserWithEmailAndPassword, 
+    GoogleAuthProvider, 
+    signInWithPopup,
+    onAuthStateChanged
+  } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-auth.js";
+  import { 
+    getDatabase, 
+    ref, 
+    set 
+  } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-database.js";
+
+  // 🔹 2️⃣ Initialize Firebase
+  const firebaseConfig = {
+    apiKey: "AIzaSyD4z857J2ipSxqK8pN4tEWqU-jeK_mwA2I",
+    authDomain: "class-manager-383ad.firebaseapp.com",
+    databaseURL: "https://class-manager-383ad-default-rtdb.firebaseio.com",
+    projectId: "class-manager-383ad",
+    storageBucket: "class-manager-383ad.firebasestorage.app",
+    messagingSenderId: "1085651561679",
+    appId: "1:1085651561679:web:82ca82d59d6ff2ec671bba"
+  };
+
+  const app = initializeApp(firebaseConfig);
+  const auth = getAuth(app);
+  const database = getDatabase(app);
+
+  // 🔹 3️⃣ Check if already logged in
+  onAuthStateChanged(auth, (user) => {
+    if (user) {
+      // User already logged in, redirect to app
+      console.log('User already logged in, redirecting...');
+      //window.location.href = "app.html";
+    }
+  });
+
+  // 🔹 4️⃣ Initialize EmailJS
+  emailjs.init("rHYrJYPEObugXQPep");
+
+  // 🔹 5️⃣ Send login email (optional, non-blocking)
+  function sendLoginEmail(userEmail) {
+    // Run asynchronously without blocking
+    emailjs.send("service_jcmia18", "template_c34t4jt", {
+      user_email: userEmail,
+      login_time: new Date().toLocaleString(),
+      device: navigator.userAgent
+    }).then(() => {
+      console.log('📧 Login notification email sent');
+    }).catch((err) => {
+      console.error("📧 Email notification failed (non-critical):", err);
+    });
+  }
+
+  // 🔹 6️⃣ Login function
+  window.login = async function(email, password, callback) {
+    try {
+      const userCredential = await signInWithEmailAndPassword(auth, email, password);
+      console.log('✅ Login successful:', userCredential.user.uid);
+      
+      // Send email notification (non-blocking)
+      sendLoginEmail(userCredential.user.email);
+      
+      // Redirect to app
+      window.location.href = "app.html";
+    } catch (error) {
+      console.error('Login error:', error);
+      if (callback) callback(error.message);
+    }
+  };
+
+  // 🔹 7️⃣ Signup function
+  window.signUp = async function(email, password, callback) {
+    if (password.length < 6) {
+      if (callback) callback("Password must be at least 6 characters");
+      return;
+    }
+    
+    try {
+      const userCredential = await createUserWithEmailAndPassword(auth, email, password);
+      console.log('✅ Account created:', userCredential.user.uid);
+      
+      // Create user profile in database
+      await set(ref(database, 'users/' + userCredential.user.uid + '/profile'), {
+        email: email,
+        createdAt: new Date().toISOString()
+      });
+      
+      // Send email notification (non-blocking)
+      sendLoginEmail(userCredential.user.email);
+      
+      // Redirect to app
+      window.location.href = "app.html";
+    } catch (error) {
+      console.error('Signup error:', error);
+      if (callback) callback(error.message);
+    }
+  };
+
+  // 🔹 8️⃣ Google login
+  window.googleLogin = async function() {
+    const provider = new GoogleAuthProvider();
+    try {
+      const result = await signInWithPopup(auth, provider);
+      console.log('✅ Google login successful:', result.user.uid);
+      
+      // Create/update user profile
+      await set(ref(database, 'users/' + result.user.uid + '/profile'), {
+        email: result.user.email,
+        name: result.user.displayName,
+        photoURL: result.user.photoURL,
+        lastLogin: new Date().toISOString()
+      });
+      
+      // Send email notification (non-blocking)
+      sendLoginEmail(result.user.email);
+      
+      // Redirect to app
+      window.location.href = "app.html";
+    } catch (error) {
+      console.error('Google login error:', error);
+      alert("Google login failed: " + error.message);
+    }
+  };
+
+  // 🔹 9️⃣ Loader
+  window.addEventListener("load", () => {
+    setTimeout(() => {
+      document.getElementById("loader").classList.add("hide-loader");
+    }, 2500);
+  });
+
+  // 🔹 🔟 Tab switching
+  window.switchTab = function(tab) {
+    const tabs = document.querySelectorAll('.tab-btn');
+    const forms = document.querySelectorAll('.auth-form');
+
+    tabs.forEach(t => {
+      if (t.textContent.toLowerCase().includes(tab)) {
+        t.classList.add('active');
+      } else {
+        t.classList.remove('active');
       }
     });
-
-    // ============================================
-    // LOGIN FUNCTION
-    // ============================================
-
-    window.login = async function(email, password, callback) {
-        try {
-            // Sign in with Firebase Authentication
-            const userCredential = await signInWithEmailAndPassword(auth, email, password);
-            console.log('✅ Login successful:', userCredential.user.uid);
-            
-            // Send login notification email
-            await sendLoginEmail(userCredential.user.email);
-        
-            // Redirect to app - app.html will load user's data
-            window.location.href = "app.html";
-        } catch (error) {
-            console.error('Login error:', error);
-            if (callback) callback(error.message);
-        }
-    };
-
-    // ============================================
-    // SIGNUP FUNCTION
-    // ============================================
-
-    window.signUp = async function(email, password, callback) {
-        if (password.length < 6) {
-            if (callback) callback("Password must be at least 6 characters");
-            return;
-        }
     
-        try {
-            // Create new user account
-            const userCredential = await createUserWithEmailAndPassword(auth, email, password);
-            console.log('✅ Account created:', userCredential.user.uid);
-        
-            // ⭐ CREATE USER PROFILE IN DATABASE
-            // Path format: /users/{uniqueUserId}/profile
-            await set(ref(database, 'users/' + userCredential.user.uid + '/profile'), {
-                email: email,
-                createdAt: new Date().toISOString()
-            });
-        
-            // Send welcome email
-            await sendLoginEmail(userCredential.user.email);
-        
-            // Redirect to app - app.html will initialize with empty data
-            window.location.href = "app.html";
-        } catch (error) {
-            console.error('Signup error:', error);
-            if (callback) callback(error.message);
-        }
-    };
-
-    // ============================================
-    // GOOGLE LOGIN FUNCTION
-    // ============================================
-
-    window.googleLogin = async function() {
-        const provider = new GoogleAuthProvider();
-        try {
-            // Sign in with Google popup
-            const result = await signInWithPopup(auth, provider);
-            console.log('✅ Google login successful:', result.user.uid);
-        
-            // ⭐ CREATE/UPDATE USER PROFILE
-            // Path format: /users/{uniqueUserId}/profile
-            await set(ref(database, 'users/' + result.user.uid + '/profile'), {
-                email: result.user.email,
-                name: result.user.displayName,
-                photoURL: result.user.photoURL,
-                lastLogin: new Date().toISOString()
-            });
-        
-            // Send login notification
-            await sendLoginEmail(result.user.email);
-        
-            // Redirect to app
-            window.location.href = "app.html";
-        } catch (error) {
-            console.error('Google login error:', error);
-            alert("Google login failed: " + error.message);
-        }
-    };
-
-    // Loader
-    window.addEventListener("load", () => {
-      setTimeout(() => {
-        document.getElementById("loader").classList.add("hide-loader");
-      }, 2500);
+    forms.forEach(f => {
+      if (f.id === tab + 'Form') {
+        f.classList.add('active');
+      } else {
+        f.classList.remove('active');
+      }
     });
+    
+    hideAlert();
+  };
 
-    // Tab switching
-    window.switchTab = function(tab) {
-      const tabs = document.querySelectorAll('.tab-btn');
-      const forms = document.querySelectorAll('.auth-form');
+  // 🔹 11 Password toggle
+  window.togglePassword = function(inputId) {
+    const input = document.getElementById(inputId);
+    input.type = input.type === 'password' ? 'text' : 'password';
+  };
 
-      tabs.forEach(t => {
-        if (t.textContent.toLowerCase().includes(tab)) {
-          t.classList.add('active');
-        } else {
-          t.classList.remove('active');
-        }
-      });
-      
-      forms.forEach(f => {
-        if (f.id === tab + 'Form') {
-          f.classList.add('active');
-        } else {
-          f.classList.remove('active');
-        }
-      });
-      
-      hideAlert();
-    };
+  // 🔹 12 Alert functions
+  function showAlert(message, type = 'error') {
+    const alert = document.getElementById('alert');
+    alert.textContent = message;
+    alert.className = `alert alert-${type} show`;
+  }
 
-    // Password toggle
-    window.togglePassword = function(inputId) {
-      const input = document.getElementById(inputId);
-      input.type = input.type === 'password' ? 'text' : 'password';
-    };
+  function hideAlert() {
+    document.getElementById('alert').classList.remove('show');
+  }
 
-    // Alert functions
-    function showAlert(message, type = 'error') {
-      const alert = document.getElementById('alert');
-      alert.textContent = message;
-      alert.className = `alert alert-${type} show`;
-    }
+  // 🔹 13 Login handler
+  window.handleLogin = async function(e) {
+    e.preventDefault();
+    hideAlert();
 
-    function hideAlert() {
-      document.getElementById('alert').classList.remove('show');
-    }
+    const btn = document.getElementById('loginBtn');
+    const email = document.getElementById('loginEmail').value;
+    const password = document.getElementById('loginPassword').value;
 
-    // Login handler
-    window.handleLogin = async function(e) {
-      e.preventDefault();
-      hideAlert();
+    btn.disabled = true;
+    btn.innerHTML = '<span class="spinner"></span><span>Logging in...</span>';
 
-      const btn = document.getElementById('loginBtn');
-      const email = document.getElementById('loginEmail').value;
-      const password = document.getElementById('loginPassword').value;
-
-      btn.disabled = true;
-      btn.innerHTML = '<span class="spinner"></span><span>Logging in...</span>';
-
-      try {
-        await window.login(email, password, (error) => {
-          if (error) {
-            showAlert(error, 'error');
-            btn.disabled = false;
-            btn.innerHTML = '<span>Login to your account</span>';
-          }
-        });
-        
-        // Reset button after successful login
-        setTimeout(() => {
+    try {
+      await window.login(email, password, (error) => {
+        if (error) {
+          showAlert(error, 'error');
           btn.disabled = false;
           btn.innerHTML = '<span>Login to your account</span>';
-        }, 1000);
-      } catch (err) {
-        btn.disabled = false;
-        btn.innerHTML = '<span>Login to your account</span>';
-      }
-    };
+        }
+      });
+    } catch (err) {
+      btn.disabled = false;
+      btn.innerHTML = '<span>Login to your account</span>';
+    }
+  };
 
-    // Signup handler
-    window.handleSignup = async function(e) {
-      e.preventDefault();
-      hideAlert();
+  // 🔹 14 Signup handler
+  window.handleSignup = async function(e) {
+    e.preventDefault();
+    hideAlert();
 
-      const btn = document.getElementById('signupBtn');
-      const email = document.getElementById('signupEmail').value;
-      const password = document.getElementById('signupPassword').value;
-      const confirm = document.getElementById('confirmPassword').value;
+    const btn = document.getElementById('signupBtn');
+    const email = document.getElementById('signupEmail').value;
+    const password = document.getElementById('signupPassword').value;
+    const confirm = document.getElementById('confirmPassword').value;
 
-      if (password !== confirm) {
-        showAlert('Passwords do not match!', 'error');
-        return;
-      }
+    if (password !== confirm) {
+      showAlert('Passwords do not match!', 'error');
+      return;
+    }
 
-      btn.disabled = true;
-      btn.innerHTML = '<span class="spinner"></span><span>Creating account...</span>';
+    btn.disabled = true;
+    btn.innerHTML = '<span class="spinner"></span><span>Creating account...</span>';
 
-      try {
-        await window.signUp(email, password, (error) => {
-          if (error) {
-            showAlert(error, 'error');
-            btn.disabled = false;
-            btn.innerHTML = '<span>Create account</span>';
-          }
-        });
-        
-        // Reset button after successful signup
-        setTimeout(() => {
+    try {
+      await window.signUp(email, password, (error) => {
+        if (error) {
+          showAlert(error, 'error');
           btn.disabled = false;
           btn.innerHTML = '<span>Create account</span>';
-        }, 1000);
-      } catch (err) {
-        btn.disabled = false;
-        btn.innerHTML = '<span>Create account</span>';
-      }
-    };
-  </script>
-  <script>  
-    document.getElementById("year").textContent = new Date().getFullYear();
-  </script>
+        }
+      });
+    } catch (err) {
+      btn.disabled = false;
+      btn.innerHTML = '<span>Create account</span>';
+    }
+  };
+</script>
 </body>
 </html>
-
-
-
-
-
-
-
