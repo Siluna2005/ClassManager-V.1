@@ -44,6 +44,10 @@
                 <p>Welcome back!</p>
             </div>
             <div class="sidebar-menu">
+                <!-- Admin Panel (Only visible to admins) -->
+                <div class="menu-item" data-screen="admin-panel" onclick="navigateTo('admin-panel')" id="adminMenuItem" style="display: none;">    
+                    <span>👑</span><span>Admin Panel</span>
+                </div>
                 <div class="menu-item active" data-screen="dashboard" onclick="navigateTo('dashboard')">
                     <span>📊</span><span>Dashboard</span>
                 </div>
@@ -75,6 +79,83 @@
         </div>
 
         <div class="content">
+            <!-- Admin Panel Screen -->
+            <div id="admin-panel" class="screen">    
+                <div class="screen-header">       
+                    <h1 class="screen-title">👑 Admin Control Panel</h1>        
+                    <p class="screen-subtitle">Platform Administration</p>    
+                </div>
+  
+                <!-- Quick Stats -->   
+                <div class="stats-grid">     
+                    <div class="stat-card">          
+                        <div class="stat-header">             
+                            <div class="stat-info">        
+                                <p>Total Users</p>   
+                                <h3 id="adminTotalUsers">-</h3>   
+                            </div>     
+                            <div class="stat-icon blue">👥</div>  
+                        </div>  
+                    </div>
+            
+                    <div class="stat-card">      
+                        <div class="stat-header">      
+                            <div class="stat-info">        
+                                <p>Total Students</p>        
+                                <h3 id="adminTotalStudents">-</h3>        
+                            </div>        
+                            <div class="stat-icon purple">🎓</div>        
+                        </div>        
+                    </div>
+                
+                    <div class="stat-card">            
+                        <div class="stat-header">              
+                            <div class="stat-info">              
+                                <p>Active Subscriptions</p>              
+                                <h3 id="adminActiveSubscriptions">-</h3>              
+                            </div>              
+                            <div class="stat-icon green">💳</div>           
+                        </div>        
+                    </div>
+                
+                    <div class="stat-card">          
+                        <div class="stat-header">           
+                            <div class="stat-info">           
+                                <p>Free Trial Users</p>              
+                                <h3 id="adminFreeUsers">-</h3>              
+                            </div>             
+                            <div class="stat-icon amber">📊</div>            
+                        </div>       
+                    </div>    
+                </div>
+   
+                <!-- Load All Users Button -->   
+                <div class="card">     
+                    <h3 class="card-title">User Management</h3>   
+                    <button class="btn btn-primary" onclick="loadAllUsersAdmin()" style="margin-bottom: 20px;">         
+                        📊 Load All Users    
+                    </button>
+               
+                    <!-- Users Table -->   
+                    <div class="table-responsive" id="adminUsersTable" style="display: none;">      
+                        <table class="data-table">    
+                            <thead>
+                                <tr>     
+                                    <th>Email</th>     
+                                    <th>User ID</th>       
+                                    <th>Students</th>       
+                                    <th>Subscription</th>        
+                                    <th>Created</th>        
+                                    <th>Actions</th>                    
+                                </tr>                
+                            </thead>              
+                            <tbody id="adminUsersTableBody">
+                                <!-- Populated by JavaScript --> 
+                            </tbody>    
+                        </table>    
+                    </div>   
+                </div>
+            </div>
             
             <!-- Dashboard Screen -->
             <div id="dashboard" class="screen active">
@@ -975,7 +1056,14 @@
         var currentUser = null;
         var currentUserId = null;
         var lastSyncedTimestamp = null;
-   
+        var isAdmin = false;
+        var adminRole = null;
+        var adminPermissions = {    
+            canViewAllUsers: false,    
+            canEditAllUsers: false,    
+            canManageSubscriptions: false,    
+            canViewAnalytics: false
+        };
                 
         // ============================================        
         // FIREBASE CONFIGURATION        
@@ -997,6 +1085,85 @@
         auth = firebase.auth();
 
         console.log('✅ Firebase initialized successfully');
+
+        // ============================================
+        // ADMIN DETECTION
+        // ============================================
+
+        async function checkIfAdmin(userId, userEmail) {
+            try {
+                console.log('🔍 Checking admin status for:', userEmail);
+        
+               // Check if email exists in admin list
+                const emailKey = userEmail.replace(/\./g, '_').replace(/@/g, '_');
+                const adminCheck = await database.ref('admins/' + emailKey).once('value');
+        
+                if (adminCheck.val() === true) {
+                    isAdmin = true;
+            
+                    // Try to load admin profile with permissions
+                    const adminProfileSnapshot = await database.ref('admin-users/' + userId).once('value');
+            
+                    if (adminProfileSnapshot.exists()) {
+                        const profile = adminProfileSnapshot.val();
+                        adminRole = profile.role || 'admin';
+                        adminPermissions = profile.permissions || {
+                            canViewAllUsers: true,
+                            canEditAllUsers: true,
+                            canManageSubscriptions: true,
+                            canViewAnalytics: true
+                        };
+                    } else {
+                        // Default admin permissions
+                        adminRole = 'admin';
+                        adminPermissions = {
+                            canViewAllUsers: true,
+                            canEditAllUsers: true,
+                            canManageSubscriptions: true,
+                            canViewAnalytics: true
+                        };
+                    }
+            
+                    console.log('🔑 ✅ ADMIN ACCESS GRANTED');
+                    console.log('   Role:', adminRole);
+                    console.log('   Permissions:', adminPermissions);
+            
+                    // Update UI to show admin status
+                    updateUIForAdmin();
+            
+                    return true;
+                }
+        
+                console.log('ℹ️ Regular user (not admin)');
+                isAdmin = false;
+                return false;
+        
+            } catch (error) {
+                console.error('❌ Error checking admin status:', error);
+                isAdmin = false;
+                return false;
+            }
+        }
+
+        function updateUIForAdmin() {
+            if (!isAdmin) return;
+    
+            // Add admin badge to navbar
+            const navbarBrand = document.querySelector('.navbar-brand');
+            if (navbarBrand && !document.querySelector('.admin-badge')) {
+                const badge = document.createElement('span');
+                badge.className = 'admin-badge';
+                badge.textContent = '👑 ADMIN';
+                badge.style.cssText = 'background: linear-gradient(135deg, #FFD700, #FFA500); color: #000; padding: 4px 12px; border-radius: 6px; font-size: 11px; font-weight: 700; margin-left: 12px; box-shadow: 0 2px 8px rgba(255,215,0,0.3);';
+                navbarBrand.appendChild(badge);
+            }
+    
+            // Show admin menu item (will create this later)
+            const adminMenuItem = document.getElementById('adminMenuItem');
+            if (adminMenuItem) {
+                adminMenuItem.style.display = 'flex';
+            }
+        }
 
         // ============================================    
         // PAYHERE & APP DATA   
@@ -1063,36 +1230,33 @@
         // CHECK AUTHENTICATION
         // ============================================
 
-        auth.onAuthStateChanged((user) => {
-            if (user) {
-                // ✅ User is logged in
-                currentUser = user;
-                currentUserId = user.uid;  // ← THIS IS THE UNIQUE USER ID
+        auth.onAuthStateChanged((user) => {    
+            if (user) {        
+                currentUser = user;        
+                currentUserId = user.uid;
         
-                console.log('✅ User authenticated:', user.email);
+                console.log('✅ User authenticated:', user.email);        
                 console.log('User ID:', currentUserId);
         
-                // Hide loading screen
-                setTimeout(() => {
-                    const loader = document.getElementById('loader');
-                    if (loader) {
-                        loader.classList.add('hide-loader');
-                        setTimeout(() => {
-                            loader.style.display = 'none';
-                        }, 600);
-                    }
-                }, 1000);
-        
-                // Initialize the app with user's data
-                teacherIdDisplay();
-                initializeApp();
-    
-            } else {
-                // ❌ No user logged in - redirect to login page
-                console.log('❌ No user authenticated, redirecting...');
-                window.location.href = 'index.html';
+                // CHECK IF USER IS ADMIN
+                checkIfAdmin(user.uid, user.email).then(() => {
+                    // Hide loader
+                    setTimeout(() => {            
+                        const loader = document.getElementById('loader');            
+                        if (loader) {                
+                            loader.classList.add('hide-loader');                
+                            setTimeout(() => {                    
+                                loader.style.display = 'none';                
+                            }, 600);            
+                        }        
+                    }, 1000);
+            
+                    // Initialize app
+                    initializeApp();
+                });
             }
         });
+
 
         // ============================================
         // LOGOUT FUNCTION
@@ -3176,6 +3340,156 @@
                 `;
             }).join('');
         }
+
+        // ============================================
+        // ADMIN PANEL FUNCTIONS
+        // ============================================
+
+        async function loadAllUsersAdmin() {
+            if (!isAdmin || !adminPermissions.canViewAllUsers) {
+                alert('❌ Access denied: You do not have permission to view all users');
+                return;
+            }
+    
+            console.log('📊 Loading all users (Admin)...');
+    
+            const loadingBtn = event.target;
+            loadingBtn.disabled = true;
+            loadingBtn.textContent = '⏳ Loading...';
+    
+            try {
+                const usersSnapshot = await database.ref('users').once('value');
+                const allUsers = [];
+                let totalStudents = 0;
+                let activeSubscriptions = 0;
+                let freeUsers = 0;
+        
+                usersSnapshot.forEach((userSnapshot) => {
+                    const userId = userSnapshot.key;
+                    const userData = userSnapshot.val();
+            
+                    const profile = userData.profile || {};
+                    const data = userData.data || {};
+                    const students = data.students || [];
+                    const subscription = data.subscription || { plan: 'free_trial' };
+            
+                    allUsers.push({
+                        userId: userId,
+                        email: profile.email || 'Unknown',
+                        studentsCount: students.length,
+                        subscription: subscription.plan || 'free_trial',
+                        subscriptionStatus: subscription.status || 'active',
+                        createdAt: profile.createdAt || 'Unknown'
+                    });
+            
+                    totalStudents += students.length;
+                    if (subscription.plan !== 'free_trial') {
+                        activeSubscriptions++;
+                    } else {
+                        freeUsers++;
+                    }
+                });
+        
+                console.log('✅ Loaded', allUsers.length, 'users');
+        
+                // Update stats
+                document.getElementById('adminTotalUsers').textContent = allUsers.length;
+                document.getElementById('adminTotalStudents').textContent = totalStudents;
+                document.getElementById('adminActiveSubscriptions').textContent = activeSubscriptions;
+                document.getElementById('adminFreeUsers').textContent = freeUsers;
+        
+                // Display users table
+                displayAdminUsersTable(allUsers);
+        
+                // Show table
+                document.getElementById('adminUsersTable').style.display = 'block';
+        
+                loadingBtn.disabled = false;
+                loadingBtn.textContent = '✅ Loaded ' + allUsers.length + ' users';
+        
+            } catch (error) {
+                console.error('❌ Error loading users:', error);
+                alert('Failed to load users: ' + error.message);
+                loadingBtn.disabled = false;
+                loadingBtn.textContent = '📊 Load All Users';
+            }
+        }
+
+        function displayAdminUsersTable(users) {
+            const tbody = document.getElementById('adminUsersTableBody');
+            tbody.innerHTML = '';
+    
+            users.forEach(user => {
+                const row = document.createElement('tr');
+        
+                const createdDate = user.createdAt !== 'Unknown' 
+                    ? new Date(user.createdAt).toLocaleDateString() 
+                    : 'Unknown';
+        
+                const subscriptionBadge = user.subscription === 'free_trial' 
+                    ? '<span style="background: #EF4444; color: white; padding: 4px 8px; border-radius: 4px; font-size: 11px;">FREE</span>'
+                    : '<span style="background: #10B981; color: white; padding: 4px 8px; border-radius: 4px; font-size: 11px;">PAID</span>';
+        
+                row.innerHTML = `
+                    <td>${user.email}</td>
+                    <td style="font-family: monospace; font-size: 12px;">${user.userId.substring(0, 20)}...</td>
+                    <td><strong>${user.studentsCount}</strong> students</td>
+                    <td>${subscriptionBadge}</td>
+                    <td>${createdDate}</td>
+                    <td>
+                        <button class="btn btn-secondary" onclick="viewUserDataAdmin('${user.userId}')" style="font-size: 12px; padding: 6px 12px;">
+                            👁️ View
+                        </button>
+                    </td>
+                `;
+        
+                tbody.appendChild(row);
+            });
+        }
+
+        async function viewUserDataAdmin(userId) {
+            if (!isAdmin || !adminPermissions.canViewAllUsers) {
+                alert('❌ Access denied');
+                return;
+            }
+    
+            try {
+                const userSnapshot = await database.ref('users/' + userId).once('value');
+                const userData = userSnapshot.val();
+        
+                const profile = userData.profile || {};
+                const data = userData.data || {};
+        
+                const info = `
+        👤 USER DETAILS
+        ━━━━━━━━━━━━━━━━━━━━
+        
+        📧 Email: ${profile.email || 'Unknown'}
+        🆔 User ID: ${userId}
+
+        📊 STATISTICS
+        ━━━━━━━━━━━━━━━━━━━━
+                👥 Students: ${(data.students || []).length}
+        📅 Timetable entries: ${(data.timetable || []).length}
+        💰 Payment records: ${(data.payments || []).length}
+        ✅ Attendance records: ${Object.keys(data.attendance || {}).length}
+
+        💳 SUBSCRIPTION
+        ━━━━━━━━━━━━━━━━━━━━
+        Plan: ${(data.subscription?.plan || 'free_trial').toUpperCase()}
+        Status: ${(data.subscription?.status || 'active').toUpperCase()}
+        Max Students: ${data.subscription?.maxStudents || 10}
+
+        📅 Created: ${profile.createdAt ? new Date(profile.createdAt).toLocaleString() : 'Unknown'}
+                `;
+        
+                alert(info);
+        
+            } catch (error) {
+                console.error('Error viewing user data:', error);
+                alert('Failed to load user data');
+            }
+        }
     
         // ============================================    
         // EXCEL EXPORT    
@@ -3487,32 +3801,66 @@
 
         // Check if subscription is valid
         function checkSubscriptionStatus() {
-            const sub = appData.subscription;
+            // ✅ ADMIN BYPASS - Admins always have active status
+            if (isAdmin) {
+                return true;
+            }
     
-            // Check expiration
-            if (sub.endDate) {
-                const endDate = new Date(sub.endDate);
+            // Regular user - check subscription
+            const sub = appData.subscription;
+
+            if (sub.endDate) {        
+                const endDate = new Date(sub.endDate);        
                 const now = new Date();
         
-                if (now > endDate) {
-                    sub.status = 'expired';
-                    // Revert to free trial
-                    sub.plan = 'free_trial';
-                    sub.maxStudents = 10;
-                    saveData();
-                }
+                if (now > endDate) {            
+                    sub.status = 'expired';            
+                    sub.plan = 'free_trial';            
+                    sub.maxStudents = 10;            
+                    saveData();        
+                }    
             }
-    
-            // Check student limit
-            if (sub.plan === 'free_trial' && appData.students.length >= sub.maxStudents) {
-                return false;
-            }
-    
+
+            if (sub.plan === 'free_trial' && appData.students.length >= sub.maxStudents) {        
+                return false;    
+            }    
+
             return sub.status === 'active';
         }
 
         // Update subscription display
         function updateSubscriptionDisplay() {
+            // Show admin status instead of subscription for admins
+            if (isAdmin) {
+                const currentPlanEl = document.getElementById('currentPlanName');
+                if (currentPlanEl) {
+                    currentPlanEl.textContent = '👑 Admin Account';
+                }
+        
+                const statusEl = document.getElementById('subscriptionStatus');
+                if (statusEl) {
+                    statusEl.textContent = 'Unlimited Access';
+                }
+        
+                const maxStudentsEl = document.getElementById('maxStudents');
+                if (maxStudentsEl) {
+                    maxStudentsEl.textContent = '∞';
+                }
+        
+                const currentStudentsEl = document.getElementById('currentStudents');
+                if (currentStudentsEl) {
+                    currentStudentsEl.textContent = appData.students.length;
+                }
+        
+                const warningEl = document.getElementById('subscriptionWarning');
+                if (warningEl) {
+                    warningEl.style.display = 'none';
+                }
+        
+                return; // Don't show regular subscription info
+            }
+    
+            // Regular user subscription display continues below...
             const sub = appData.subscription;
     
             // Update current plan name
@@ -3566,6 +3914,8 @@
             } else {
                 warningEl.style.display = 'none';
             }
+
+            
     
             // Update button states
             updateSubscriptionButtons();
@@ -3639,15 +3989,22 @@
 
         // Check before adding student
         function canAddStudent() {
-            const sub = appData.subscription;
-    
-            if (sub.plan === 'free_trial' && appData.students.length >= sub.maxStudents) {
-                if (confirm(`⚠️ Student Limit Reached!\n\nYou've reached the limit of ${sub.maxStudents} students on the Free Trial.\n\nWould you like to upgrade to add unlimited students?`)) {
-                    navigateTo('subscription');
-                }
-                return false;
+            // ✅ ADMIN BYPASS - Admins have unlimited students
+            if (isAdmin) {
+                console.log('🔑 Admin bypass: Unlimited students allowed');
+                return true;
             }
     
+            // Regular user - check subscription limits
+            const sub = appData.subscription;
+
+            if (sub.plan === 'free_trial' && appData.students.length >= sub.maxStudents) {        
+                if (confirm(`⚠️ Student Limit Reached!\n\nYou've reached the limit of ${sub.maxStudents} students on the Free Trial.\n\nWould you like to upgrade to add unlimited students?`)) {            
+                    navigateTo('subscription');        
+                }        
+                return false;   
+            }    
+
             return true;
         }
 
@@ -3891,16 +4248,3 @@
     </script>
 </body>
 </html>
-
-
-
-
-
-
-
-
-
-
-
-
-
