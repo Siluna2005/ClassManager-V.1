@@ -226,16 +226,17 @@
     }
   };
 
-  // 🔹 Google login
-  window.googleLogin = async function () { 
-    try {    
-      const provider = new GoogleAuthProvider();   
-      await signInWithRedirect(auth, provider); 
-    } catch (error) {   
-      console.error("Google login error:", error);    
-      alert("Google login failed: " + error.message); 
-    }
-  };
+  // 🔹 Google login  // 🔹 Google login
+window.googleLogin = async function () {
+  try {
+    const provider = new GoogleAuthProvider();
+    await signInWithRedirect(auth, provider);
+  } catch (error) {
+    console.error("Google login error:", error);
+    alert("Google login failed: " + error.message);
+  }
+};
+
 
 
   // 🔹 9️⃣ Loader
@@ -346,6 +347,7 @@
 </script>
 </body>
 </html>
+
 
 
 
