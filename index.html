@@ -150,15 +150,10 @@
     });
   }
 
-  // 🔹 5️⃣ Flag to prevent double redirect
-  let redirectInProgress = false;
-
-  // 🔹 6️⃣ Handle Google Redirect FIRST (before onAuthStateChanged)
+  // 🔹 5️⃣ Handle Google Redirect Result
   getRedirectResult(auth)
     .then(async (result) => {
       if (result) {
-        // User just completed Google sign-in
-        redirectInProgress = true;
         console.log("✅ Google login successful:", result.user.uid);
 
         try {
@@ -170,50 +165,47 @@
           });
 
           sendLoginEmail(result.user.email);
-          console.log("Redirecting to app...");
-          window.location.href = "app.html";
+          console.log("Profile saved, redirecting...");
+          
+          // Redirect to app
+          window.location.replace("app.html");  // Using replace instead of href
         } catch (error) {
           console.error("Error saving profile:", error);
-          window.location.href = "app.html"; // Redirect anyway
+          window.location.replace("app.html");
+        }
+      } else {
+        // No redirect result - check if user is already logged in
+        const currentUser = auth.currentUser;
+        if (currentUser) {
+          console.log("User already logged in, redirecting...");
+          window.location.replace("app.html");
         }
       }
     })
     .catch((error) => {
-      // Only log/alert real errors, not cancelled redirects
       if (error.code !== 'auth/cancelled-popup-request') {
         console.error("Redirect result error:", error);
       }
     });
 
-  // 🔹 7️⃣ Check if already logged in (for returning users)
-  onAuthStateChanged(auth, (user) => {
-    // Don't redirect if we're already handling a Google redirect
-    if (user && !redirectInProgress) {
-      // Add a small delay to ensure getRedirectResult completes first
-      setTimeout(() => {
-        if (!redirectInProgress) {
-          console.log('User already logged in, redirecting...');
-          window.location.href = "app.html";
-        }
-      }, 1000);
-    }
-  });
+  // 🔹 6️⃣ Don't use onAuthStateChanged for redirect - it causes loops!
+  // We handle redirects in each login method instead
 
-  // 🔹 8️⃣ Login function
+  // 🔹 7️⃣ Login function
   window.login = async function(email, password, callback) {
     try {
       const userCredential = await signInWithEmailAndPassword(auth, email, password);
       console.log('✅ Login successful:', userCredential.user.uid);
       
       sendLoginEmail(userCredential.user.email);
-      window.location.href = "app.html";
+      window.location.replace("app.html");
     } catch (error) {
       console.error('Login error:', error);
       if (callback) callback(error.message);
     }
   };
 
-  // 🔹 9️⃣ Signup function
+  // 🔹 8️⃣ Signup function
   window.signUp = async function(email, password, callback) {
     if (password.length < 6) {
       if (callback) callback("Password must be at least 6 characters");
@@ -230,34 +222,36 @@
       });
       
       sendLoginEmail(userCredential.user.email);
-      window.location.href = "app.html";
+      window.location.replace("app.html");
     } catch (error) {
       console.error('Signup error:', error);
       if (callback) callback(error.message);
     }
   };
 
-  // 🔹 🔟 Google login
+  // 🔹 9️⃣ Google login
   window.googleLogin = async function() {
     try {
-      redirectInProgress = true;
       const provider = new GoogleAuthProvider();
+      console.log("Starting Google sign-in redirect...");
       await signInWithRedirect(auth, provider);
     } catch (error) {
       console.error("Google login error:", error);
-      redirectInProgress = false;
       alert("Google login failed: " + error.message);
     }
   };
 
-  // 🔹 1️⃣1️⃣ Loader
+  // 🔹 🔟 Loader
   window.addEventListener("load", () => {
     setTimeout(() => {
-      document.getElementById("loader").classList.add("hide-loader");
+      const loader = document.getElementById("loader");
+      if (loader) {
+        loader.classList.add("hide-loader");
+      }
     }, 2500);
   });
 
-  // 🔹 1️⃣2️⃣ Tab switching
+  // 🔹 1️⃣1️⃣ Tab switching
   window.switchTab = function(tab) {
     const tabs = document.querySelectorAll('.tab-btn');
     const forms = document.querySelectorAll('.auth-form');
@@ -281,13 +275,13 @@
     hideAlert();
   };
 
-  // 🔹 1️⃣3️⃣ Password toggle
+  // 🔹 1️⃣2️⃣ Password toggle
   window.togglePassword = function(inputId) {
     const input = document.getElementById(inputId);
     input.type = input.type === 'password' ? 'text' : 'password';
   };
 
-  // 🔹 1️⃣4️⃣ Alert functions
+  // 🔹 1️⃣3️⃣ Alert functions
   function showAlert(message, type = 'error') {
     const alert = document.getElementById('alert');
     alert.textContent = message;
@@ -298,7 +292,7 @@
     document.getElementById('alert').classList.remove('show');
   }
 
-  // 🔹 1️⃣5️⃣ Login handler
+  // 🔹 1️⃣4️⃣ Login handler
   window.handleLogin = async function(e) {
     e.preventDefault();
     hideAlert();
@@ -324,7 +318,7 @@
     }
   };
 
-  // 🔹 1️⃣6️⃣ Signup handler
+  // 🔹 1️⃣5️⃣ Signup handler
   window.handleSignup = async function(e) {
     e.preventDefault();
     hideAlert();
@@ -358,6 +352,7 @@
 </script>
 </body>
 </html>
+
 
 
 
