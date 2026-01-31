@@ -244,8 +244,8 @@
       sendLoginEmail(result.user.email);
       
       // Redirect to app
-      window.location.href = "app.html";
-    } catch (error) {
+      window.location.href = "app.html";      
+  } catch (error) {
       console.error('Google login error:', error);
       alert("Google login failed: " + error.message);
     }
@@ -359,4 +359,5 @@
 </script>
 </body>
 </html>
+
 
