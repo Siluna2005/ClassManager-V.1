@@ -226,30 +226,17 @@
     }
   };
 
-  // 🔹 8️⃣ Google login
-  window.googleLogin = async function() {
-    const provider = new GoogleAuthProvider();
-    await signInWithRedirect(auth, provider);
-      console.log('✅ Google login successful:', result.user.uid);
-      
-      // Create/update user profile
-      await set(ref(database, 'users/' + result.user.uid + '/profile'), {
-        email: result.user.email,
-        name: result.user.displayName,
-        photoURL: result.user.photoURL,
-        lastLogin: new Date().toISOString()
-      });
-      
-      // Send email notification (non-blocking)
-      sendLoginEmail(result.user.email);
-      
-      // Redirect to app
-      window.location.href = "app.html";  
-  }); 
-  } catch (error) {
-      console.error('Google login error:', error);
-      alert("Google login failed: " + error.message);
+  // 🔹 Google login
+  window.googleLogin = async function () { 
+    try {    
+      const provider = new GoogleAuthProvider();   
+      await signInWithRedirect(auth, provider); 
+    } catch (error) {   
+      console.error("Google login error:", error);    
+      alert("Google login failed: " + error.message); 
+    }
   };
+
 
   // 🔹 9️⃣ Loader
   window.addEventListener("load", () => {
@@ -359,6 +346,7 @@
 </script>
 </body>
 </html>
+
 
 
 
