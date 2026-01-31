@@ -101,7 +101,6 @@
   </form>
 </div>
   
-<!-- index.html -->
 <script type="module">
   // 🔹 1️⃣ Import Firebase modules
   import { initializeApp } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-app.js";
@@ -110,8 +109,8 @@
     signInWithEmailAndPassword, 
     createUserWithEmailAndPassword, 
     GoogleAuthProvider, 
-    signInWithRedirect,  // ← Add
-    getRedirectResult,   // ← Add
+    signInWithRedirect,
+    getRedirectResult,
     onAuthStateChanged
   } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-auth.js";
   import { 
@@ -124,7 +123,7 @@
   const firebaseConfig = {
     apiKey: "AIzaSyD4z857J2ipSxqK8pN4tEWqU-jeK_mwA2I",
     authDomain: "class-manager-383ad.firebaseapp.com",
-    databaseURL: "https://class-manager-383ad-default-rtdb.firebaseio.com",
+    databaseURL: "https://class-manager-383ad-default-rtdb.asia-southeast1.firebasedatabase.app",
     projectId: "class-manager-383ad",
     storageBucket: "class-manager-383ad.firebasestorage.app",
     messagingSenderId: "1085651561679",
@@ -138,40 +137,16 @@
   // 🔹 3️⃣ Check if already logged in
   onAuthStateChanged(auth, (user) => {
     if (user) {
-      // User already logged in, redirect to app
       console.log('User already logged in, redirecting...');
-      //window.location.href = "app.html";
+      window.location.href = "app.html";
     }
   });
-
-  getRedirectResult(auth)
-  .then(async (result) => {
-    if (!result) return;
-
-    console.log("✅ Google login successful:", result.user.uid);
-
-    await set(ref(database, "users/" + result.user.uid + "/profile"), {
-      email: result.user.email,
-      name: result.user.displayName,
-      photoURL: result.user.photoURL,
-      lastLogin: new Date().toISOString(),
-    });
-
-    sendLoginEmail(result.user.email);
-    window.location.href = "app.html";
-  })
-  .catch((error) => {
-    console.error("Redirect result error:", error);
-    alert("Google login failed: " + error.message);
-  });
-
 
   // 🔹 4️⃣ Initialize EmailJS
   emailjs.init("rHYrJYPEObugXQPep");
 
-  // 🔹 5️⃣ Send login email (optional, non-blocking)
+  // 🔹 5️⃣ Send login email (DEFINE FIRST!)
   function sendLoginEmail(userEmail) {
-    // Run asynchronously without blocking
     emailjs.send("service_jcmia18", "template_c34t4jt", {
       user_email: userEmail,
       login_time: new Date().toLocaleString(),
@@ -183,16 +158,38 @@
     });
   }
 
-  // 🔹 6️⃣ Login function
+  // 🔹 6️⃣ Handle Google Redirect
+  getRedirectResult(auth)
+    .then(async (result) => {
+      if (!result) return;
+
+      console.log("✅ Google login successful:", result.user.uid);
+
+      await set(ref(database, "users/" + result.user.uid + "/profile"), {
+        email: result.user.email,
+        name: result.user.displayName,
+        photoURL: result.user.photoURL,
+        lastLogin: new Date().toISOString(),
+      });
+
+      sendLoginEmail(result.user.email);
+      window.location.href = "app.html";
+    })
+    .catch((error) => {
+      console.error("Redirect result error:", error);
+      // Don't alert if user just cancelled
+      if (error.code !== 'auth/cancelled-popup-request') {
+        alert("Google login failed: " + error.message);
+      }
+    });
+
+  // 🔹 7️⃣ Login function
   window.login = async function(email, password, callback) {
     try {
       const userCredential = await signInWithEmailAndPassword(auth, email, password);
       console.log('✅ Login successful:', userCredential.user.uid);
       
-      // Send email notification (non-blocking)
       sendLoginEmail(userCredential.user.email);
-      
-      // Redirect to app
       window.location.href = "app.html";
     } catch (error) {
       console.error('Login error:', error);
@@ -200,7 +197,7 @@
     }
   };
 
-  // 🔹 7️⃣ Signup function
+  // 🔹 8️⃣ Signup function
   window.signUp = async function(email, password, callback) {
     if (password.length < 6) {
       if (callback) callback("Password must be at least 6 characters");
@@ -211,16 +208,12 @@
       const userCredential = await createUserWithEmailAndPassword(auth, email, password);
       console.log('✅ Account created:', userCredential.user.uid);
       
-      // Create user profile in database
       await set(ref(database, 'users/' + userCredential.user.uid + '/profile'), {
         email: email,
         createdAt: new Date().toISOString()
       });
       
-      // Send email notification (non-blocking)
       sendLoginEmail(userCredential.user.email);
-      
-      // Redirect to app
       window.location.href = "app.html";
     } catch (error) {
       console.error('Signup error:', error);
@@ -228,27 +221,25 @@
     }
   };
 
-  // 🔹 Google login  // 🔹 Google login
-window.googleLogin = async function () {
-  try {
-    const provider = new GoogleAuthProvider();
-    await signInWithRedirect(auth, provider);
-  } catch (error) {
-    console.error("Google login error:", error);
-    alert("Google login failed: " + error.message);
-  }
-};
+  // 🔹 9️⃣ Google login
+  window.googleLogin = async function() {
+    try {
+      const provider = new GoogleAuthProvider();
+      await signInWithRedirect(auth, provider);
+    } catch (error) {
+      console.error("Google login error:", error);
+      alert("Google login failed: " + error.message);
+    }
+  };
 
-
-
-  // 🔹 9️⃣ Loader
+  // 🔹 🔟 Loader
   window.addEventListener("load", () => {
     setTimeout(() => {
       document.getElementById("loader").classList.add("hide-loader");
     }, 2500);
   });
 
-  // 🔹 🔟 Tab switching
+  // 🔹 1️⃣1️⃣ Tab switching
   window.switchTab = function(tab) {
     const tabs = document.querySelectorAll('.tab-btn');
     const forms = document.querySelectorAll('.auth-form');
@@ -272,13 +263,13 @@ window.googleLogin = async function () {
     hideAlert();
   };
 
-  // 🔹 11 Password toggle
+  // 🔹 1️⃣2️⃣ Password toggle
   window.togglePassword = function(inputId) {
     const input = document.getElementById(inputId);
     input.type = input.type === 'password' ? 'text' : 'password';
   };
 
-  // 🔹 12 Alert functions
+  // 🔹 1️⃣3️⃣ Alert functions
   function showAlert(message, type = 'error') {
     const alert = document.getElementById('alert');
     alert.textContent = message;
@@ -289,7 +280,7 @@ window.googleLogin = async function () {
     document.getElementById('alert').classList.remove('show');
   }
 
-  // 🔹 13 Login handler
+  // 🔹 1️⃣4️⃣ Login handler
   window.handleLogin = async function(e) {
     e.preventDefault();
     hideAlert();
@@ -315,7 +306,7 @@ window.googleLogin = async function () {
     }
   };
 
-  // 🔹 14 Signup handler
+  // 🔹 1️⃣5️⃣ Signup handler
   window.handleSignup = async function(e) {
     e.preventDefault();
     hideAlert();
@@ -349,6 +340,7 @@ window.googleLogin = async function () {
 </script>
 </body>
 </html>
+
 
 
 
