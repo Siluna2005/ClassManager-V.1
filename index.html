@@ -105,12 +105,13 @@
 <script type="module">
   // 🔹 1️⃣ Import Firebase modules
   import { initializeApp } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-app.js";
-  import { 
+  import {    
     getAuth, 
     signInWithEmailAndPassword, 
     createUserWithEmailAndPassword, 
     GoogleAuthProvider, 
-    signInWithPopup,
+    signInWithRedirect,  // ← Add
+    getRedirectResult,   // ← Add
     onAuthStateChanged
   } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-auth.js";
   import { 
@@ -140,6 +141,26 @@
       // User already logged in, redirect to app
       console.log('User already logged in, redirecting...');
       //window.location.href = "app.html";
+    }
+  });
+
+  // Handle Google redirect result
+  getRedirectResult(auth).then(async (result) => {    
+    if (result) {
+        console.log('✅ Google login successful');
+        
+        await set(ref(database, 'users/' + result.user.uid + '/profile'), {
+            email: result.user.email,
+            name: result.user.displayName,
+            photoURL: result.user.photoURL,
+            lastLogin: new Date().toISOString()
+        });
+        
+        window.location.href = "app.html";
+    }
+  }).catch(err => {    
+    if (err.code !== 'auth/cancelled-popup-request') {
+        console.error('Google login error:', err);
     }
   });
 
@@ -208,8 +229,7 @@
   // 🔹 8️⃣ Google login
   window.googleLogin = async function() {
     const provider = new GoogleAuthProvider();
-    try {
-      const result = await signInWithPopup(auth, provider);
+    await signInWithRedirect(auth, provider);
       console.log('✅ Google login successful:', result.user.uid);
       
       // Create/update user profile
@@ -339,3 +359,4 @@
 </script>
 </body>
 </html>
+
