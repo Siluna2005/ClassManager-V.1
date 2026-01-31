@@ -134,18 +134,10 @@
   const auth = getAuth(app);
   const database = getDatabase(app);
 
-  // 🔹 3️⃣ Check if already logged in
-  onAuthStateChanged(auth, (user) => {
-    if (user) {
-      console.log('User already logged in, redirecting...');
-      window.location.href = "app.html";
-    }
-  });
-
-  // 🔹 4️⃣ Initialize EmailJS
+  // 🔹 3️⃣ Initialize EmailJS
   emailjs.init("rHYrJYPEObugXQPep");
 
-  // 🔹 5️⃣ Send login email (DEFINE FIRST!)
+  // 🔹 4️⃣ Send login email function
   function sendLoginEmail(userEmail) {
     emailjs.send("service_jcmia18", "template_c34t4jt", {
       user_email: userEmail,
@@ -158,32 +150,56 @@
     });
   }
 
-  // 🔹 6️⃣ Handle Google Redirect
+  // 🔹 5️⃣ Flag to prevent double redirect
+  let redirectInProgress = false;
+
+  // 🔹 6️⃣ Handle Google Redirect FIRST (before onAuthStateChanged)
   getRedirectResult(auth)
     .then(async (result) => {
-      if (!result) return;
+      if (result) {
+        // User just completed Google sign-in
+        redirectInProgress = true;
+        console.log("✅ Google login successful:", result.user.uid);
 
-      console.log("✅ Google login successful:", result.user.uid);
+        try {
+          await set(ref(database, "users/" + result.user.uid + "/profile"), {
+            email: result.user.email,
+            name: result.user.displayName,
+            photoURL: result.user.photoURL,
+            lastLogin: new Date().toISOString(),
+          });
 
-      await set(ref(database, "users/" + result.user.uid + "/profile"), {
-        email: result.user.email,
-        name: result.user.displayName,
-        photoURL: result.user.photoURL,
-        lastLogin: new Date().toISOString(),
-      });
-
-      sendLoginEmail(result.user.email);
-      window.location.href = "app.html";
+          sendLoginEmail(result.user.email);
+          console.log("Redirecting to app...");
+          window.location.href = "app.html";
+        } catch (error) {
+          console.error("Error saving profile:", error);
+          window.location.href = "app.html"; // Redirect anyway
+        }
+      }
     })
     .catch((error) => {
-      console.error("Redirect result error:", error);
-      // Don't alert if user just cancelled
+      // Only log/alert real errors, not cancelled redirects
       if (error.code !== 'auth/cancelled-popup-request') {
-        alert("Google login failed: " + error.message);
+        console.error("Redirect result error:", error);
       }
     });
 
-  // 🔹 7️⃣ Login function
+  // 🔹 7️⃣ Check if already logged in (for returning users)
+  onAuthStateChanged(auth, (user) => {
+    // Don't redirect if we're already handling a Google redirect
+    if (user && !redirectInProgress) {
+      // Add a small delay to ensure getRedirectResult completes first
+      setTimeout(() => {
+        if (!redirectInProgress) {
+          console.log('User already logged in, redirecting...');
+          window.location.href = "app.html";
+        }
+      }, 1000);
+    }
+  });
+
+  // 🔹 8️⃣ Login function
   window.login = async function(email, password, callback) {
     try {
       const userCredential = await signInWithEmailAndPassword(auth, email, password);
@@ -197,7 +213,7 @@
     }
   };
 
-  // 🔹 8️⃣ Signup function
+  // 🔹 9️⃣ Signup function
   window.signUp = async function(email, password, callback) {
     if (password.length < 6) {
       if (callback) callback("Password must be at least 6 characters");
@@ -221,25 +237,27 @@
     }
   };
 
-  // 🔹 9️⃣ Google login
+  // 🔹 🔟 Google login
   window.googleLogin = async function() {
     try {
+      redirectInProgress = true;
       const provider = new GoogleAuthProvider();
       await signInWithRedirect(auth, provider);
     } catch (error) {
       console.error("Google login error:", error);
+      redirectInProgress = false;
       alert("Google login failed: " + error.message);
     }
   };
 
-  // 🔹 🔟 Loader
+  // 🔹 1️⃣1️⃣ Loader
   window.addEventListener("load", () => {
     setTimeout(() => {
       document.getElementById("loader").classList.add("hide-loader");
     }, 2500);
   });
 
-  // 🔹 1️⃣1️⃣ Tab switching
+  // 🔹 1️⃣2️⃣ Tab switching
   window.switchTab = function(tab) {
     const tabs = document.querySelectorAll('.tab-btn');
     const forms = document.querySelectorAll('.auth-form');
@@ -263,13 +281,13 @@
     hideAlert();
   };
 
-  // 🔹 1️⃣2️⃣ Password toggle
+  // 🔹 1️⃣3️⃣ Password toggle
   window.togglePassword = function(inputId) {
     const input = document.getElementById(inputId);
     input.type = input.type === 'password' ? 'text' : 'password';
   };
 
-  // 🔹 1️⃣3️⃣ Alert functions
+  // 🔹 1️⃣4️⃣ Alert functions
   function showAlert(message, type = 'error') {
     const alert = document.getElementById('alert');
     alert.textContent = message;
@@ -280,7 +298,7 @@
     document.getElementById('alert').classList.remove('show');
   }
 
-  // 🔹 1️⃣4️⃣ Login handler
+  // 🔹 1️⃣5️⃣ Login handler
   window.handleLogin = async function(e) {
     e.preventDefault();
     hideAlert();
@@ -306,7 +324,7 @@
     }
   };
 
-  // 🔹 1️⃣5️⃣ Signup handler
+  // 🔹 1️⃣6️⃣ Signup handler
   window.handleSignup = async function(e) {
     e.preventDefault();
     hideAlert();
@@ -340,6 +358,7 @@
 </script>
 </body>
 </html>
+
 
 
 
