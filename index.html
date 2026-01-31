@@ -144,25 +144,27 @@
     }
   });
 
-  // Handle Google redirect result
-  getRedirectResult(auth).then(async (result) => {    
-    if (result) {
-        console.log('✅ Google login successful');
-        
-        await set(ref(database, 'users/' + result.user.uid + '/profile'), {
-            email: result.user.email,
-            name: result.user.displayName,
-            photoURL: result.user.photoURL,
-            lastLogin: new Date().toISOString()
-        });
-        
-        window.location.href = "app.html";
-    }
-  }).catch(err => {    
-    if (err.code !== 'auth/cancelled-popup-request') {
-        console.error('Google login error:', err);
-    }
+  getRedirectResult(auth)
+  .then(async (result) => {
+    if (!result) return;
+
+    console.log("✅ Google login successful:", result.user.uid);
+
+    await set(ref(database, "users/" + result.user.uid + "/profile"), {
+      email: result.user.email,
+      name: result.user.displayName,
+      photoURL: result.user.photoURL,
+      lastLogin: new Date().toISOString(),
+    });
+
+    sendLoginEmail(result.user.email);
+    window.location.href = "app.html";
+  })
+  .catch((error) => {
+    console.error("Redirect result error:", error);
+    alert("Google login failed: " + error.message);
   });
+
 
   // 🔹 4️⃣ Initialize EmailJS
   emailjs.init("rHYrJYPEObugXQPep");
@@ -347,6 +349,7 @@ window.googleLogin = async function () {
 </script>
 </body>
 </html>
+
 
 
 
