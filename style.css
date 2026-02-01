@@ -562,15 +562,6 @@ body::before {
     }
 }
 
-/* ============================================
-   CLASS MANAGER - MODERN BLUE DESIGN
-   App Styles Part 2 (appStyle.css continuation)
-   ============================================ */
-
-/* ============================================
-   BUTTONS - Modern Gradient Style
-   ============================================ */
-
 .btn {
     padding: 12px 24px;
     border: none;
@@ -1408,6 +1399,110 @@ body::before {
 }
 
 /* ============================================
+   TOGGLEABLE SIDEBAR - DESKTOP & MOBILE
+   ============================================ */
+
+/* Show hamburger on all screen sizes */
+.menu-toggle {
+    position: fixed;
+    top: 20px;
+    left: 20px;
+    width: 50px;
+    height: 50px;
+    background: linear-gradient(135deg, var(--primary-600), var(--primary-700));
+    border: none;
+    border-radius: 12px;
+    cursor: pointer;
+    z-index: 1001;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    box-shadow: 0 4px 12px rgba(37, 99, 235, 0.4);
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.menu-toggle:hover {
+    transform: scale(1.05);
+    box-shadow: 0 6px 20px rgba(37, 99, 235, 0.6);
+}
+
+.menu-toggle span {
+    width: 24px;
+    height: 3px;
+    background: white;
+    border-radius: 2px;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.menu-toggle.active span:nth-child(1) {
+    transform: rotate(45deg) translate(7px, 7px);
+}
+
+.menu-toggle.active span:nth-child(2) {
+    opacity: 0;
+    transform: translateX(-20px);
+}
+
+.menu-toggle.active span:nth-child(3) {
+    transform: rotate(-45deg) translate(7px, -7px);
+}
+
+/* Sidebar - Hidden by default */
+.sidebar {
+    position: fixed;
+    transform: translateX(-100%);
+    transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.sidebar.open {
+    transform: translateX(0);
+}
+
+/* Overlay */
+.sidebar-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.5);
+    backdrop-filter: blur(4px);
+    z-index: 99;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.3s;
+}
+
+.sidebar-overlay.active {
+    opacity: 1;
+    pointer-events: all;
+}
+
+/* Main content - No left margin */
+.main-content {
+    margin-left: 0;
+    padding-left: 80px; /* Space for hamburger */
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* When sidebar is open on desktop */
+@media (min-width: 1025px) {
+    .sidebar.open ~ .main-content {
+        margin-left: 280px;
+    }
+}
+
+@media (max-width: 768px) {
+    .main-content {
+        padding-left: 20px;
+        padding-top: 80px;
+    }
+}
+
+/* ============================================
    END OF APP STYLES
    ============================================ */
+
 
