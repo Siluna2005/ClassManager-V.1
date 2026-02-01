@@ -108,8 +108,7 @@
     signInWithEmailAndPassword, 
     createUserWithEmailAndPassword, 
     GoogleAuthProvider, 
-    signInWithRedirect,
-    getRedirectResult,
+    signInWithPopup,  // ← Using POPUP instead of redirect
     onAuthStateChanged
   } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-auth.js";
   import { 
@@ -146,124 +145,22 @@
     }).catch(err => console.error("Email error:", err));
   }
 
-  // Check if we're returning from Google OAuth
-  const isReturningFromGoogle = sessionStorage.getItem('googleLoginInProgress');
-  console.log("🔍 Google login in progress?", isReturningFromGoogle);
-
   let hasRedirected = false;
-  let authCheckCount = 0;
-  const MAX_AUTH_CHECKS = 10;
 
-  // Function to check and handle authenticated user
-  async function handleAuthenticatedUser(user) {
-    if (hasRedirected) return;
-
-    console.log("✅ User is authenticated:", user.email);
-
-    // If returning from Google, save profile
-    if (isReturningFromGoogle === 'true') {
-      console.log("💾 Saving Google user profile...");
-      
-      try {
-        await set(ref(database, "users/" + user.uid + "/profile"), {
-          email: user.email,
-          name: user.displayName,
-          photoURL: user.photoURL,
-          lastLogin: new Date().toISOString(),
-        });
-        console.log("✅ Profile saved");
-        sendLoginEmail(user.email);
-      } catch (error) {
-        console.error("❌ Error saving profile:", error);
-      }
-
-      // Clear the flag
-      sessionStorage.removeItem('googleLoginInProgress');
-    }
-
-    // Redirect to app
-    hasRedirected = true;
-    console.log("🔄 REDIRECTING TO APP in 500ms");
-    
-    setTimeout(() => {
-      window.location.replace("app.html");
-    }, 500);
-  }
-
-  // If returning from Google, poll for auth state
-  if (isReturningFromGoogle === 'true') {
-    console.log("⏳ Waiting for Firebase authentication to complete...");
-    
-    const checkAuth = setInterval(() => {
-      authCheckCount++;
-      const currentUser = auth.currentUser;
-      
-      console.log(`🔍 Auth check ${authCheckCount}/${MAX_AUTH_CHECKS}:`, currentUser ? currentUser.email : 'null');
-      
-      if (currentUser) {
-        console.log("✅ User authenticated!");
-        clearInterval(checkAuth);
-        handleAuthenticatedUser(currentUser);
-      } else if (authCheckCount >= MAX_AUTH_CHECKS) {
-        console.error("❌ Timeout waiting for authentication");
-        clearInterval(checkAuth);
-        sessionStorage.removeItem('googleLoginInProgress');
-        alert("Authentication timeout. Please try again.");
-      }
-    }, 500); // Check every 500ms
-  }
-
-  // Regular auth state listener (for email login and already logged in users)
+  // Check if already logged in
   onAuthStateChanged(auth, (user) => {
-    // Skip if we're already handling Google redirect
-    if (isReturningFromGoogle === 'true') {
-      console.log("🔔 Auth state changed (skipping - handled by polling)");
-      return;
-    }
-
-    console.log("🔔 Auth state changed");
-    console.log("  - User:", user ? user.email : "null");
-
     if (user && !hasRedirected) {
-      handleAuthenticatedUser(user);
+      console.log("✅ User already logged in:", user.email);
+      hasRedirected = true;
+      
+      setTimeout(() => {
+        console.log("🔄 REDIRECTING TO APP");
+        window.location.replace("app.html");
+      }, 500);
     } else if (!user) {
-      console.log("ℹ️ No user authenticated - showing login form");
+      console.log("ℹ️ No user authenticated");
     }
   });
-
-  // Also try getRedirectResult (as backup)
-  getRedirectResult(auth)
-    .then(async (result) => {
-      console.log("📥 getRedirectResult:", result ? "Has result" : "null");
-      
-      if (result && !hasRedirected) {
-        console.log("✅ Got result from getRedirectResult!");
-        console.log("  - Email:", result.user.email);
-        
-        // Save profile
-        try {
-          await set(ref(database, "users/" + result.user.uid + "/profile"), {
-            email: result.user.email,
-            name: result.user.displayName,
-            photoURL: result.user.photoURL,
-            lastLogin: new Date().toISOString(),
-          });
-          sendLoginEmail(result.user.email);
-        } catch (error) {
-          console.error("Error saving:", error);
-        }
-        
-        sessionStorage.removeItem('googleLoginInProgress');
-        hasRedirected = true;
-        
-        setTimeout(() => {
-          window.location.replace("app.html");
-        }, 500);
-      }
-    })
-    .catch((error) => {
-      console.error("❌ getRedirectResult error:", error);
-    });
 
   window.login = async function(email, password, callback) {
     console.log("📧 Email login attempt:", email);
@@ -271,7 +168,9 @@
       await signInWithEmailAndPassword(auth, email, password);
       console.log("✅ Email login successful");
       sendLoginEmail(email);
-      // onAuthStateChanged will handle redirect
+      
+      hasRedirected = true;
+      window.location.replace("app.html");
     } catch (error) {
       console.error("❌ Email login error:", error);
       if (callback) callback(error.message);
@@ -295,28 +194,60 @@
       console.log("✅ Profile created");
       
       sendLoginEmail(email);
-      // onAuthStateChanged will handle redirect
+      
+      hasRedirected = true;
+      window.location.replace("app.html");
     } catch (error) {
       console.error("❌ Signup error:", error);
       if (callback) callback(error.message);
     }
   };
 
+  // POPUP METHOD - More reliable!
   window.googleLogin = async function() {
-    console.log("🔵 GOOGLE LOGIN CLICKED");
-    
-    // Set flag before redirecting
-    sessionStorage.setItem('googleLoginInProgress', 'true');
-    console.log("  - Flag set in sessionStorage");
+    console.log("🔵 GOOGLE LOGIN CLICKED (popup method)");
     
     try {
       const provider = new GoogleAuthProvider();
-      console.log("  - Starting redirect to Google...");
-      await signInWithRedirect(auth, provider);
+      console.log("  - Opening Google popup...");
+      
+      // Use popup instead of redirect
+      const result = await signInWithPopup(auth, provider);
+      
+      console.log("✅ Google login successful!");
+      console.log("  - User:", result.user.email);
+      console.log("  - UID:", result.user.uid);
+      
+      // Save profile
+      await set(ref(database, "users/" + result.user.uid + "/profile"), {
+        email: result.user.email,
+        name: result.user.displayName,
+        photoURL: result.user.photoURL,
+        lastLogin: new Date().toISOString(),
+      });
+      console.log("✅ Profile saved");
+      
+      sendLoginEmail(result.user.email);
+      
+      hasRedirected = true;
+      console.log("🔄 REDIRECTING TO APP");
+      
+      setTimeout(() => {
+        window.location.replace("app.html");
+      }, 500);
+      
     } catch (error) {
       console.error("❌ Google login error:", error);
-      sessionStorage.removeItem('googleLoginInProgress');
-      alert("Google login failed: " + error.message);
+      console.error("  - Code:", error.code);
+      console.error("  - Message:", error.message);
+      
+      if (error.code === 'auth/popup-blocked') {
+        alert("❌ Popup was blocked!\n\nPlease allow popups for this site and try again.");
+      } else if (error.code === 'auth/cancelled-popup-request') {
+        console.log("ℹ️ User cancelled the login");
+      } else {
+        alert("Google login failed: " + error.message);
+      }
     }
   };
 
@@ -398,6 +329,7 @@
 </script>
 </body>
 </html>
+
 
 
 
