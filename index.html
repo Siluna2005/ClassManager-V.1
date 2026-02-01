@@ -109,7 +109,8 @@
     createUserWithEmailAndPassword, 
     GoogleAuthProvider, 
     signInWithRedirect,
-    getRedirectResult
+    getRedirectResult,
+    onAuthStateChanged
   } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-auth.js";
   import { 
     getDatabase, 
@@ -145,89 +146,77 @@
     }).catch(err => console.error("Email error:", err));
   }
 
-  // Check URL parameters to see if we're returning from Google
-  const urlParams = new URLSearchParams(window.location.search);
-  const isReturningFromGoogle = urlParams.has('code') || urlParams.has('state');
-  
-  console.log("🔍 Checking redirect status...");
-  console.log("  - Is returning from Google?", isReturningFromGoogle);
-  console.log("  - Current URL:", window.location.href);
-  console.log("  - Current user before redirect check:", auth.currentUser);
+  // Check if we're returning from Google OAuth
+  const isReturningFromGoogle = sessionStorage.getItem('googleLoginInProgress');
+  console.log("🔍 Google login in progress?", isReturningFromGoogle);
 
-  // Handle Google redirect
-  getRedirectResult(auth)
-    .then(async (result) => {
-      console.log("📥 getRedirectResult completed");
-      console.log("  - Result:", result);
-      console.log("  - Current user after:", auth.currentUser);
+  // Flag to prevent multiple redirects
+  let hasRedirected = false;
 
-      if (result) {
-        console.log("✅ NEW Google login detected");
-        console.log("  - User ID:", result.user.uid);
-        console.log("  - Email:", result.user.email);
+  // Handle auth state changes
+  onAuthStateChanged(auth, async (user) => {
+    console.log("🔔 Auth state changed");
+    console.log("  - User:", user ? user.email : "null");
+    console.log("  - Has redirected?", hasRedirected);
+    console.log("  - Returning from Google?", isReturningFromGoogle);
 
+    if (user && !hasRedirected) {
+      console.log("✅ User is authenticated");
+
+      // If returning from Google, save profile
+      if (isReturningFromGoogle === 'true') {
+        console.log("💾 Saving Google user profile...");
+        
         try {
-          await set(ref(database, "users/" + result.user.uid + "/profile"), {
-            email: result.user.email,
-            name: result.user.displayName,
-            photoURL: result.user.photoURL,
+          await set(ref(database, "users/" + user.uid + "/profile"), {
+            email: user.email,
+            name: user.displayName,
+            photoURL: user.photoURL,
             lastLogin: new Date().toISOString(),
           });
-          console.log("✅ Profile saved to database");
+          console.log("✅ Profile saved");
+          sendLoginEmail(user.email);
         } catch (error) {
           console.error("❌ Error saving profile:", error);
         }
 
-        sendLoginEmail(result.user.email);
-        
-        console.log("🔄 REDIRECTING TO APP (from Google login)");
-        setTimeout(() => {
-          window.location.replace("app.html");
-        }, 1000);
-        
-      } else {
-        console.log("ℹ️ No redirect result (not a Google redirect)");
-        
-        // Check if user is already authenticated
-        setTimeout(() => {
-          const currentUser = auth.currentUser;
-          console.log("🔍 Checking current user after delay...");
-          console.log("  - Current user:", currentUser);
-          
-          if (currentUser) {
-            console.log("✅ User already logged in");
-            console.log("  - User ID:", currentUser.uid);
-            console.log("  - Email:", currentUser.email);
-            console.log("🔄 REDIRECTING TO APP (already logged in)");
-            window.location.replace("app.html");
-          } else {
-            console.log("ℹ️ No user logged in - showing login form");
-          }
-        }, 2000);
+        // Clear the flag
+        sessionStorage.removeItem('googleLoginInProgress');
+      }
+
+      // Redirect to app
+      hasRedirected = true;
+      console.log("🔄 REDIRECTING TO APP");
+      
+      setTimeout(() => {
+        window.location.replace("app.html");
+      }, 500);
+    } else if (!user) {
+      console.log("ℹ️ No user authenticated - showing login form");
+      // Clear any stale flags
+      sessionStorage.removeItem('googleLoginInProgress');
+    }
+  });
+
+  // Also try getRedirectResult (as backup)
+  getRedirectResult(auth)
+    .then((result) => {
+      console.log("📥 getRedirectResult:", result ? "Has result" : "null");
+      if (result) {
+        console.log("  - Email:", result.user.email);
       }
     })
     .catch((error) => {
-      console.error("❌ getRedirectResult ERROR:", error);
-      console.error("  - Error code:", error.code);
-      console.error("  - Error message:", error.message);
-      
-      // Even on error, check if user is logged in
-      setTimeout(() => {
-        if (auth.currentUser) {
-          console.log("⚠️ Error but user is logged in, redirecting anyway");
-          window.location.replace("app.html");
-        }
-      }, 2000);
+      console.error("❌ getRedirectResult error:", error);
     });
 
   window.login = async function(email, password, callback) {
     console.log("📧 Email login attempt:", email);
     try {
-      const result = await signInWithEmailAndPassword(auth, email, password);
-      console.log("✅ Email login successful:", result.user.uid);
+      await signInWithEmailAndPassword(auth, email, password);
+      console.log("✅ Email login successful");
       sendLoginEmail(email);
-      console.log("🔄 REDIRECTING TO APP (email login)");
-      window.location.replace("app.html");
+      // onAuthStateChanged will handle redirect
     } catch (error) {
       console.error("❌ Email login error:", error);
       if (callback) callback(error.message);
@@ -242,7 +231,7 @@
     }
     try {
       const cred = await createUserWithEmailAndPassword(auth, email, password);
-      console.log("✅ Signup successful:", cred.user.uid);
+      console.log("✅ Signup successful");
       
       await set(ref(database, 'users/' + cred.user.uid + '/profile'), {
         email: email,
@@ -251,8 +240,7 @@
       console.log("✅ Profile created");
       
       sendLoginEmail(email);
-      console.log("🔄 REDIRECTING TO APP (signup)");
-      window.location.replace("app.html");
+      // onAuthStateChanged will handle redirect
     } catch (error) {
       console.error("❌ Signup error:", error);
       if (callback) callback(error.message);
@@ -261,27 +249,30 @@
 
   window.googleLogin = async function() {
     console.log("🔵 GOOGLE LOGIN CLICKED");
-    console.log("  - Current user before redirect:", auth.currentUser);
+    
+    // Set flag before redirecting
+    sessionStorage.setItem('googleLoginInProgress', 'true');
+    console.log("  - Flag set in sessionStorage");
+    
     try {
       const provider = new GoogleAuthProvider();
       console.log("  - Starting redirect to Google...");
       await signInWithRedirect(auth, provider);
-      console.log("  - Redirect initiated (you should not see this)");
     } catch (error) {
       console.error("❌ Google login error:", error);
+      sessionStorage.removeItem('googleLoginInProgress');
       alert("Google login failed: " + error.message);
     }
   };
 
   window.addEventListener("load", () => {
-    console.log("🎨 Page loaded, hiding loader");
+    console.log("🎨 Page loaded");
     setTimeout(() => {
       document.getElementById("loader")?.classList.add("hide-loader");
     }, 2500);
   });
 
   window.switchTab = function(tab) {
-    console.log("🔄 Switching to tab:", tab);
     document.querySelectorAll('.tab-btn').forEach(t => {
       t.classList.toggle('active', t.textContent.toLowerCase().includes(tab));
     });
@@ -352,6 +343,7 @@
 </script>
 </body>
 </html>
+
 
 
 
