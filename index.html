@@ -150,60 +150,115 @@
   const isReturningFromGoogle = sessionStorage.getItem('googleLoginInProgress');
   console.log("🔍 Google login in progress?", isReturningFromGoogle);
 
-  // Flag to prevent multiple redirects
   let hasRedirected = false;
+  let authCheckCount = 0;
+  const MAX_AUTH_CHECKS = 10;
 
-  // Handle auth state changes
-  onAuthStateChanged(auth, async (user) => {
-    console.log("🔔 Auth state changed");
-    console.log("  - User:", user ? user.email : "null");
-    console.log("  - Has redirected?", hasRedirected);
-    console.log("  - Returning from Google?", isReturningFromGoogle);
+  // Function to check and handle authenticated user
+  async function handleAuthenticatedUser(user) {
+    if (hasRedirected) return;
 
-    if (user && !hasRedirected) {
-      console.log("✅ User is authenticated");
+    console.log("✅ User is authenticated:", user.email);
 
-      // If returning from Google, save profile
-      if (isReturningFromGoogle === 'true') {
-        console.log("💾 Saving Google user profile...");
-        
-        try {
-          await set(ref(database, "users/" + user.uid + "/profile"), {
-            email: user.email,
-            name: user.displayName,
-            photoURL: user.photoURL,
-            lastLogin: new Date().toISOString(),
-          });
-          console.log("✅ Profile saved");
-          sendLoginEmail(user.email);
-        } catch (error) {
-          console.error("❌ Error saving profile:", error);
-        }
-
-        // Clear the flag
-        sessionStorage.removeItem('googleLoginInProgress');
+    // If returning from Google, save profile
+    if (isReturningFromGoogle === 'true') {
+      console.log("💾 Saving Google user profile...");
+      
+      try {
+        await set(ref(database, "users/" + user.uid + "/profile"), {
+          email: user.email,
+          name: user.displayName,
+          photoURL: user.photoURL,
+          lastLogin: new Date().toISOString(),
+        });
+        console.log("✅ Profile saved");
+        sendLoginEmail(user.email);
+      } catch (error) {
+        console.error("❌ Error saving profile:", error);
       }
 
-      // Redirect to app
-      hasRedirected = true;
-      console.log("🔄 REDIRECTING TO APP");
+      // Clear the flag
+      sessionStorage.removeItem('googleLoginInProgress');
+    }
+
+    // Redirect to app
+    hasRedirected = true;
+    console.log("🔄 REDIRECTING TO APP in 500ms");
+    
+    setTimeout(() => {
+      window.location.replace("app.html");
+    }, 500);
+  }
+
+  // If returning from Google, poll for auth state
+  if (isReturningFromGoogle === 'true') {
+    console.log("⏳ Waiting for Firebase authentication to complete...");
+    
+    const checkAuth = setInterval(() => {
+      authCheckCount++;
+      const currentUser = auth.currentUser;
       
-      setTimeout(() => {
-        window.location.replace("app.html");
-      }, 500);
+      console.log(`🔍 Auth check ${authCheckCount}/${MAX_AUTH_CHECKS}:`, currentUser ? currentUser.email : 'null');
+      
+      if (currentUser) {
+        console.log("✅ User authenticated!");
+        clearInterval(checkAuth);
+        handleAuthenticatedUser(currentUser);
+      } else if (authCheckCount >= MAX_AUTH_CHECKS) {
+        console.error("❌ Timeout waiting for authentication");
+        clearInterval(checkAuth);
+        sessionStorage.removeItem('googleLoginInProgress');
+        alert("Authentication timeout. Please try again.");
+      }
+    }, 500); // Check every 500ms
+  }
+
+  // Regular auth state listener (for email login and already logged in users)
+  onAuthStateChanged(auth, (user) => {
+    // Skip if we're already handling Google redirect
+    if (isReturningFromGoogle === 'true') {
+      console.log("🔔 Auth state changed (skipping - handled by polling)");
+      return;
+    }
+
+    console.log("🔔 Auth state changed");
+    console.log("  - User:", user ? user.email : "null");
+
+    if (user && !hasRedirected) {
+      handleAuthenticatedUser(user);
     } else if (!user) {
       console.log("ℹ️ No user authenticated - showing login form");
-      // Clear any stale flags
-      sessionStorage.removeItem('googleLoginInProgress');
     }
   });
 
   // Also try getRedirectResult (as backup)
   getRedirectResult(auth)
-    .then((result) => {
+    .then(async (result) => {
       console.log("📥 getRedirectResult:", result ? "Has result" : "null");
-      if (result) {
+      
+      if (result && !hasRedirected) {
+        console.log("✅ Got result from getRedirectResult!");
         console.log("  - Email:", result.user.email);
+        
+        // Save profile
+        try {
+          await set(ref(database, "users/" + result.user.uid + "/profile"), {
+            email: result.user.email,
+            name: result.user.displayName,
+            photoURL: result.user.photoURL,
+            lastLogin: new Date().toISOString(),
+          });
+          sendLoginEmail(result.user.email);
+        } catch (error) {
+          console.error("Error saving:", error);
+        }
+        
+        sessionStorage.removeItem('googleLoginInProgress');
+        hasRedirected = true;
+        
+        setTimeout(() => {
+          window.location.replace("app.html");
+        }, 500);
       }
     })
     .catch((error) => {
@@ -343,6 +398,7 @@
 </script>
 </body>
 </html>
+
 
 
 
