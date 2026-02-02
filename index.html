@@ -4,305 +4,291 @@
   <meta charset="UTF-8">
   <title>Class Manager</title>
   <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
-  <link rel="stylesheet" href="style.css">
-  <meta http-equiv="Content-Security-Policy" content="default-src 'self' https: data: blob: 'unsafe-inline' 'unsafe-eval';">
   <meta http-equiv="Cross-Origin-Opener-Policy" content="same-origin-allow-popups">
   <meta http-equiv="Cross-Origin-Embedder-Policy" content="unsafe-none">
   <link rel="icon" type="image/x-icon" href="assets/favicon.ico">
-  <script src="https://cdn.jsdelivr.net/npm/emailjs-com@3/dist/email.min.js"></script>
+  <link rel="stylesheet" href="style.css">
 </head>
 <body>
 
   <!-- Loading Screen -->
-<div id="loader">
-  <div class="loader-content">
-    <img src="assets/logo.png" alt="Class Manager Logo" class="logo-img">
-    <div class="dots">
-      <span></span>
-      <span></span>
-      <span></span>
+  <div id="loader">
+    <div class="loader-content">
+      <img src="assets/logo.png" alt="Class Manager Logo" class="logo-img">
+      <div class="dots">
+        <span></span>
+        <span></span>
+        <span></span>
+      </div>
+      <p>Preparing your workspace</p>
     </div>
-    <p>Preparing your workspace</p>
-  </div>
-</div>
-
-<!-- Auth Container -->
-<div class="auth-container">
-  <div class="auth-header">
-    <h1>Class Manager</h1>
-    <p>Manage your classes efficiently</p>
   </div>
 
-  <!-- Tab Switcher -->
-  <div class="tab-switcher">
-    <button class="tab-btn active" onclick="switchTab('login')">Login</button>
-    <button class="tab-btn" onclick="switchTab('signup')">Sign Up</button>
+  <!-- Auth Container -->
+  <div class="auth-container">
+    <div class="auth-header">
+      <h1>Class Manager</h1>
+      <p>Manage your classes efficiently</p>
+    </div>
+
+    <!-- Tab Switcher -->
+    <div class="tab-switcher">
+      <button class="tab-btn active" onclick="switchTab('login')">Login</button>
+      <button class="tab-btn" onclick="switchTab('signup')">Sign Up</button>
+    </div>
+
+    <!-- Login Form -->
+    <form class="auth-form active" id="loginForm" onsubmit="handleLogin(event)">
+      <div class="input-group">
+        <label for="loginEmail">Email address</label>
+        <input type="email" id="loginEmail" placeholder="you@example.com" required>
+      </div>
+
+      <div class="input-group">
+        <label for="loginPassword">Password</label>
+        <input type="password" id="loginPassword" placeholder="Enter your password" required>
+        <span class="password-toggle" onclick="togglePassword('loginPassword')">👁️</span>
+      </div>
+
+      <div class="forgot-password">
+        <a href="#" onclick="alert('Password reset feature coming soon!'); return false;">Forgot password?</a>
+      </div>
+
+      <button type="submit" class="btn btn-primary">
+        <span>Login to your account</span>
+      </button>
+
+      <div class="divider"><span>OR</span></div>
+
+      <button type="button" class="btn btn-google" onclick="googleLogin()">
+        <img src="https://www.svgrepo.com/show/475656/google-color.svg" alt="Google">
+        <span>Continue with Google</span>
+      </button>
+    </form>
+
+    <!-- Sign Up Form -->
+    <form class="auth-form" id="signupForm" onsubmit="handleSignup(event)">
+      <div class="input-group">
+        <label for="signupEmail">Email address</label>
+        <input type="email" id="signupEmail" placeholder="you@example.com" required>
+      </div>
+
+      <div class="input-group">
+        <label for="signupPassword">Password</label>
+        <input type="password" id="signupPassword" placeholder="At least 6 characters" required minlength="6">
+        <span class="password-toggle" onclick="togglePassword('signupPassword')">👁️</span>
+      </div>
+
+      <div class="input-group">
+        <label for="confirmPassword">Confirm Password</label>
+        <input type="password" id="confirmPassword" placeholder="Re-enter your password" required minlength="6">
+        <span class="password-toggle" onclick="togglePassword('confirmPassword')">👁️</span>
+      </div>
+
+      <button type="submit" class="btn btn-primary">
+        <span>Create account</span>
+      </button>
+
+      <div class="divider"><span>OR</span></div>
+
+      <button type="button" class="btn btn-google" onclick="googleLogin()">
+        <img src="https://www.svgrepo.com/show/475656/google-color.svg" alt="Google">
+        <span>Sign up with Google</span>
+      </button>
+    </form>
   </div>
 
-  <!-- Alert Message -->
-  <div id="alert" class="alert"></div>
-
-  <!-- Login Form -->
-  <form class="auth-form active" id="loginForm" onsubmit="handleLogin(event)">
-    <div class="input-group">
-      <label for="loginEmail">Email address</label>
-      <input type="email" id="loginEmail" placeholder="you@example.com" required>
-    </div>
-
-    <div class="input-group">
-      <label for="loginPassword">Password</label>
-      <input type="password" id="loginPassword" placeholder="Enter your password" required>
-      <span class="password-toggle" onclick="togglePassword('loginPassword')">👁️</span>
-    </div>
-
-    <div class="forgot-password">
-      <a href="#" onclick="alert('Password reset feature coming soon!'); return false;">Forgot password?</a>
-    </div>
-
-    <button type="submit" class="btn btn-primary" id="loginBtn">
-      <span>Login to your account</span>
-    </button>
-
-    <div class="divider"><span>OR</span></div>
-
-    <button type="button" class="btn btn-google" onclick="googleLogin()">
-      <img src="https://www.svgrepo.com/show/475656/google-color.svg" alt="Google">
-      <span>Continue with Google</span>
-    </button>
-  </form>
-
-  <!-- Sign Up Form -->
-  <form class="auth-form" id="signupForm" onsubmit="handleSignup(event)">
-    <div class="input-group">
-      <label for="signupEmail">Email address</label>
-      <input type="email" id="signupEmail" placeholder="you@example.com" required>
-    </div>
-
-    <div class="input-group">
-      <label for="signupPassword">Password</label>
-      <input type="password" id="signupPassword" placeholder="At least 6 characters" required minlength="6">
-      <span class="password-toggle" onclick="togglePassword('signupPassword')">👁️</span>
-    </div>
-
-    <div class="input-group">
-      <label for="confirmPassword">Confirm Password</label>
-      <input type="password" id="confirmPassword" placeholder="Re-enter your password" required minlength="6">
-      <span class="password-toggle" onclick="togglePassword('confirmPassword')">👁️</span>
-    </div>
-
-    <button type="submit" class="btn btn-primary" id="signupBtn">
-      <span>Create account</span>
-    </button>
-
-    <div class="divider"><span>OR</span></div>
-
-    <button type="button" class="btn btn-google" onclick="googleLogin()">
-      <img src="https://www.svgrepo.com/show/475656/google-color.svg" alt="Google">
-      <span>Sign up with Google</span>
-    </button>
-  </form>
-</div>
-
-<script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-auth-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-database-compat.js"></script>
+  <!-- Firebase Libraries -->
+  <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-auth-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-database-compat.js"></script>
   
-<script type="module">
-  import { initializeApp } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-app.js";
-  import {    
-    getAuth, 
-    signInWithEmailAndPassword, 
-    createUserWithEmailAndPassword, 
-    GoogleAuthProvider, 
-    signInWithPopup,  // ← Using POPUP instead of redirect
-    onAuthStateChanged
-  } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-auth.js";
-  import { 
-    getDatabase, 
-    ref, 
-    set 
-  } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-database.js";
-
-
-</script>    
-  <!-- ============================================         
-  STEP 2: YOUR SCRIPT (AFTER FIREBASE)         
-  ============================================ -->      
-  <script>        
+  <script>
     console.log('🔵 SCRIPT STARTED');
-                
-    // Firebase Configuration       
-    const firebaseConfig = {           
-      apiKey: "AIzaSyD4z857J2ipSxqK8pN4tEWqU-jeK_mwA2I",            
-      authDomain: "class-manager-383ad.firebaseapp.com",           
-      databaseURL: "https://class-manager-383ad-default-rtdb.asia-southeast1.firebasedatabase.app",            
-      projectId: "class-manager-383ad",           
-      storageBucket: "class-manager-383ad.firebasestorage.app",           
-      messagingSenderId: "1085651561679",            
-      appId: "1:1085651561679:web:82ca82d59d6ff2ec671bba"       
+    
+    const firebaseConfig = {
+      apiKey: "AIzaSyD4z857J2ipSxqK8pN4tEWqU-jeK_mwA2I",
+      authDomain: "class-manager-383ad.firebaseapp.com",
+      databaseURL: "https://class-manager-383ad-default-rtdb.asia-southeast1.firebasedatabase.app",
+      projectId: "class-manager-383ad",
+      storageBucket: "class-manager-383ad.firebasestorage.app",
+      messagingSenderId: "1085651561679",
+      appId: "1:1085651561679:web:82ca82d59d6ff2ec671bba"
     };
-               
-    // Initialize Firebase       
-    firebase.initializeApp(firebaseConfig);       
-    const auth = firebase.auth();       
-    const database = firebase.database();        
-        
-    console.log('✅ Firebase initialized');        
-        
-    // Check for redirect result        
-    auth.getRedirectResult()      
-      .then(async (result) => {               
-        if (result.user) {                   
-          console.log('✅ Google login successful:', result.user.email);                    
-                    
-          // Save user profile                   
-          await database.ref('users/' + result.user.uid + '/profile').set({                        
-            email: result.user.email,                        
-            displayName: result.user.displayName || '',                        
-            photoURL: result.user.photoURL || '',                        
-            createdAt: new Date().toISOString(),                        
-            lastLogin: new Date().toISOString()                    
-          });                
-        }            
-      })            
-      .catch((error) => {                
-        if (error.code !== 'auth/popup-closed-by-user') {                   
-          console.error('❌ Redirect error:', error);                
-        }           
-      });
-                
-    // Auth state listener       
-    auth.onAuthStateChanged(async (user) => {           
-      if (user) {                
-        console.log('✅ User logged in:', user.email);                
-                
-        // Save/update profile                
-        await database.ref('users/' + user.uid + '/profile').set({                    
-          email: user.email,                    
-          displayName: user.displayName || '',                    
-          photoURL: user.photoURL || '',                    
-          lastLogin: new Date().toISOString()               
+    
+    firebase.initializeApp(firebaseConfig);
+    const auth = firebase.auth();
+    const database = firebase.database();
+    console.log('✅ Firebase initialized');
+    
+    auth.getRedirectResult().then(async (result) => {
+      if (result.user) {
+        console.log('✅ Redirect login:', result.user.email);
+        await database.ref('users/' + result.user.uid + '/profile').set({
+          email: result.user.email,
+          displayName: result.user.displayName || '',
+          photoURL: result.user.photoURL || '',
+          createdAt: new Date().toISOString(),
+          lastLogin: new Date().toISOString()
         });
-                                
-        // Redirect to app                
-        window.location.href = 'app.html';           
-      } else {                
-        console.log('ℹ️ No user authenticated');            
-      }        
+      }
+    }).catch((error) => {
+      if (error.code !== 'auth/popup-closed-by-user') {
+        console.error('Redirect error:', error);
+      }
     });
-                
-    // Google Login Function       
-    async function googleLogin() {            
-      console.log('🔵 GOOGLE LOGIN CLICKED');            
-            
-      try {               
-        const provider = new firebase.auth.GoogleAuthProvider();               
-        provider.addScope('email');               
-        provider.addScope('profile');                
-                
-        const result = await auth.signInWithPopup(provider);                
-                
-        if (result.user) {                    
-          console.log('✅ Login successful:', result.user.email);                    
-                    
-          // Save profile                   
-          await database.ref('users/' + result.user.uid + '/profile').set({                       
-            email: result.user.email,                        
-            displayName: result.user.displayName || '',                     
-            photoURL: result.user.photoURL || '',                    
-            createdAt: new Date().toISOString(),                    
-            lastLogin: new Date().toISOString()                   
-          });               
+    
+    auth.onAuthStateChanged(async (user) => {
+      if (user) {
+        console.log('✅ User logged in:', user.email);
+        try {
+          await database.ref('users/' + user.uid + '/profile').set({
+            email: user.email,
+            displayName: user.displayName || '',
+            photoURL: user.photoURL || '',
+            lastLogin: new Date().toISOString()
+          });
+        } catch (error) {
+          console.error('Error saving profile:', error);
         }
-                            
-      } catch (error) {                
-        console.error('❌ Login error:', error);                
-                
-        if (error.code === 'auth/popup-closed-by-user') {                    
-          console.log('Login cancelled');                
-        } else if (error.code === 'auth/popup-blocked') {                    
-          alert('Popup blocked. Trying redirect method...');                    
-          const provider = new firebase.auth.GoogleAuthProvider();                    
-          await auth.signInWithRedirect(provider);                
-        } else {                    
-          alert('Login failed: ' + error.message);                
-        }            
-      }        
+        window.location.href = 'app.html';
+      } else {
+        console.log('ℹ️ No user authenticated');
+      }
+    });
+    
+    async function googleLogin() {
+      console.log('🔵 GOOGLE LOGIN');
+      try {
+        const provider = new firebase.auth.GoogleAuthProvider();
+        provider.addScope('email');
+        provider.addScope('profile');
+        const result = await auth.signInWithPopup(provider);
+        if (result.user) {
+          console.log('✅ Login success');
+          await database.ref('users/' + result.user.uid + '/profile').set({
+            email: result.user.email,
+            displayName: result.user.displayName || '',
+            photoURL: result.user.photoURL || '',
+            createdAt: new Date().toISOString(),
+            lastLogin: new Date().toISOString()
+          });
+        }
+      } catch (error) {
+        console.error('Login error:', error);
+        if (error.code === 'auth/popup-blocked') {
+          alert('Popup blocked. Trying redirect...');
+          await auth.signInWithRedirect(new firebase.auth.GoogleAuthProvider());
+        } else if (error.code !== 'auth/popup-closed-by-user') {
+          alert('Login failed: ' + error.message);
+        }
+      }
     }
-               
     window.googleLogin = googleLogin;
-                
-    // Email Login Function        
-    async function emailLogin() {            
-      const email = document.getElementById('loginEmail').value.trim();            
+    
+    function handleLogin(event) {
+      event.preventDefault();
+      const email = document.getElementById('loginEmail').value.trim();
       const password = document.getElementById('loginPassword').value.trim();
-                       
-      if (!email || !password) {              
-        alert('Please enter email and password');           
-        return;          
+      if (!email || !password) {
+        alert('Please enter email and password');
+        return;
       }
-                      
-      try {          
-        const result = await auth.signInWithEmailAndPassword(email, password);        
-               
-        await database.ref('users/' + result.user.uid + '/profile').set({                   
-          email: result.user.email,                  
-          lastLogin: new Date().toISOString()               
+      console.log('📧 Email login');
+      auth.signInWithEmailAndPassword(email, password)
+        .then(async (result) => {
+          await database.ref('users/' + result.user.uid + '/profile').set({
+            email: result.user.email,
+            lastLogin: new Date().toISOString()
+          });
+        })
+        .catch((error) => {
+          let msg = 'Login failed.';
+          if (error.code === 'auth/user-not-found') msg = 'No account found.';
+          else if (error.code === 'auth/wrong-password') msg = 'Incorrect password.';
+          alert(msg);
         });
-                           
-      } catch (error) {               
-        let msg = 'Login failed. ';               
-        if (error.code === 'auth/user-not-found') msg = 'No account found.';              
-        else if (error.code === 'auth/wrong-password') msg = 'Incorrect password.';              
-        alert(msg);           
-      }      
     }
-               
-    window.emailLogin = emailLogin;
-                
-    // Email Signup Function       
-    async function emailSignup() {           
-      const email = document.getElementById('signupEmail').value.trim();            
-      const password = document.getElementById('signupPassword').value.trim();           
-      const confirm = document.getElementById('signupConfirmPassword').value.trim();
-                       
-      if (!email || !password || !confirm) {               
-        alert('Please fill in all fields');             
-        return;          
+    window.handleLogin = handleLogin;
+    
+    function handleSignup(event) {
+      event.preventDefault();
+      const email = document.getElementById('signupEmail').value.trim();
+      const password = document.getElementById('signupPassword').value.trim();
+      const confirm = document.getElementById('confirmPassword').value.trim();
+      if (!email || !password || !confirm) {
+        alert('Please fill all fields');
+        return;
       }
-                       
-      if (password !== confirm) {              
-        alert('Passwords do not match');           
-        return;          
+      if (password !== confirm) {
+        alert('Passwords do not match');
+        return;
       }
-                        
-      if (password.length < 6) {               
-        alert('Password must be at least 6 characters');              
-        return;          
+      if (password.length < 6) {
+        alert('Password must be at least 6 characters');
+        return;
       }
-                       
-      try {            
-        const result = await auth.createUserWithEmailAndPassword(email, password);                
-             
-        await database.ref('users/' + result.user.uid + '/profile').set({           
-          email: result.user.email,           
-          createdAt: new Date().toISOString(),           
-          lastLogin: new Date().toISOString()             
+      console.log('📧 Signup');
+      auth.createUserWithEmailAndPassword(email, password)
+        .then(async (result) => {
+          await database.ref('users/' + result.user.uid + '/profile').set({
+            email: result.user.email,
+            createdAt: new Date().toISOString(),
+            lastLogin: new Date().toISOString()
+          });
+          alert('Account created!');
+        })
+        .catch((error) => {
+          let msg = 'Signup failed.';
+          if (error.code === 'auth/email-already-in-use') msg = 'Email already registered.';
+          else if (error.code === 'auth/weak-password') msg = 'Password too weak.';
+          alert(msg);
         });
-                                
-        alert('Account created successfully!');                
-            
-      } catch (error) {               
-        let msg = 'Signup failed. ';               
-        if (error.code === 'auth/email-already-in-use') msg = 'Email already registered.';              
-        else if (error.code === 'auth/weak-password') msg = 'Password too weak.';              
-        alert(msg);          
-      }      
     }
-                
-    window.emailSignup = emailSignup;
-                
-    console.log('✅ All functions loaded');  
+    window.handleSignup = handleSignup;
+    
+    function switchTab(tab) {
+      const loginForm = document.getElementById('loginForm');
+      const signupForm = document.getElementById('signupForm');
+      const tabs = document.querySelectorAll('.tab-btn');
+      if (tab === 'login') {
+        loginForm.classList.add('active');
+        signupForm.classList.remove('active');
+        tabs[0].classList.add('active');
+        tabs[1].classList.remove('active');
+      } else {
+        signupForm.classList.add('active');
+        loginForm.classList.remove('active');
+        tabs[1].classList.add('active');
+        tabs[0].classList.remove('active');
+      }
+    }
+    window.switchTab = switchTab;
+    
+    function togglePassword(fieldId) {
+      const field = document.getElementById(fieldId);
+      const toggle = field.nextElementSibling;
+      if (field.type === 'password') {
+        field.type = 'text';
+        toggle.textContent = '🙈';
+      } else {
+        field.type = 'password';
+        toggle.textContent = '👁️';
+      }
+    }
+    window.togglePassword = togglePassword;
+    
+    setTimeout(() => {
+      const loader = document.getElementById('loader');
+      if (loader) {
+        loader.style.opacity = '0';
+        loader.style.transition = 'opacity 0.5s';
+        setTimeout(() => loader.style.display = 'none', 500);
+        console.log('✅ Loader hidden');
+      }
+    }, 1000);
+    
+    console.log('✅ All functions loaded');
   </script>
 </body>
 </html>
