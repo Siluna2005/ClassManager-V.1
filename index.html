@@ -102,6 +102,10 @@
     </button>
   </form>
 </div>
+
+<script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-database-compat.js"></script>
   
 <script type="module">
   import { initializeApp } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-app.js";
@@ -119,307 +123,190 @@
     set 
   } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-database.js";
 
- // ============================================
-// FIXED GOOGLE LOGIN - PROPER INITIALIZATION
-// Replace the entire Google login section in index.html
-// ============================================
 
-// ============================================
-// STEP 1: FIREBASE INITIALIZATION
-// ============================================
-
-console.log('🔵 SCRIPT STARTED');
-
-const firebaseConfig = {
-    apiKey: "AIzaSyD4z857J2ipSxqK8pN4tEWqU-jeK_mwA2I",
-    authDomain: "class-manager-383ad.firebaseapp.com",
-    databaseURL: "https://class-manager-383ad-default-rtdb.asia-southeast1.firebasedatabase.app",
-    projectId: "class-manager-383ad",
-    storageBucket: "class-manager-383ad.firebasestorage.app",
-    messagingSenderId: "1085651561679",
-    appId: "1:1085651561679:web:82ca82d59d6ff2ec671bba"
-};
-
-// Initialize Firebase
-firebase.initializeApp(firebaseConfig);
-const auth = firebase.auth();
-const database = firebase.database();
-
-console.log('✅ Firebase initialized');
-
-// ============================================
-// STEP 2: CHECK FOR REDIRECT RESULT
-// (Must be AFTER auth is initialized)
-// ============================================
-
-auth.getRedirectResult()
-    .then(async (result) => {
-        if (result.user) {
-            console.log('✅ Google login successful (redirect):', result.user.email);
-            
-            try {
-                // Save user email to Firebase
-                await database.ref('users/' + result.user.uid + '/profile').set({
-                    email: result.user.email,
-                    displayName: result.user.displayName || '',
-                    photoURL: result.user.photoURL || '',
-                    createdAt: new Date().toISOString(),
-                    lastLogin: new Date().toISOString()
-                });
+</script>    
+  <!-- ============================================         
+  STEP 2: YOUR SCRIPT (AFTER FIREBASE)         
+  ============================================ -->      
+  <script>        
+    console.log('🔵 SCRIPT STARTED');
                 
-                console.log('✅ User profile saved');
-            } catch (error) {
-                console.error('❌ Error saving profile:', error);
-            }
-            
-            // Redirect handled by onAuthStateChanged
-        }
-    })
-    .catch((error) => {
-        console.error('❌ Redirect result error:', error);
+    // Firebase Configuration       
+    const firebaseConfig = {           
+      apiKey: "AIzaSyD4z857J2ipSxqK8pN4tEWqU-jeK_mwA2I",            
+      authDomain: "class-manager-383ad.firebaseapp.com",           
+      databaseURL: "https://class-manager-383ad-default-rtdb.asia-southeast1.firebasedatabase.app",            
+      projectId: "class-manager-383ad",           
+      storageBucket: "class-manager-383ad.firebasestorage.app",           
+      messagingSenderId: "1085651561679",            
+      appId: "1:1085651561679:web:82ca82d59d6ff2ec671bba"       
+    };
+               
+    // Initialize Firebase       
+    firebase.initializeApp(firebaseConfig);       
+    const auth = firebase.auth();       
+    const database = firebase.database();        
         
-        // Only show error if it's not a user cancellation
-        if (error.code !== 'auth/popup-closed-by-user' && 
-            error.code !== 'auth/cancelled-popup-request') {
-            alert('Login error: ' + error.message);
-        }
+    console.log('✅ Firebase initialized');        
+        
+    // Check for redirect result        
+    auth.getRedirectResult()      
+      .then(async (result) => {               
+        if (result.user) {                   
+          console.log('✅ Google login successful:', result.user.email);                    
+                    
+          // Save user profile                   
+          await database.ref('users/' + result.user.uid + '/profile').set({                        
+            email: result.user.email,                        
+            displayName: result.user.displayName || '',                        
+            photoURL: result.user.photoURL || '',                        
+            createdAt: new Date().toISOString(),                        
+            lastLogin: new Date().toISOString()                    
+          });                
+        }            
+      })            
+      .catch((error) => {                
+        if (error.code !== 'auth/popup-closed-by-user') {                   
+          console.error('❌ Redirect error:', error);                
+        }           
+      });
+                
+    // Auth state listener       
+    auth.onAuthStateChanged(async (user) => {           
+      if (user) {                
+        console.log('✅ User logged in:', user.email);                
+                
+        // Save/update profile                
+        await database.ref('users/' + user.uid + '/profile').set({                    
+          email: user.email,                    
+          displayName: user.displayName || '',                    
+          photoURL: user.photoURL || '',                    
+          lastLogin: new Date().toISOString()               
+        });
+                                
+        // Redirect to app                
+        window.location.href = 'app.html';           
+      } else {                
+        console.log('ℹ️ No user authenticated');            
+      }        
     });
-
-// ============================================
-// STEP 3: AUTHENTICATION STATE LISTENER
-// ============================================
-
-auth.onAuthStateChanged(async (user) => {
-    if (user) {
-        console.log('✅ User logged in:', user.email);
-        
-        try {
-            // Save/update user profile
-            await database.ref('users/' + user.uid + '/profile').set({
-                email: user.email,
-                displayName: user.displayName || '',
-                photoURL: user.photoURL || '',
-                createdAt: new Date().toISOString(),
-                lastLogin: new Date().toISOString()
-            });
+                
+    // Google Login Function       
+    async function googleLogin() {            
+      console.log('🔵 GOOGLE LOGIN CLICKED');            
             
-            console.log('✅ User profile updated');
-        } catch (error) {
-            console.error('❌ Error saving profile:', error);
+      try {               
+        const provider = new firebase.auth.GoogleAuthProvider();               
+        provider.addScope('email');               
+        provider.addScope('profile');                
+                
+        const result = await auth.signInWithPopup(provider);                
+                
+        if (result.user) {                    
+          console.log('✅ Login successful:', result.user.email);                    
+                    
+          // Save profile                   
+          await database.ref('users/' + result.user.uid + '/profile').set({                       
+            email: result.user.email,                        
+            displayName: result.user.displayName || '',                     
+            photoURL: result.user.photoURL || '',                    
+            createdAt: new Date().toISOString(),                    
+            lastLogin: new Date().toISOString()                   
+          });               
         }
-        
-        // Redirect to app
-        console.log('➡️ Redirecting to app.html...');
-        window.location.href = 'app.html';
-        
-    } else {
-        console.log('ℹ️ No user authenticated');
+                            
+      } catch (error) {                
+        console.error('❌ Login error:', error);                
+                
+        if (error.code === 'auth/popup-closed-by-user') {                    
+          console.log('Login cancelled');                
+        } else if (error.code === 'auth/popup-blocked') {                    
+          alert('Popup blocked. Trying redirect method...');                    
+          const provider = new firebase.auth.GoogleAuthProvider();                    
+          await auth.signInWithRedirect(provider);                
+        } else {                    
+          alert('Login failed: ' + error.message);                
+        }            
+      }        
     }
-});
-
-// ============================================
-// STEP 4: GOOGLE LOGIN FUNCTION
-// ============================================
-
-async function googleLogin() {
-    console.log('🔵 GOOGLE LOGIN CLICKED');
-    
-    try {
-        const provider = new firebase.auth.GoogleAuthProvider();
-        
-        // Add required scopes
-        provider.addScope('email');
-        provider.addScope('profile');
-        
-        console.log('  - Trying popup method...');
-        
-        try {
-            // Try popup first (preferred method)
-            const result = await auth.signInWithPopup(provider);
-            
-            if (result.user) {
-                console.log('✅ Google login successful (popup):', result.user.email);
+               
+    window.googleLogin = googleLogin;
                 
-                // Save user email to Firebase
-                await database.ref('users/' + result.user.uid + '/profile').set({
-                    email: result.user.email,
-                    displayName: result.user.displayName || '',
-                    photoURL: result.user.photoURL || '',
-                    createdAt: new Date().toISOString(),
-                    lastLogin: new Date().toISOString()
-                });
-                
-                console.log('✅ User profile saved');
-                
-                // onAuthStateChanged will handle redirect
-            }
-            
-        } catch (popupError) {
-            console.warn('⚠️ Popup method failed:', popupError.code);
-            
-            // If popup was blocked or closed, fallback to redirect
-            if (popupError.code === 'auth/popup-blocked' || 
-                popupError.code === 'auth/popup-closed-by-user' ||
-                popupError.code === 'auth/cancelled-popup-request') {
-                
-                console.log('  - Falling back to redirect method...');
-                alert('Popup blocked. Redirecting to Google login...');
-                
-                await auth.signInWithRedirect(provider);
-                // User will be redirected back after login
-                
-            } else {
-                // Other errors - throw them
-                throw popupError;
-            }
-        }
-        
-    } catch (error) {
-        console.error('❌ Google login error:', error);
-        console.error('  - Code:', error.code);
-        console.error('  - Message:', error.message);
-        
-        // User-friendly error messages
-        let errorMessage = 'Google login failed. ';
-        
-        if (error.code === 'auth/popup-closed-by-user') {
-            errorMessage = 'Login cancelled. Please try again.';
-        } else if (error.code === 'auth/popup-blocked') {
-            errorMessage = 'Popup was blocked by your browser. Please allow popups and try again.';
-        } else if (error.code === 'auth/network-request-failed') {
-            errorMessage = 'Network error. Please check your internet connection.';
-        } else {
-            errorMessage += error.message;
-        }
-        
-        alert(errorMessage);
-    }
-}
-
-// Make function globally available
-window.googleLogin = googleLogin;
-
-// ============================================
-// STEP 5: EMAIL/PASSWORD LOGIN FUNCTION
-// ============================================
-
-async function emailLogin() {
-    console.log('📧 EMAIL LOGIN CLICKED');
-    
-    const email = document.getElementById('loginEmail').value.trim();
-    const password = document.getElementById('loginPassword').value.trim();
-    
-    if (!email || !password) {
-        alert('Please enter email and password');
-        return;
-    }
-    
-    try {
-        const result = await auth.signInWithEmailAndPassword(email, password);
-        
-        console.log('✅ Email login successful:', result.user.email);
-        
-        // Save/update user profile
-        await database.ref('users/' + result.user.uid + '/profile').set({
-            email: result.user.email,
-            createdAt: new Date().toISOString(),
-            lastLogin: new Date().toISOString()
+    // Email Login Function        
+    async function emailLogin() {            
+      const email = document.getElementById('loginEmail').value.trim();            
+      const password = document.getElementById('loginPassword').value.trim();
+                       
+      if (!email || !password) {              
+        alert('Please enter email and password');           
+        return;          
+      }
+                      
+      try {          
+        const result = await auth.signInWithEmailAndPassword(email, password);        
+               
+        await database.ref('users/' + result.user.uid + '/profile').set({                   
+          email: result.user.email,                  
+          lastLogin: new Date().toISOString()               
         });
-        
-        // onAuthStateChanged will handle redirect
-        
-    } catch (error) {
-        console.error('❌ Email login error:', error);
-        
-        let errorMessage = 'Login failed. ';
-        
-        if (error.code === 'auth/user-not-found') {
-            errorMessage = 'No account found with this email.';
-        } else if (error.code === 'auth/wrong-password') {
-            errorMessage = 'Incorrect password.';
-        } else if (error.code === 'auth/invalid-email') {
-            errorMessage = 'Invalid email address.';
-        } else if (error.code === 'auth/user-disabled') {
-            errorMessage = 'This account has been disabled.';
-        } else {
-            errorMessage += error.message;
-        }
-        
-        alert(errorMessage);
+                           
+      } catch (error) {               
+        let msg = 'Login failed. ';               
+        if (error.code === 'auth/user-not-found') msg = 'No account found.';              
+        else if (error.code === 'auth/wrong-password') msg = 'Incorrect password.';              
+        alert(msg);           
+      }      
     }
-}
-
-window.emailLogin = emailLogin;
-
-// ============================================
-// STEP 6: EMAIL/PASSWORD SIGNUP FUNCTION
-// ============================================
-
-async function emailSignup() {
-    console.log('📧 EMAIL SIGNUP CLICKED');
-    
-    const email = document.getElementById('signupEmail').value.trim();
-    const password = document.getElementById('signupPassword').value.trim();
-    const confirmPassword = document.getElementById('signupConfirmPassword').value.trim();
-    
-    if (!email || !password || !confirmPassword) {
-        alert('Please fill in all fields');
-        return;
-    }
-    
-    if (password !== confirmPassword) {
-        alert('Passwords do not match');
-        return;
-    }
-    
-    if (password.length < 6) {
-        alert('Password must be at least 6 characters');
-        return;
-    }
-    
-    try {
-        const result = await auth.createUserWithEmailAndPassword(email, password);
-        
-        console.log('✅ Signup successful:', result.user.email);
-        
-        // Save user profile
-        await database.ref('users/' + result.user.uid + '/profile').set({
-            email: result.user.email,
-            createdAt: new Date().toISOString(),
-            lastLogin: new Date().toISOString()
+               
+    window.emailLogin = emailLogin;
+                
+    // Email Signup Function       
+    async function emailSignup() {           
+      const email = document.getElementById('signupEmail').value.trim();            
+      const password = document.getElementById('signupPassword').value.trim();           
+      const confirm = document.getElementById('signupConfirmPassword').value.trim();
+                       
+      if (!email || !password || !confirm) {               
+        alert('Please fill in all fields');             
+        return;          
+      }
+                       
+      if (password !== confirm) {              
+        alert('Passwords do not match');           
+        return;          
+      }
+                        
+      if (password.length < 6) {               
+        alert('Password must be at least 6 characters');              
+        return;          
+      }
+                       
+      try {            
+        const result = await auth.createUserWithEmailAndPassword(email, password);                
+             
+        await database.ref('users/' + result.user.uid + '/profile').set({           
+          email: result.user.email,           
+          createdAt: new Date().toISOString(),           
+          lastLogin: new Date().toISOString()             
         });
-        
-        console.log('✅ User profile created');
-        
-        alert('Account created successfully!');
-        
-        // onAuthStateChanged will handle redirect
-        
-    } catch (error) {
-        console.error('❌ Signup error:', error);
-        
-        let errorMessage = 'Signup failed. ';
-        
-        if (error.code === 'auth/email-already-in-use') {
-            errorMessage = 'This email is already registered. Please login instead.';
-        } else if (error.code === 'auth/invalid-email') {
-            errorMessage = 'Invalid email address.';
-        } else if (error.code === 'auth/weak-password') {
-            errorMessage = 'Password is too weak. Please use a stronger password.';
-        } else {
-            errorMessage += error.message;
-        }
-        
-        alert(errorMessage);
+                                
+        alert('Account created successfully!');                
+            
+      } catch (error) {               
+        let msg = 'Signup failed. ';               
+        if (error.code === 'auth/email-already-in-use') msg = 'Email already registered.';              
+        else if (error.code === 'auth/weak-password') msg = 'Password too weak.';              
+        alert(msg);          
+      }      
     }
-}
-
-window.emailSignup = emailSignup;
-
-console.log('✅ All login functions loaded');
-</script>
+                
+    window.emailSignup = emailSignup;
+                
+    console.log('✅ All functions loaded');  
+  </script>
 </body>
 </html>
+
 
 
 
