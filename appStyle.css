@@ -438,3 +438,86 @@ table tbody tr:last-child td { border-bottom: none; }
     .card, .glass-card { box-shadow: none; border: 1px solid var(--gray-300); }
     .screen-title { color: black; }
 }
+
+/* ============================================
+   TEXT COLOR FIX - Settings & Subscription
+   ============================================ */
+
+/* Fix all text in Settings screen to black */
+#settings p,
+#settings h3,
+#settings h4,
+#settings span:not(.btn):not(.badge),
+#settings label,
+#settings div {
+    color: #111827 !important;
+}
+
+/* Fix all text in Subscription screen to black */
+#subscription p,
+#subscription h3,
+#subscription h4,
+#subscription span:not(.btn):not(.badge),
+#subscription label,
+#subscription div:not(.btn):not([class*="btn"]) {
+    color: #111827 !important;
+}
+
+/* Keep white text in colored stat boxes */
+#subscription [style*="background: rgba(59,130,246"] p,
+#subscription [style*="background: rgba(16,185,129"] p,
+#subscription [style*="background: rgba(245,158,11"] p,
+#subscription [style*="background: rgba(139,92,246"] p,
+#subscription [style*="background: rgba(239,68,68"] p {
+    color: white !important;
+}
+
+/* Keep white text in small labels on colored backgrounds */
+#subscription [style*="font-size: 13px"][style*="color: rgba(255,255,255"] {
+    color: rgba(255, 255, 255, 0.7) !important;
+}
+
+#subscription [style*="font-size: 20px"][style*="font-weight: 700"] {
+    color: white !important;
+}
+
+/* Keep colored icons in feature lists */
+#subscription [style*="color: #10B981"],
+#subscription [style*="color: #EF4444"] {
+    /* Icons stay colored */
+}
+
+/* Keep white text on buttons */
+.btn, 
+.btn-primary, 
+.btn-success, 
+.btn-danger, 
+.btn-secondary {
+    color: white !important;
+}
+
+/* Fix Settings colored box text */
+#settings [style*="background: rgba(16,185,129"] p,
+#settings [style*="background: rgba(59,130,246"] p,
+#settings [style*="background: rgba(245,158,11"] p,
+#settings [style*="background: rgba(139,92,246"] p,
+#settings [style*="background: rgba(239,68,68"] p {
+    color: white !important;
+}
+
+/* Keep colored status indicators */
+#settings [style*="font-weight: 600"][style*="color: #fff"],
+#settings [style*="font-weight: 600"][style*="color: white"] {
+    color: white !important;
+}
+
+/* Fix small gray text to darker gray */
+#settings [style*="font-size: 13px"][style*="color: rgba(255,255,255,0.7)"],
+#settings [style*="font-size: 14px"][style*="color: rgba(255,255,255,0.8)"] {
+    color: #4b5563 !important;
+}
+
+#subscription [style*="font-size: 13px"][style*="color: rgba(255,255,255,0.7)"],
+#subscription [style*="font-size: 14px"][style*="color: rgba(255,255,255,0.7)"] {
+    color: #4b5563 !important;
+}
