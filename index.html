@@ -206,53 +206,197 @@
   };
 
   // POPUP METHOD - More reliable!
-  window.googleLogin = async function() {
-    console.log("🔵 GOOGLE LOGIN CLICKED (popup method)");
+ async function googleLogin() {
+    console.log('🔵 GOOGLE LOGIN CLICKED');
     
     try {
-      const provider = new GoogleAuthProvider();
-      console.log("  - Opening Google popup...");
-      
-      // Use popup instead of redirect
-      const result = await signInWithPopup(auth, provider);
-      
-      console.log("✅ Google login successful!");
-      console.log("  - User:", result.user.email);
-      console.log("  - UID:", result.user.uid);
-      
-      // Save profile
-      await set(ref(database, "users/" + result.user.uid + "/profile"), {
-        email: result.user.email,
-        name: result.user.displayName,
-        photoURL: result.user.photoURL,
-        lastLogin: new Date().toISOString(),
-      });
-      console.log("✅ Profile saved");
-      
-      sendLoginEmail(result.user.email);
-      
-      hasRedirected = true;
-      console.log("🔄 REDIRECTING TO APP");
-      
-      setTimeout(() => {
-        window.location.replace("app.html");
-      }, 500);
-      
+        const provider = new firebase.auth.GoogleAuthProvider();
+        
+        // Add required scopes
+        provider.addScope('email');
+        provider.addScope('profile');
+        
+        console.log('  - Trying popup method...');
+        
+        try {
+            // Try popup first (preferred method)
+            const result = await auth.signInWithPopup(provider);
+            
+            if (result.user) {
+                console.log('✅ Google login successful (popup):', result.user.email);
+                
+                // Save user email to Firebase
+                await database.ref('users/' + result.user.uid + '/profile').set({
+                    email: result.user.email,
+                    displayName: result.user.displayName || '',
+                    photoURL: result.user.photoURL || '',
+                    createdAt: new Date().toISOString(),
+                    lastLogin: new Date().toISOString()
+                });
+                
+                console.log('✅ User profile saved');
+                
+                // Redirect handled by onAuthStateChanged
+            }
+            
+        } catch (popupError) {
+            console.warn('⚠️ Popup method failed:', popupError.code);
+            
+            // If popup was blocked or closed, fallback to redirect
+            if (popupError.code === 'auth/popup-blocked' || 
+                popupError.code === 'auth/popup-closed-by-user' ||
+                popupError.code === 'auth/cancelled-popup-request') {
+                
+                console.log('  - Falling back to redirect method...');
+                alert('Popup blocked. Redirecting to Google login...');
+                
+                await auth.signInWithRedirect(provider);
+                // User will be redirected back after login
+                
+            } else {
+                // Other errors - throw them
+                throw popupError;
+            }
+        }
+        
     } catch (error) {
-      console.error("❌ Google login error:", error);
-      console.error("  - Code:", error.code);
-      console.error("  - Message:", error.message);
-      
-      if (error.code === 'auth/popup-blocked') {
-        alert("❌ Popup was blocked!\n\nPlease allow popups for this site and try again.");
-      } else if (error.code === 'auth/cancelled-popup-request') {
-        console.log("ℹ️ User cancelled the login");
-      } else {
-        alert("Google login failed: " + error.message);
-      }
+        console.error('❌ Google login error:', error);
+        console.error('  - Code:', error.code);
+        console.error('  - Message:', error.message);
+        
+        // User-friendly error messages
+        let errorMessage = 'Google login failed. ';
+        
+        if (error.code === 'auth/popup-closed-by-user') {
+            errorMessage = 'Login cancelled. Please try again.';
+        } else if (error.code === 'auth/popup-blocked') {
+            errorMessage = 'Popup was blocked by your browser. Please allow popups and try again.';
+        } else if (error.code === 'auth/network-request-failed') {
+            errorMessage = 'Network error. Please check your internet connection.';
+        } else {
+            errorMessage += error.message;
+        }
+        
+        alert(errorMessage);
     }
-  };
+}
 
+  // ============================================
+// UPDATED GOOGLE LOGIN - WITH REDIRECT FALLBACK
+// Replace your googleLogin() function with this
+// ============================================
+
+async function googleLogin() {
+    console.log('🔵 GOOGLE LOGIN CLICKED');
+    
+    try {
+        const provider = new firebase.auth.GoogleAuthProvider();
+        
+        // Add required scopes
+        provider.addScope('email');
+        provider.addScope('profile');
+        
+        console.log('  - Trying popup method...');
+        
+        try {
+            // Try popup first (preferred method)
+            const result = await auth.signInWithPopup(provider);
+            
+            if (result.user) {
+                console.log('✅ Google login successful (popup):', result.user.email);
+                
+                // Save user email to Firebase
+                await database.ref('users/' + result.user.uid + '/profile').set({
+                    email: result.user.email,
+                    displayName: result.user.displayName || '',
+                    photoURL: result.user.photoURL || '',
+                    createdAt: new Date().toISOString(),
+                    lastLogin: new Date().toISOString()
+                });
+                
+                console.log('✅ User profile saved');
+                
+                // Redirect handled by onAuthStateChanged
+            }
+            
+        } catch (popupError) {
+            console.warn('⚠️ Popup method failed:', popupError.code);
+            
+            // If popup was blocked or closed, fallback to redirect
+            if (popupError.code === 'auth/popup-blocked' || 
+                popupError.code === 'auth/popup-closed-by-user' ||
+                popupError.code === 'auth/cancelled-popup-request') {
+                
+                console.log('  - Falling back to redirect method...');
+                alert('Popup blocked. Redirecting to Google login...');
+                
+                await auth.signInWithRedirect(provider);
+                // User will be redirected back after login
+                
+            } else {
+                // Other errors - throw them
+                throw popupError;
+            }
+        }
+        
+    } catch (error) {
+        console.error('❌ Google login error:', error);
+        console.error('  - Code:', error.code);
+        console.error('  - Message:', error.message);
+        
+        // User-friendly error messages
+        let errorMessage = 'Google login failed. ';
+        
+        if (error.code === 'auth/popup-closed-by-user') {
+            errorMessage = 'Login cancelled. Please try again.';
+        } else if (error.code === 'auth/popup-blocked') {
+            errorMessage = 'Popup was blocked by your browser. Please allow popups and try again.';
+        } else if (error.code === 'auth/network-request-failed') {
+            errorMessage = 'Network error. Please check your internet connection.';
+        } else {
+            errorMessage += error.message;
+        }
+        
+        alert(errorMessage);
+    }
+}
+
+// ============================================
+// HANDLE REDIRECT RESULT
+// Add this to check for redirect results
+// ============================================
+
+// Check for redirect result when page loads
+auth.getRedirectResult()
+    .then(async (result) => {
+        if (result.user) {
+            console.log('✅ Google login successful (redirect):', result.user.email);
+            
+            // Save user email to Firebase
+            await database.ref('users/' + result.user.uid + '/profile').set({
+                email: result.user.email,
+                displayName: result.user.displayName || '',
+                photoURL: result.user.photoURL || '',
+                createdAt: new Date().toISOString(),
+                lastLogin: new Date().toISOString()
+            });
+            
+            console.log('✅ User profile saved');
+            // Redirect handled by onAuthStateChanged
+        }
+    })
+    .catch((error) => {
+        console.error('❌ Redirect result error:', error);
+        
+        // Only show error if it's not a user cancellation
+        if (error.code !== 'auth/popup-closed-by-user' && 
+            error.code !== 'auth/cancelled-popup-request') {
+            alert('Login error: ' + error.message);
+        }
+    });
+
+console.log('✅ Google login functions loaded');
+  
   window.addEventListener("load", () => {
     console.log("🎨 Page loaded");
     setTimeout(() => {
@@ -331,6 +475,7 @@
 </script>
 </body>
 </html>
+
 
 
 
