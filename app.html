@@ -1298,26 +1298,55 @@
                 console.log('✅ User authenticated:', user.email);        
                 console.log('User ID:', currentUserId);
         
-                // CHECK IF USER IS ADMIN
-                await checkIfAdmin(currentUserId, user.email);
-        
-                setTimeout(() => {            
-                    const loader = document.getElementById('loader');            
-                    if (loader) {                
-                        loader.classList.add('hide-loader');                
-                        setTimeout(() => {                    
-                            loader.style.display = 'none';                
-                        }, 600);            
-                    }        
-                }, 1000);
-        
-                initializeApp();
-    
-            } else {        
-                console.log('❌ No user authenticated, redirecting...');        
-                window.location.href = 'index.html';    
+        // ⭐ SAVE USER EMAIL TO FIREBASE PROFILE
+        try {
+            const profileRef = database.ref('users/' + currentUserId + '/profile');
+            const profileSnapshot = await profileRef.once('value');
+            
+            if (!profileSnapshot.exists()) {
+                // First time - create profile
+                await profileRef.set({
+                    email: user.email,
+                    displayName: user.displayName || '',
+                    photoURL: user.photoURL || '',
+                    createdAt: new Date().toISOString(),
+                    lastLogin: new Date().toISOString()
+                });
+                console.log('✅ User profile created with email:', user.email);
+            } else {
+                // Update existing profile
+                await profileRef.update({
+                    email: user.email,
+                    lastLogin: new Date().toISOString()
+                });
+                console.log('✅ User profile updated with email:', user.email);
             }
-        });
+        } catch (error) {
+            console.error('❌ Error saving user profile:', error);
+        }
+        
+        // CHECK IF USER IS ADMIN
+        await checkIfAdmin(currentUserId, user.email);
+        
+        // Hide loader
+        setTimeout(() => {            
+            const loader = document.getElementById('loader');            
+            if (loader) {                
+                loader.classList.add('hide-loader');                
+                setTimeout(() => {                    
+                    loader.style.display = 'none';                
+                }, 600);            
+            }        
+        }, 1000);
+        
+        initializeApp();
+    
+    } else {        
+        console.log('❌ No user authenticated, redirecting...');        
+        window.location.href = 'index.html';    
+    }
+});
+
 
 
         // ============================================
@@ -5331,6 +5360,7 @@
     </script>
 </body>
 </html>
+
 
 
 
