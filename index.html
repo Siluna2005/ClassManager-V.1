@@ -205,82 +205,6 @@
     }
   };
 
-  // POPUP METHOD - More reliable!
- async function googleLogin() {
-    console.log('🔵 GOOGLE LOGIN CLICKED');
-    
-    try {
-        const provider = new firebase.auth.GoogleAuthProvider();
-        
-        // Add required scopes
-        provider.addScope('email');
-        provider.addScope('profile');
-        
-        console.log('  - Trying popup method...');
-        
-        try {
-            // Try popup first (preferred method)
-            const result = await auth.signInWithPopup(provider);
-            
-            if (result.user) {
-                console.log('✅ Google login successful (popup):', result.user.email);
-                
-                // Save user email to Firebase
-                await database.ref('users/' + result.user.uid + '/profile').set({
-                    email: result.user.email,
-                    displayName: result.user.displayName || '',
-                    photoURL: result.user.photoURL || '',
-                    createdAt: new Date().toISOString(),
-                    lastLogin: new Date().toISOString()
-                });
-                
-                console.log('✅ User profile saved');
-                
-                // Redirect handled by onAuthStateChanged
-            }
-            
-        } catch (popupError) {
-            console.warn('⚠️ Popup method failed:', popupError.code);
-            
-            // If popup was blocked or closed, fallback to redirect
-            if (popupError.code === 'auth/popup-blocked' || 
-                popupError.code === 'auth/popup-closed-by-user' ||
-                popupError.code === 'auth/cancelled-popup-request') {
-                
-                console.log('  - Falling back to redirect method...');
-                alert('Popup blocked. Redirecting to Google login...');
-                
-                await auth.signInWithRedirect(provider);
-                // User will be redirected back after login
-                
-            } else {
-                // Other errors - throw them
-                throw popupError;
-            }
-        }
-        
-    } catch (error) {
-        console.error('❌ Google login error:', error);
-        console.error('  - Code:', error.code);
-        console.error('  - Message:', error.message);
-        
-        // User-friendly error messages
-        let errorMessage = 'Google login failed. ';
-        
-        if (error.code === 'auth/popup-closed-by-user') {
-            errorMessage = 'Login cancelled. Please try again.';
-        } else if (error.code === 'auth/popup-blocked') {
-            errorMessage = 'Popup was blocked by your browser. Please allow popups and try again.';
-        } else if (error.code === 'auth/network-request-failed') {
-            errorMessage = 'Network error. Please check your internet connection.';
-        } else {
-            errorMessage += error.message;
-        }
-        
-        alert(errorMessage);
-    }
-}
-
   // ============================================
   // UPDATED GOOGLE LOGIN - WITH REDIRECT FALLBACK
   // Replace your googleLogin() function with this
@@ -474,6 +398,7 @@ console.log('✅ Google login functions loaded');
 </script>
 </body>
 </html>
+
 
 
 
