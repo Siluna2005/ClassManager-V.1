@@ -1603,19 +1603,30 @@
                 .then(() => alert("✅ Teacher ID copied"))     
                 .catch(() => alert("❌ Copy failed"));
         }
+
+        function testLoadAdminUsers() {
+            console.log('🔧 MANUAL TEST - Loading users...');
+            console.log('Is Admin:', isAdmin);
+            console.log('Admin Role:', adminRole);
+            console.log('Permissions:', adminPermissions);
+            console.log('Current User:', currentUser ? currentUser.email : 'Not logged in');
+    
+            loadAllUsers();
+        }
         
         function navigateTo(screenName) {
+            console.log('🔄 Navigating to:', screenName);
     
             document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
             document.getElementById(screenName).classList.add('active');
-    
+
             document.querySelectorAll('.menu-item').forEach(m => m.classList.remove('active'));
             const menuItem = document.querySelector(`.menu-item[data-screen="${screenName}"]`);
-    
+
             if (menuItem) menuItem.classList.add('active');
-    
+
             toggleSidebar();
-    
+
             // Call screen-specific functions
             if (screenName === 'students') loadStudentsScreen();
             if (screenName === 'timetable') loadTimetable();
@@ -1627,9 +1638,15 @@
             }
             if (screenName === 'payments') loadPaymentHistory();
             if (screenName === 'settings') loadSettings();
-    
-            // ADD THIS FOR SUBSCRIPTION
             if (screenName === 'subscription') updateSubscriptionDisplay();
+    
+            // AUTO-LOAD users when opening admin panel
+            if (screenName === 'admin-panel') {
+                console.log('📊 Admin panel opened - auto-loading users...');
+                setTimeout(() => {
+                    loadAllUsers();
+                }, 200);
+            }
         }
 
         function toggleSidebar() {
@@ -3408,50 +3425,93 @@
         // ============================================
 
         async function loadAllUsers() {
-            if (!isAdmin || !adminPermissions.canViewAllUsers) {
-                console.error('❌ Access denied: Cannot view all users');
-                alert('Access denied!');
+            console.log('📊 Starting loadAllUsers()...');
+    
+            // Check admin permissions
+            if (!isAdmin) {
+                console.error('❌ User is not an admin');
+                alert('Access denied: You are not an admin!');
                 return;
             }
     
-            console.log('📊 Loading all users...');
-    
+            if (!adminPermissions.canViewAllUsers) {
+                console.error('❌ No permission to view all users');
+                alert('Access denied: You do not have permission to view all users!');
+                return;
+            }
+
+            console.log('✅ Admin permissions verified');
+            console.log('👤 Current User:', currentUser.email);
+            console.log('🔑 Admin Role:', adminRole);
+
             try {
+                console.log('🔍 Fetching users from Firebase...');
                 const usersSnapshot = await database.ref('users').once('value');
-                allUsersData = [];
         
+                if (!usersSnapshot.exists()) {
+                    console.warn('⚠️ No users found in database');
+                    alert('No users found in the database.');
+                    return;
+                }
+        
+                console.log('✅ Users data retrieved from Firebase');
+        
+                allUsersData = [];
+                let userCount = 0;
+
                 usersSnapshot.forEach((userSnapshot) => {
                     const userId = userSnapshot.key;
                     const userData = userSnapshot.val();
             
+                    userCount++;
+                    console.log(`Processing user ${userCount}:`, userId);
+            
                     if (userData) {
-                        allUsersData.push({
+                        // Try to find email in multiple possible locations
+                        let email = 'No email found';
+                
+                        if (userData.profile && userData.profile.email) {
+                            email = userData.profile.email;
+                        } else if (userData.email) {
+                            email = userData.email;
+                        } else if (userData.data && userData.data.email) {
+                            email = userData.data.email;
+                        }
+                
+                        console.log('  📧 Email:', email);
+                        console.log('  📊 Students:', (userData.data?.students || []).length);
+                
+                        const userInfo = {
                             userId: userId,
-                            email: userData.profile?.email || 'Unknown',
+                            email: email,
                             createdAt: userData.profile?.createdAt || null,
                             studentsCount: (userData.data?.students || []).length,
                             paymentsCount: (userData.data?.payments || []).length,
                             subscription: userData.data?.subscription || {
                                 plan: 'free_trial',
                                 status: 'active'
-                            },
+                            },                           
                             lastSaved: userData.data?.lastSaved || null
-                        });
+                        };
+                
+                        allUsersData.push(userInfo);
                     }
                 });
-        
-                console.log('✅ Loaded', allUsersData.length, 'users');
-        
+
+                console.log('✅ Processed', allUsersData.length, 'users');
+                console.log('📊 All users data:', allUsersData);
+
                 // Update stats
                 updateAdminStats();
-        
-                // Display users table
+
+                // Display users in table
                 displayUsersTable();
-        
+
                 return allUsersData;
-        
+
             } catch (error) {
                 console.error('❌ Error loading users:', error);
+                console.error('Error details:', error.message, error.stack);
                 alert('Failed to load users: ' + error.message);
             }
         }
@@ -3490,36 +3550,60 @@
         }
 
         function displayUsersTable() {
+            console.log('📋 Displaying users table...');
+    
             const tbody = document.getElementById('adminUsersTableBody');
-            if (!tbody) return;
     
+            if (!tbody) {
+                console.error('❌ Table body not found: adminUsersTableBody');
+                return;
+            }
+
+            if (!allUsersData || allUsersData.length === 0) {
+                console.warn('⚠️ No users to display');
+                tbody.innerHTML = `
+                    <tr>
+                        <td colspan="6" style="text-align: center; padding: 40px; color: #6b7280;">
+                            No users found in database
+                        </td>
+                    </tr>
+                `;
+                return;
+            }
+
+            console.log('✅ Displaying', allUsersData.length, 'users');
+
             tbody.innerHTML = '';
-    
-            allUsersData.forEach(user => {
-                const row = document.createElement('tr');
+
+            allUsersData.forEach((user, index) => {
+                console.log(`Adding user ${index + 1} to table:`, user.email);
         
+                const row = document.createElement('tr');
+
                 const statusClass = user.subscription.status === 'active' ? 'status-active' : 'status-inactive';
                 const statusText = user.subscription.status === 'active' ? '✅ Active' : '❌ Inactive';
-        
+
                 row.innerHTML = `
-                    <td>${user.email}</td>
-                    <td><code>${user.userId.substring(0, 20)}...</code></td>
-                    <td>${user.studentsCount}</td>
+                    <td><strong>${user.email}</strong></td>
+                    <td><code style="font-size: 11px;">${user.userId.substring(0, 20)}...</code></td>
+                    <td><strong>${user.studentsCount}</strong></td>
                     <td><span class="badge badge-${user.subscription.plan}">${user.subscription.plan}</span></td>
                     <td><span class="${statusClass}">${statusText}</span></td>
                     <td>
                         <button class="btn-small btn-primary" onclick="viewUserDetails('${user.userId}')">👁️ View</button>
                         ${adminPermissions.canManageSubscriptions ? `
-                        <button class="btn-small btn-success" onclick="manageUserSubscription('${user.userId}')">💳 Subscription</button>
+                        <button class="btn-small btn-success" onclick="manageUserSubscription('${user.userId}')">💳 Manage</button>
                         ` : ''}
                         ${adminPermissions.canDeleteUsers ? `
                         <button class="btn-small btn-danger" onclick="deleteUser('${user.userId}')">🗑️ Delete</button>
                         ` : ''}
                     </td>
                 `;
-        
+
                 tbody.appendChild(row);
             });
+    
+            console.log('✅ Table displayed successfully');
         }
 
         async function viewUserDetails(userId) {
@@ -3914,43 +3998,57 @@
             });
         }
 
-        function showAdminTab(tabName) {
-            // Hide all tabs
-            document.querySelectorAll('.admin-tab-content').forEach(tab => {
-                tab.classList.remove('active');
-                tab.style.display = 'none';
+        function showAdminTab(tabName) {  
+            console.log('🔄 Switching to admin tab:', tabName);
+        
+            // Hide all tab contents    
+            document.querySelectorAll('.admin-tab-content').forEach(tab => {        
+                tab.classList.remove('active');       
+                tab.style.display = 'none';    
             });
     
-            // Remove active class from all tab buttons
-            document.querySelectorAll('.admin-tab').forEach(btn => {
-                btn.classList.remove('active');
-                btn.style.background = '#f3f4f6';
-                btn.style.color = '#374151';
+            // Remove active styling from all buttons   
+            document.querySelectorAll('.admin-tab').forEach(btn => {                
+                btn.classList.remove('active');        
+                btn.style.background = '#f3f4f6';        
+                btn.style.color = '#374151';    
             });
-    
-            // Show selected tab
-            const selectedTab = document.getElementById('admin-' + tabName + '-tab');
-            if (selectedTab) {
-                selectedTab.classList.add('active');
-                selectedTab.style.display = 'block';
+   
+            // Show the selected tab    
+            const selectedTab = document.getElementById('admin-' + tabName + '-tab');   
+            if (selectedTab) {       
+                selectedTab.classList.add('active');        
+                selectedTab.style.display = 'block';       
+                console.log('✅ Tab displayed:', tabName);    
+            } else {        
+                console.error('❌ Tab not found:', 'admin-' + tabName + '-tab');    
             }
     
-            // Add active class to clicked button
-            if (event && event.target) {
-                event.target.classList.add('active');
-                event.target.style.background = '#2563EB';
-                event.target.style.color = 'white';
+            // Update button styling    
+            if (event && event.target) {        
+                event.target.classList.add('active');        
+                event.target.style.background = '#2563EB';        
+                event.target.style.color = 'white';   
             }
     
-            // Load data for the tab
-            if (tabName === 'users') {
-                loadAllUsers();
-            } else if (tabName === 'subscriptions') {
-                loadSubscriptionsTab();
-            } else if (tabName === 'analytics') {
-                loadAdminAnalytics();
-            } else if (tabName === 'settings') {
-                loadAdminSettingsTab();
+            // AUTO-LOAD DATA FOR EACH TAB    
+            console.log('📊 Loading data for tab:', tabName);
+        
+            if (tabName === 'users') {        
+                // Load users automatically       
+                setTimeout(() => {            
+                    console.log('⏳ Calling loadAllUsers()...');            
+                    loadAllUsers();                        
+                }, 100);
+           
+            } else if (tabName === 'subscriptions') {        
+                setTimeout(() => loadSubscriptionsTab(), 100);
+            
+            } else if (tabName === 'analytics') {        
+                setTimeout(() => loadAdminAnalytics(), 100);
+            
+            } else if (tabName === 'settings') {        
+                setTimeout(() => loadAdminSettingsTab(), 100);   
             }
         }
 
@@ -5233,6 +5331,7 @@
     </script>
 </body>
 </html>
+
 
 
 
