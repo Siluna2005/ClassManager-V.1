@@ -903,9 +903,23 @@
                         💡 Save this ID to access your data from any device                    
                     </p>    
                     
-                    <button class="btn btn-primary" onclick="syncNowManual()" style="margin-bottom: 12px;">                            
-                        🔄 Sync Now                    
-                    </button>            
+                   <!-- Sync Status Row -->   
+                    <div style="display: flex; align-items: center; justify-content: space-between; gap: 20px; margin-bottom: 20px; padding: 16px; background: rgba(255,255,255,0.1); border-radius: 10px;">        
+                        <div style="flex: 1;">            
+                            <p style="margin: 0 0 4px 0; font-weight: 600; font-size: 14px; color: rgba(255,255,255,0.9);">Last Synced</p>            
+                            <p id="lastSyncTime" style="margin: 0; color: rgba(255,255,255,0.7); font-size: 14px;">Never</p>       
+                        </div>        
+        
+                        <div style="display: flex; align-items: center; gap: 12px;">            
+                            <!-- Sync Indicator -->            
+                            <div id="syncIndicator" style="width: 10px; height: 10px; background: #10b981; border-radius: 50%; box-shadow: 0 0 10px rgba(16,185,129,0.5);"></div>
+         
+                            <!-- Sync Button -->
+                            <button class="btn btn-primary" onclick="syncNowManual()" id="syncNowBtn"> 
+                                <span id="syncNowBtnText">🔄 Sync Now</span>                                
+                            </button>                                               
+                        </div>                        
+                    </div>                   
                 </div>
        
                 <!-- Grades Card -->   
@@ -5359,6 +5373,7 @@
     </script>
 </body>
 </html>
+
 
 
 
