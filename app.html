@@ -903,7 +903,7 @@
                         💡 Save this ID to access your data from any device                    
                     </p>    
                     
-                    <button class="btn btn-primary" onclick="manualSync()" style="margin-bottom: 12px;">                            
+                    <button class="btn btn-primary" onclick="syncNowManual()" style="margin-bottom: 12px;">                            
                         🔄 Sync Now                    
                     </button>            
                 </div>
@@ -4812,6 +4812,8 @@
         
             // Update data statistics    
             updateDataStatistics();
+            updateLastSyncTimeDisplay();    
+            updateSyncStats();
         }
 
         function addGrade() {
@@ -5026,8 +5028,6 @@
             } else {
                 warningEl.style.display = 'none';
             }
-
-            
     
             // Update button states
             updateSubscriptionButtons();
@@ -5074,7 +5074,6 @@
                 btnAnnual.style.opacity = '0.6';
             }
         }
-
         
         // Select a subscription plan (updated for PayHere)
         function selectPlan(plan) {
@@ -5360,6 +5359,7 @@
     </script>
 </body>
 </html>
+
 
 
 
