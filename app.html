@@ -888,9 +888,61 @@
                     <h1 class="screen-title">Settings</h1>   
                 </div>
 
+                <!-- Data Synchronization Card - NEW -->
+                <div class="card">
+                    <h3 class="card-title">💾 Data Synchronization</h3>
+        
+                    <!-- Sync Status Row -->
+                    <div style="display: flex; align-items: center; justify-content: space-between; gap: 20px; margin-bottom: 20px; padding: 16px; background: rgba(255,255,255,0.1); border-radius: 10px;">
+                        <div style="flex: 1;">
+                            <p style="margin: 0 0 4px 0; font-weight: 600; font-size: 14px; color: rgba(255,255,255,0.9);">Last Synced</p>
+                            <p id="lastSyncTime" style="margin: 0; color: rgba(255,255,255,0.7); font-size: 14px;">Never</p>
+                        </div>
+            
+                        <div style="display: flex; align-items: center; gap: 12px;">
+                            <!-- Sync Indicator -->
+                            <div id="syncIndicator" style="width: 10px; height: 10px; background: #10b981; border-radius: 50%; box-shadow: 0 0 10px rgba(16,185,129,0.5);"></div>
+                
+                            <!-- Sync Button -->
+                            <button class="btn btn-primary" onclick="syncNowManual()" id="syncNowBtn">
+                                <span id="syncNowBtnText">🔄 Sync Now</span>
+                            </button>
+                        </div>
+                    </div>
+        
+                    <!-- Sync Status Message -->
+                    <div id="syncStatusMessage" style="display: none; padding: 12px 16px; border-radius: 8px; margin-bottom: 16px;">
+                        <p id="syncStatusText" style="margin: 0; font-size: 14px; font-weight: 500;"></p>
+                    </div>
+        
+                    <!-- Sync Statistics -->
+                    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 12px; margin-bottom: 20px;">
+                        <div style="padding: 12px; background: rgba(59,130,246,0.2); border-radius: 8px; text-align: center; border: 1px solid rgba(59,130,246,0.3);">
+                            <p style="margin: 0 0 4px 0; font-size: 12px; color: rgba(255,255,255,0.7); text-transform: uppercase; letter-spacing: 0.5px;">Students</p>
+                            <p id="syncStudentsCount" style="margin: 0; font-size: 20px; font-weight: 700; color: #fff;">0</p>
+                        </div>
+            
+                        <div style="padding: 12px; background: rgba(16,185,129,0.2); border-radius: 8px; text-align: center; border: 1px solid rgba(16,185,129,0.3);">
+                            <p style="margin: 0 0 4px 0; font-size: 12px; color: rgba(255,255,255,0.7); text-transform: uppercase; letter-spacing: 0.5px;">Classes</p>
+                            <p id="syncClassesCount" style="margin: 0; font-size: 20px; font-weight: 700; color: #fff;">0</p>
+                        </div>
+            
+                        <div style="padding: 12px; background: rgba(245,158,11,0.2); border-radius: 8px; text-align: center; border: 1px solid rgba(245,158,11,0.3);">
+                            <p style="margin: 0 0 4px 0; font-size: 12px; color: rgba(255,255,255,0.7); text-transform: uppercase; letter-spacing: 0.5px;">Payments</p>
+                            <p id="syncPaymentsCount" style="margin: 0; font-size: 20px; font-weight: 700; color: #fff;">0</p>
+                        </div>
+                    </div>
+        
+                    <!-- Info Text -->
+                    <p style="color: rgba(255,255,255,0.7); font-size: 13px; margin: 0; line-height: 1.5;">
+                        ℹ️ Your data is automatically synced with the cloud in real-time. Use the "Sync Now" button to manually force synchronization or check for updates.
+                    </p>
+                </div>
+
+                <!-- Account Card -->
                 <div class="card">                    
                     <h3 class="card-title">👤 Account</h3>
-                        
+            
                     <div style="background: rgba(59,130,246,0.2); padding: 15px; border-radius: 12px; margin-bottom: 15px;">                            
                         <p style="font-size: 13px; color: rgba(255,255,255,0.7); margin-bottom: 5px;">Your Teacher ID:</p>                      
                         <p style="font-size: 16px; font-weight: 600; color: #fff; font-family: monospace;" id="teacherIdDisplay"></p>                       
@@ -898,30 +950,41 @@
                             📋 Copy ID                      
                         </button>                   
                     </div>
-                        
+            
                     <p style="font-size: 13px; color: rgba(255,255,255,0.7); margin-bottom: 15px;">                            
                         💡 Save this ID to access your data from any device                    
                     </p>    
-                    
-                   <!-- Sync Status Row -->   
-                    <div style="display: flex; align-items: center; justify-content: space-between; gap: 20px; margin-bottom: 20px; padding: 16px; background: rgba(255,255,255,0.1); border-radius: 10px;">        
-                        <div style="flex: 1;">            
-                            <p style="margin: 0 0 4px 0; font-weight: 600; font-size: 14px; color: rgba(255,255,255,0.9);">Last Synced</p>            
-                            <p id="lastSyncTime" style="margin: 0; color: rgba(255,255,255,0.7); font-size: 14px;">Never</p>       
-                        </div>        
-        
-                        <div style="display: flex; align-items: center; gap: 12px;">            
-                            <!-- Sync Indicator -->            
-                            <div id="syncIndicator" style="width: 10px; height: 10px; background: #10b981; border-radius: 50%; box-shadow: 0 0 10px rgba(16,185,129,0.5);"></div>
-         
-                            <!-- Sync Button -->
-                            <button class="btn btn-primary" onclick="syncNowManual()" id="syncNowBtn"> 
-                                <span id="syncNowBtnText">🔄 Sync Now</span>                                
-                            </button>                                               
-                        </div>                        
-                    </div>                   
                 </div>
-       
+
+                <!-- Cloud Sync Status - NEW SECTION -->
+                <div class="card">
+                    <h3 class="card-title">☁️ Cloud Synchronization</h3>
+        
+                    <div style="background: rgba(16,185,129,0.2); padding: 15px; border-radius: 12px; margin-bottom: 20px; border: 1px solid rgba(16,185,129,0.3);">
+                        <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 8px;">
+                            <span style="font-size: 20px;">✅</span>
+                            <span style="font-weight: 600; color: #D1FAE5;">Cloud Sync Active</span>
+                        </div>
+                        <p style="font-size: 13px; color: rgba(255,255,255,0.7); margin: 0;">
+                            Your data is automatically saved to the cloud in real-time
+                        </p>
+                    </div>
+        
+                    <!-- Last Saved Info -->
+                    <div style="background: rgba(255,255,255,0.1); padding: 12px; border-radius: 8px; margin-bottom: 20px;">
+                        <p style="font-size: 14px; color: rgba(255,255,255,0.8); margin: 0;">
+                            📅 Last Saved: <span id="lastSavedTime" style="font-weight: 600; color: #fff;">Never</span>
+                        </p>
+                    </div>
+        
+                    <p style="color: rgba(255,255,255,0.7); font-size: 13px; margin: 0 0 8px 0; line-height: 1.6;">
+                        ✓ Works on all your devices<br>
+                        ✓ Always up-to-date<br>
+                        ✓ Protected by Firebase security<br>
+                        ✓ No manual saving required
+                    </p>
+                </div>
+
                 <!-- Grades Card -->   
                 <div class="card">
                     <h3 class="card-title">Grades</h3>        
@@ -931,7 +994,7 @@
                         <button class="btn btn-primary" onclick="addGrade()">➕ Add</button>        
                     </div>    
                 </div>
-        
+
                 <!-- Subject Card -->    
                 <div class="card">        
                     <h3 class="card-title">Subject</h3>        
@@ -941,81 +1004,74 @@
                     </div>        
                     <button class="btn btn-primary" onclick="saveSubject()">💾 Save</button>    
                 </div>
-        
-                <!-- Data Management Card -->    
-                <div class="card">        
-                    <h3 class="card-title">Data Management</h3>        
-        
-                    <!-- Auto-Save Status -->        
-                    <div style="background: rgba(16,185,129,0.2); padding: 15px; border-radius: 12px; margin-bottom: 20px; border: 1px solid rgba(16,185,129,0.3);">            
-                        <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 8px;">                
-                            <span style="font-size: 20px;">✅</span>                
-                            <span style="font-weight: 600; color: #D1FAE5;">Auto-Save Active</span>            
-                        </div>            
-                        <p style="font-size: 13px; color: rgba(255,255,255,0.7); margin: 0;">                
-                            Your data is automatically saved every time you make changes           
-                        </p>       
-                    </div>
-        
-                    <!-- Last Saved Info -->        
-                    <div style="background: rgba(255,255,255,0.1); padding: 12px; border-radius: 8px; margin-bottom: 20px;">            
-                        <p style="font-size: 14px; color: rgba(255,255,255,0.8); margin: 0;">                
-                            📅 Last Saved: <span id="lastSavedTime" style="font-weight: 600; color: #fff;">Never</span>            
-                        </p>           
-                        <p style="font-size: 14px; color: rgba(255,255,255,0.8); margin: 8px 0 0 0;">                
-                            📦 Last Backup: <span id="lastBackupTime" style="font-weight: 600; color: #fff;">Never</span>           
-                        </p>        
-                    </div>
-        
-                    <!-- Manual Backup -->        
-                    <h4 style="color: #fff; font-size: 16px; margin-bottom: 12px;">Manual Backup</h4>        
-                    <button class="btn btn-primary" onclick="downloadBackup()" style="margin-bottom: 12px;">            
-                        💾 Download Backup File        
-                    </button>        
-                    <button class="btn btn-secondary" onclick="uploadBackup()" style="margin-bottom: 20px;">            
-                        📂 Restore from Backup File        
-                    </button>
 
-                    <!-- Data Statistics -->        
-                    <h4 style="color: #fff; font-size: 16px; margin-bottom: 12px;">Data Statistics</h4>        
-                    <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px; margin-bottom: 20px;">            
-                        <div style="background: rgba(59,130,246,0.2); padding: 12px; border-radius: 8px; text-align: center;">                
-                            <p style="font-size: 12px; color: rgba(255,255,255,0.7); margin-bottom: 4px;">Students</p>                
-                            <p style="font-size: 24px; font-weight: 700; color: #fff; margin: 0;" id="statsStudents">0</p>           
-                        </div>           
-                        <div style="background: rgba(16,185,129,0.2); padding: 12px; border-radius: 8px; text-align: center;">                
-                            <p style="font-size: 12px; color: rgba(255,255,255,0.7); margin-bottom: 4px;">Payments</p>                
-                            <p style="font-size: 24px; font-weight: 700; color: #fff; margin: 0;" id="statsPayments">0</p>            
-                        </div>            
-                        <div style="background: rgba(245,158,11,0.2); padding: 12px; border-radius: 8px; text-align: center;">                
-                            <p style="font-size: 12px; color: rgba(255,255,255,0.7); margin-bottom: 4px;">Classes</p>                
-                            <p style="font-size: 24px; font-weight: 700; color: #fff; margin: 0;" id="statsTimetable">0</p>           
-                        </div>            
-                        <div style="background: rgba(139,92,246,0.2); padding: 12px; border-radius: 8px; text-align: center;">                
-                            <p style="font-size: 12px; color: rgba(255,255,255,0.7); margin-bottom: 4px;">Attendance Records</p>              
-                            <p style="font-size: 24px; font-weight: 700; color: #fff; margin: 0;" id="statsAttendance">0</p>         
-                        </div>        
-                    </div>
+                <!-- Manual Device Backup (Optional) - UPDATED -->
+                <div class="card">
+                    <h3 class="card-title">💾 Manual Device Backup (Optional)</h3>
         
-                    <!-- Export Data -->        
-                    <h4 style="color: #fff; font-size: 16px; margin-bottom: 12px;">Export Data</h4>       
-                    <button class="btn btn-success" onclick="exportAllDataToExcel()" style="margin-bottom: 20px;">            
-                        📊 Export All Data to Excel       
+                    <p style="color: rgba(255,255,255,0.7); font-size: 14px; margin-bottom: 16px; line-height: 1.6;">
+                        Download a backup file to your device for safekeeping. This is <strong>optional</strong> since your data is already safely stored in the cloud.
+                    </p>
+        
+                    <button class="btn btn-primary" onclick="downloadBackup()" style="margin-bottom: 12px;">
+                        💾 Download Backup File
                     </button>
         
-                    <!-- Danger Zone -->        
-                    <div style="background: rgba(239,68,68,0.2); padding: 15px; border-radius: 12px; border: 1px solid rgba(239,68,68,0.3);">           
-                        <h4 style="color: #FEE2E2; font-size: 16px; margin-bottom: 8px;">⚠️ Danger Zone</h4>            
-                        <p style="font-size: 13px; color: rgba(255,255,255,0.7); margin-bottom: 12px;">                
-                            This action cannot be undone. All data will be permanently deleted.            
-                        </p>            
-                        <button class="btn btn-danger" onclick="clearAllData()">                
-                            🗑️ Clear All Data            
-                        </button>        
-                    </div>    
+                    <button class="btn btn-secondary" onclick="uploadBackup()" style="margin-bottom: 20px;">
+                        📂 Restore from Backup File
+                    </button>
+        
+                    <div style="background: rgba(255,255,255,0.1); padding: 12px; border-radius: 8px;">
+                        <p style="font-size: 14px; color: rgba(255,255,255,0.8); margin: 0;">
+                            📦 Last Manual Backup: <span id="lastBackupTime" style="font-weight: 600; color: #fff;">Never</span>
+                        </p>
+                    </div>
+                </div>
+
+                <!-- Data Statistics -->
+                <div class="card">
+                    <h3 class="card-title">📊 Data Statistics</h3>
+        
+                    <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px; margin-bottom: 20px;">
+                        <div style="background: rgba(59,130,246,0.2); padding: 12px; border-radius: 8px; text-align: center;">
+                            <p style="font-size: 12px; color: rgba(255,255,255,0.7); margin-bottom: 4px;">Students</p>
+                            <p style="font-size: 24px; font-weight: 700; color: #fff; margin: 0;" id="statsStudents">0</p>
+                        </div>
+                        <div style="background: rgba(16,185,129,0.2); padding: 12px; border-radius: 8px; text-align: center;">
+                            <p style="font-size: 12px; color: rgba(255,255,255,0.7); margin-bottom: 4px;">Payments</p>
+                            <p style="font-size: 24px; font-weight: 700; color: #fff; margin: 0;" id="statsPayments">0</p>
+                        </div>
+                        <div style="background: rgba(245,158,11,0.2); padding: 12px; border-radius: 8px; text-align: center;">
+                            <p style="font-size: 12px; color: rgba(255,255,255,0.7); margin-bottom: 4px;">Classes</p>
+                            <p style="font-size: 24px; font-weight: 700; color: #fff; margin: 0;" id="statsTimetable">0</p>
+                        </div>
+                        <div style="background: rgba(139,92,246,0.2); padding: 12px; border-radius: 8px; text-align: center;">
+                            <p style="font-size: 12px; color: rgba(255,255,255,0.7); margin-bottom: 4px;">Attendance Records</p>
+                            <p style="font-size: 24px; font-weight: 700; color: #fff; margin: 0;" id="statsAttendance">0</p>
+                        </div>
+                    </div>
+        
+                    <!-- Export Data -->
+                    <h4 style="color: #fff; font-size: 16px; margin-bottom: 12px;">Export Data</h4>
+                    <button class="btn btn-success" onclick="exportAllDataToExcel()" style="margin-bottom: 20px;">
+                        📊 Export All Data to Excel
+                    </button>
+                </div>
+
+                <!-- Danger Zone -->
+                <div class="card">
+                    <div style="background: rgba(239,68,68,0.2); padding: 15px; border-radius: 12px; border: 1px solid rgba(239,68,68,0.3);">
+                        <h4 style="color: #FEE2E2; font-size: 16px; margin-bottom: 8px;">⚠️ Danger Zone</h4>
+                        <p style="font-size: 13px; color: rgba(255,255,255,0.7); margin-bottom: 12px;">
+                            This action cannot be undone. All data will be permanently deleted from the cloud.
+                        </p>
+                        <button class="btn btn-danger" onclick="clearAllData()">
+                            🗑️ Clear All Data
+                        </button>
+                    </div>
                 </div>
             </div>
-
+            
             <!-- QR Code Display Modal -->
             <div class="modal" id="qrCodeDisplayModal">    
                 <div class="modal-content" style="max-width: 500px;">        
@@ -1394,6 +1450,8 @@
             console.log('User:', currentUser.email);
             console.log('UID:', currentUserId);
 
+            migrateLocalStorageToFirebase();
+            
             loadData();                // ← Load THIS user's data
             initializeSubscription();  // ← Load subscription info
             enableRealtimeSync();      // ← Enable real-time updates
@@ -1427,180 +1485,8 @@
         }
 
         // ============================================
-        // LOAD DATA FUNCTION
-        // ============================================
-
-        function loadData() {
-            // Check if user is authenticated
-            if (!currentUserId) {
-                console.error('❌ No user authenticated');
-                return;
-            }
-
-            console.log('📥 Loading data for:', currentUserId);
-   
-            // ⭐ LOAD FROM FIREBASE - User-specific path
-            // Path format: /users/{uniqueUserId}/data
-            database.ref('users/' + currentUserId + '/data').once('value')
-                .then((snapshot) => {
-                    const firebaseData = snapshot.val();
-                
-                    if (firebaseData) {
-                        // ✅ Data exists in Firebase - Load it
-                        console.log('✅ Data loaded from Firebase');
-                       
-                        appData = {
-                            ...appData,
-                            ...firebaseData,
-                            students: firebaseData.students || [],
-                            timetable: firebaseData.timetable || [],
-                            payments: firebaseData.payments || [],
-                            attendance: firebaseData.attendance || {},
-                            grades: firebaseData.grades || ['06', '07', '08', '09', '10', '11', '12']
-                        };
-                        
-                        // Save to localStorage as backup
-                        localStorage.setItem('classManagerData_' + currentUserId, JSON.stringify(appData));
-            
-                    } else {
-                        // ℹ️ No Firebase data - Check localStorage
-                        console.log('ℹ️ No Firebase data, checking localStorage...');
-                        
-                        const localData = localStorage.getItem('classManagerData_' + currentUserId);
-                        if (localData) {
-                            // Found local data - Upload to Firebase
-                            const parsedData = JSON.parse(localData);
-                            appData = { ...appData, ...parsedData };
-                            saveData();  // Upload to Firebase
-                            console.log('✅ Local data uploaded to Firebase');
-                        } else {
-                            // No data anywhere - Use defaults
-                            console.log('ℹ️ No saved data, using defaults');
-                        }
-                    }
-                
-                    // Update the UI
-                    populateGradeDropdowns();
-                    updateDashboard();
-                    updateSyncStatus('synced');
-                    teacherIdDisplay();
-                })
-                .catch((error) => {
-                    // ❌ Firebase error - Use localStorage as fallback
-                    console.error('❌ Firebase load error:', error);
-                
-                    const localData = localStorage.getItem('classManagerData_' + currentUserId);
-                    if (localData) {
-                        appData = { ...appData, ...JSON.parse(localData) };
-                        console.log('✅ Loaded from localStorage (fallback)');
-                    }
-                
-                    populateGradeDropdowns();
-                    updateDashboard();
-                    updateSyncStatus('error');
-                });
-        }
-
-        // ============================================
-        // SAVE DATA TO FIREBASE
-        // ============================================
-
-        function saveData() {
-            // Check if user is authenticated
-            if (!currentUserId) {
-                console.error('❌ No user authenticated');
-                return false;
-            }
-
-            try {
-                const dataToSave = {
-                    ...appData,
-                    lastSaved: new Date().toISOString()
-                };
-        
-                console.log('💾 Saving data for:', currentUserId);
-        
-                updateSyncStatus('syncing');
-        
-                // ⭐ SAVE TO FIREBASE - User-specific path
-                // Path format: /users/{uniqueUserId}/data
-                database.ref('users/' + currentUserId + '/data').set(dataToSave)
-                    .then(() => {
-                        console.log('✅ Data saved to Firebase');
-                
-                        // Also save to localStorage as backup
-                        localStorage.setItem('classManagerData_' + currentUserId, JSON.stringify(dataToSave));
-                
-                        updateLastSavedTime();
-                        updateSyncStatus('synced');
-                    })
-                    .catch((error) => {
-                        console.error('❌ Firebase save error:', error);
-                
-                        // Fallback: Save to localStorage
-                        localStorage.setItem('classManagerData_' + currentUserId, JSON.stringify(dataToSave));
-                        updateSyncStatus('error');
-                    });
-        
-                return true;
-            } catch (error) {
-                console.error('❌ Error saving data:', error);
-                return false;
-            }
-        }
-
-        // ============================================
         // REAL-TIME SYNC FUNCTION
         // ============================================
-
-        function enableRealtimeSync() {
-            // Check if user is authenticated
-            if (!currentUserId) {
-                console.warn('⚠️ Cannot enable sync: No user');
-                return;
-            }
-
-            console.log('🔄 Real-time sync enabled');
-
-            // ⭐ LISTEN FOR CHANGES - User-specific path
-            // Path format: /users/{uniqueUserId}/data
-            database.ref('users/' + currentUserId + '/data').on('value', (snapshot) => {
-                const data = snapshot.val();
-        
-                if (data && data.lastSaved) {
-                    // Only update if the remote data is newer than what we have
-                    if (!lastSyncedTimestamp || data.lastSaved > lastSyncedTimestamp) {
-                        lastSyncedTimestamp = data.lastSaved;
-                
-                        console.log('🔄 Data updated from cloud');
-                
-                        // Update local appData
-                        appData = {
-                            ...appData,
-                            ...data,
-                            students: data.students || [],
-                            timetable: data.timetable || [],
-                            payments: data.payments || [],
-                            attendance: data.attendance || {},
-                            grades: data.grades || ['06', '07', '08', '09', '10', '11', '12']
-                        };
-                
-                        // Update localStorage
-                        localStorage.setItem('classManagerData_' + currentUserId, JSON.stringify(appData));
-                
-                        // Refresh current screen
-                        const activeScreen = document.querySelector('.screen.active');
-                        if (activeScreen) {
-                            const screenId = activeScreen.id;
-                            if (screenId === 'students') loadStudentsScreen();
-                            if (screenId === 'timetable') loadTimetable();
-                            if (screenId === 'payments') loadPaymentHistory();
-                            if (screenId === 'dashboard') updateDashboard();
-                        }
-                    }
-                }
-            });
-        }
 
         function updateSyncStatus(status) {
             const syncIcon = document.getElementById('syncIcon');
@@ -1795,710 +1681,7 @@
             const present = Object.values(att).filter(s => s === 'present').length;
             return Math.round((present / total) * 100) + '%';
         }
-
-        // ============================================
-        // STUDENT MANAGEMENT - UPDATED VERSION
-        // ============================================
-
-        let currentSelectedGradeTab = 'all';
-        let selectedStudentForEdit = null;
-
-        function loadStudentsScreen() {
-            populateStudentGradeDropdown();
-            createGradeTabs();
-            filterStudentsByTab();
-        }
-
-        function populateStudentGradeDropdown() {
-            const gradeSelect = document.getElementById('studentGradeInput');
-            if (gradeSelect) {
-                gradeSelect.innerHTML = '<option value="">Select Grade</option>' + 
-                    appData.grades.map(g => `<option value="${g}">Grade ${g}</option>`).join('');
-            }
-        }
-
-        function createGradeTabs() {
-            const tabsContainer = document.getElementById('gradeTabs');
-            if (tabsContainer) {
-                tabsContainer.innerHTML = appData.grades.map(g => `
-                    <button class="grade-tab" data-grade="${g}" onclick="switchGradeTab('${g}')">
-                        Grade ${g}
-                    </button>
-                `).join('');
-            }
-        }
-
-        function switchGradeTab(grade) {
-            currentSelectedGradeTab = grade;
-            
-            // Update active tab styling
-            document.querySelectorAll('.grade-tab').forEach(tab => {
-                tab.classList.remove('active');
-            });
-            document.querySelector(`.grade-tab[data-grade="${grade}"]`).classList.add('active');
-            
-            filterStudentsByTab();
-        }
-
-        function filterStudentsByTab() {
-            const searchTerm = document.getElementById('studentSearchBox').value.toLowerCase();
-            
-            let filtered = appData.students;
-            
-            // Filter by grade tab
-            if (currentSelectedGradeTab !== 'all') {
-                filtered = filtered.filter(s => s.grade === currentSelectedGradeTab);
-            }
-            
-            // Filter by search
-            if (searchTerm) {
-                filtered = filtered.filter(s => 
-                    s.name.toLowerCase().includes(searchTerm) ||
-                    s.id.includes(searchTerm) ||
-                    (s.studentPhone && s.studentPhone.includes(searchTerm)) ||
-                    (s.parentPhone && s.parentPhone.includes(searchTerm))
-                );
-            }
-            
-            displayStudentList(filtered);
-        }
-
-        function displayStudentList(students) {    
-            const listContainer = document.getElementById('studentListByGrade');
         
-            if (students.length === 0) {
-                listContainer.innerHTML = '<p style="text-align: center; color: #6B7280; padding: 40px;">No students found</p>';        
-                return;    
-            }
-        
-            listContainer.innerHTML = students.map(s => `                    
-                <div class="student-card ${selectedStudentForEdit?.id === s.id ? 'selected' : ''}"                             
-                    onclick='selectStudentForEdit(${JSON.stringify(s).replace(/'/g, "&apos;")})'>                            
-                    <div style="display: flex; justify-content: space-between; align-items: center;">                                    
-                        <div style="flex: 1;">                                
-                            <div class="student-card-name">${s.name}</div>                                            
-                            <div class="student-card-details">                                            
-                                ID: ${s.id}<br>                                                    
-                                Grade ${s.grade} - Class ${s.class || 'N/A'} | ${s.gender || 'N/A'}<br>                                                    
-                                Parent: ${s.parentPhone || 'N/A'}   
-                            </div>                                
-                        </div>                    
-                        <button onclick='event.stopPropagation(); showQRCode(${JSON.stringify(s).replace(/'/g, "&apos;")})'                         
-                                style="background: #2563EB; color: white; padding: 8px 16px; border: none; border-radius: 6px; cursor: pointer; font-size: 14px; font-weight: 600;">                    
-                            📱 QR                                    
-                        </button>            
-                    </div>
-                </div>        
-            `).join(''); 
-        }
-
-        function selectStudentForEdit(student) {
-            selectedStudentForEdit = student;
-            
-            // Fill form with student data
-            document.getElementById('studentFormTitle').textContent = 'Edit Student';
-            document.getElementById('studentNameInput').value = student.name;
-            document.getElementById('studentBirthdayInput').value = student.birthday || '';
-            document.getElementById('studentGenderInput').value = student.gender || '';
-            document.getElementById('studentClassInput').value = student.class || '';
-            document.getElementById('studentGradeInput').value = student.grade;
-            document.getElementById('studentPhoneInput').value = student.studentPhone || '';
-            document.getElementById('parentPhoneInput').value = student.parentPhone || '';
-            
-            // Show student ID and QR
-            document.getElementById('studentIdDisplay').value = student.id;
-            document.getElementById('qrCodeDisplay').textContent = student.id;
-            document.getElementById('studentIdDisplaySection').style.display = 'block';
-            
-            // Show/hide buttons
-            document.getElementById('addStudentBtn').style.display = 'none';
-            document.getElementById('updateStudentBtn').style.display = 'block';
-            document.getElementById('deleteStudentBtn').style.display = 'block';
-            
-            // Update selected styling
-            filterStudentsByTab();
-        }
-
-        function addNewStudent() {
-           
-            if (!canAddStudent()) {        
-                return;    
-            }
-
-            // Get form values
-            const name = document.getElementById('studentNameInput').value.trim();
-            const birthday = document.getElementById('studentBirthdayInput').value;
-            const gender = document.getElementById('studentGenderInput').value;
-            const studentClass = document.getElementById('studentClassInput').value;
-            const grade = document.getElementById('studentGradeInput').value;
-            const studentPhone = document.getElementById('studentPhoneInput').value.trim();
-            const parentPhone = document.getElementById('parentPhoneInput').value.trim();
-            
-            // Validation
-            if (!name) {
-                alert('Please enter student name');
-                return;
-            }
-            if (!birthday) {
-                alert('Please select birthday');
-                return;
-            }
-            if (!gender) {
-                alert('Please select gender');
-                return;
-            }
-            if (!studentClass) {
-                alert('Please select class');
-                return;
-            }
-            if (!grade) {
-                alert('Please select grade');
-                return;
-            }
-            if (!parentPhone) {
-                alert('Please enter parent\'s phone number');
-                return;
-            }
-            
-            // Generate student ID
-            const studentId = generateStudentId(grade);
-            
-            // Create student object
-            const newStudent = {
-                id: studentId,
-                name: name,
-                birthday: birthday,
-                gender: gender,
-                class: studentClass,
-                grade: grade,
-                studentPhone: studentPhone,
-                parentPhone: parentPhone,
-                qrCode: studentId
-            };
-            
-            // Add to appData 
-            appData.students.push(newStudent);
-    
-            // ⭐ Save to Firebase - User-specific path
-            saveData();  // This saves to /users/{currentUserId}/data
-    
-            
-            // Refresh display
-            filterStudentsByTab();
-            clearStudentForm();
-            
-            alert('✅ Student added successfully!\n\nStudent ID: ' + studentId);
-        }
-
-        function updateExistingStudent() {
-            if (!selectedStudentForEdit) return;
-            
-            // Get form values
-            const name = document.getElementById('studentNameInput').value.trim();
-            const birthday = document.getElementById('studentBirthdayInput').value;
-            const gender = document.getElementById('studentGenderInput').value;
-            const studentClass = document.getElementById('studentClassInput').value;
-            const grade = document.getElementById('studentGradeInput').value;
-            const studentPhone = document.getElementById('studentPhoneInput').value.trim();
-            const parentPhone = document.getElementById('parentPhoneInput').value.trim();
-            
-            // Validation
-            if (!name || !birthday || !gender || !studentClass || !grade || !parentPhone) {
-                alert('Please fill in all required fields');
-                return;
-            }
-            
-            // Update student
-            appData.students = appData.students.map(s => {
-                if (s.id === selectedStudentForEdit.id) {
-                    return {
-                        ...s,
-                        name: name,
-                        birthday: birthday,
-                        gender: gender,
-                        class: studentClass,
-                        grade: grade,
-                        studentPhone: studentPhone,
-                        parentPhone: parentPhone
-                    };
-                }
-                return s;
-            });
-            
-            saveData();
-            filterStudentsByTab();
-            clearStudentForm();
-            
-            alert('✅ Student updated successfully!');
-        }
-
-        function deleteExistingStudent() {
-            if (!selectedStudentForEdit) return;
-            
-            if (!confirm(`Are you sure you want to delete this student?\n\nName: ${selectedStudentForEdit.name}\nID: ${selectedStudentForEdit.id}`)) {
-                return;
-            }
-            
-            appData.students = appData.students.filter(s => s.id !== selectedStudentForEdit.id);
-            saveData();
-            
-            filterStudentsByTab();
-            clearStudentForm();
-            
-            alert('✅ Student deleted successfully!');
-        }
-
-        function clearStudentForm() {
-            selectedStudentForEdit = null;
-            
-            document.getElementById('studentFormTitle').textContent = 'Add New Student';
-            document.getElementById('studentNameInput').value = '';
-            document.getElementById('studentBirthdayInput').value = '';
-            document.getElementById('studentGenderInput').value = '';
-            document.getElementById('studentClassInput').value = '';
-            document.getElementById('studentGradeInput').value = '';
-            document.getElementById('studentPhoneInput').value = '';
-            document.getElementById('parentPhoneInput').value = '';
-            
-            document.getElementById('studentIdDisplaySection').style.display = 'none';
-            
-            document.getElementById('addStudentBtn').style.display = 'block';
-            document.getElementById('updateStudentBtn').style.display = 'none';
-            document.getElementById('deleteStudentBtn').style.display = 'none';
-            
-            filterStudentsByTab();
-        }
-
-        function printStudentQR() {
-            if (!selectedStudentForEdit) return;
-            alert('🖨️ Print QR Code\n\nStudent: ' + selectedStudentForEdit.name + '\nID: ' + selectedStudentForEdit.id + '\n\nIn a real app, this would open a print dialog with the QR code.');
-        }
-
-        function generateStudentId(grade) {
-            const year = new Date().getFullYear();
-            const gradeStudents = appData.students.filter(s => s.grade === grade);
-            const nextNumber = String(gradeStudents.length + 1).padStart(3, '0');
-            return `${year}${grade}${nextNumber}`;
-        }
-        
-        function showQRCodeForCurrentStudent() {    
-            if (!selectedStudentForEdit) {        
-                alert('No student selected');        
-                return;    
-            }
-        
-            showQRCode(selectedStudentForEdit);
-        }
-
-        // TIMETABLE
-        function loadTimetable() {
-            const tbody = document.getElementById('timetableTableBody');
-            if (appData.timetable.length === 0) {
-                tbody.innerHTML = '<tr><td colspan="5" style="text-align: center; padding: 40px; color: #6B7280;">No classes</td></tr>';
-                return;
-            }
-            tbody.innerHTML = appData.timetable.map(t => `
-                <tr>
-                    <td>${t.day}</td>
-                    <td>${t.time}</td>
-                    <td><span class="badge badge-blue">Grade ${t.grade}</span></td>
-                    <td>${t.notes || '-'}</td>
-                    <td>
-                        <button class="icon-btn icon-btn-blue" onclick='editTimetable(${JSON.stringify(t)})'>✏️</button>
-                        <button class="icon-btn icon-btn-red" onclick="deleteTimetable('${t.id}')">🗑️</button>
-                    </td>
-                </tr>
-            `).join('');
-        }
-
-        function showAddTimetable() {
-            appData.editingTimetable = null;
-            document.getElementById('timetableModalTitle').textContent = 'Add Class';
-            document.getElementById('timetableDay').value = 'Monday';
-            document.getElementById('timetableTime').value = '';
-            document.getElementById('timetableGrade').value = appData.grades[0];
-            document.getElementById('timetableNotes').value = '';
-            document.getElementById('timetableModal').classList.add('active');
-        }
-
-        function editTimetable(entry) {
-            appData.editingTimetable = entry;
-            document.getElementById('timetableModalTitle').textContent = 'Edit Class';
-            document.getElementById('timetableDay').value = entry.day;
-            document.getElementById('timetableTime').value = entry.time;
-            document.getElementById('timetableGrade').value = entry.grade;
-            document.getElementById('timetableNotes').value = entry.notes || '';
-            document.getElementById('timetableModal').classList.add('active');
-        }
-
-        function closeTimetableModal() {
-            document.getElementById('timetableModal').classList.remove('active');
-        }
-
-        function saveTimetableEntry() {
-            const day = document.getElementById('timetableDay').value;
-            const time = document.getElementById('timetableTime').value;
-            const grade = document.getElementById('timetableGrade').value;
-            const notes = document.getElementById('timetableNotes').value;
-            
-            if (!time) {
-                alert('Enter time');
-                return;
-            }
-            
-            if (appData.editingTimetable) {
-                appData.timetable = appData.timetable.map(t => t.id === appData.editingTimetable.id ? { ...t, day, time, grade, notes } : t);
-            } else {
-                appData.timetable.push({ id: Date.now().toString(), day, time, grade, notes });
-            }
-            
-            saveData();
-            closeTimetableModal();
-            loadTimetable();
-            updateDashboard();
-            alert('Saved!');
-        }
-
-        function deleteTimetable(id) {
-            if (!confirm('Delete?')) return;
-            appData.timetable = appData.timetable.filter(t => t.id !== id);
-            saveData();
-            loadTimetable();
-            updateDashboard();
-        }
-        
-        // ============================================
-        // PAYMENT MANAGEMENT FUNCTIONS
-        // ============================================
-
-        // Auto-fill class when student ID is entered
-        document.addEventListener('DOMContentLoaded', function() {
-            const studentIdInput = document.getElementById('paymentStudentId');
-            if (studentIdInput) {
-                studentIdInput.addEventListener('input', function() {
-                    const studentId = this.value.trim();
-                    const student = appData.students.find(s => s.id === studentId);
-                    
-                    if (student) {
-                        document.getElementById('paymentClass').value = 'Grade ' + student.grade;
-                    } else {
-                        document.getElementById('paymentClass').value = '';
-                    }
-                });
-            }
-        });
-
-        function scanQRForPayment() {
-            const studentId = prompt('📷 QR Scanner\n\nIn real app, camera would open.\nFor now, enter Student ID:');
-            if (studentId) {
-                document.getElementById('paymentStudentId').value = studentId;
-                
-                const student = appData.students.find(s => s.id === studentId);
-                if (student) {
-                    document.getElementById('paymentClass').value = 'Grade ' + student.grade;
-                } else {
-                    alert('Student not found!');
-                }
-            }
-        }
-
-        function recordPayment() {
-            const studentId = document.getElementById('paymentStudentId').value.trim();
-            const month = document.getElementById('paymentMonthDropdown').value;
-            const amount = document.getElementById('paymentAmountInput').value.trim();
-            const status = document.getElementById('paymentStatusDropdown').value;
-
-            // Validation
-            if (!studentId) {
-                alert('Please enter Student ID');
-                return;
-            }
-
-            const student = appData.students.find(s => s.id === studentId);
-            if (!student) {
-                alert('Student ID not found!');
-                return;
-            }
-
-            if (!month) {
-                alert('Please select Month');
-                return;
-            }
-
-            if (!amount && status !== 'Free Card') {
-                alert('Please enter Amount');
-                return;
-            }
-
-            // Create payment record
-            const payment = {
-                id: Date.now().toString(),
-                date: new Date().toISOString().split('T')[0],
-                studentId: studentId,
-                studentName: student.name,
-                class: 'Grade ' + student.grade,
-                month: month,
-                amount: status === 'Free Card' ? 0 : parseFloat(amount),
-                status: status
-            };
-    
-            // Add to payments array
-            if (!appData.payments) appData.payments = [];
-            appData.payments.push(payment);
-            
-            saveData();
-            loadPaymentHistory();
-
-            // Clear form
-            document.getElementById('paymentStudentId').value = '';
-            document.getElementById('paymentClass').value = '';
-            document.getElementById('paymentMonthDropdown').value = '';
-            document.getElementById('paymentAmountInput').value = '';
-            document.getElementById('paymentStatusDropdown').value = 'Paid';
-
-            alert('✅ Payment recorded successfully!');
-        }
-
-        function loadPaymentHistory() {
-            const tbody = document.getElementById('paymentHistoryTable');
-            
-            if (!appData.payments || appData.payments.length === 0) {
-                tbody.innerHTML = '<tr><td colspan="7" style="text-align: center; padding: 40px; color: #6B7280;">No payment records yet</td></tr>';
-                return;
-            }
-
-            // Sort by date (newest first)
-            const sorted = [...appData.payments].sort((a, b) => new Date(b.date) - new Date(a.date));
-
-            tbody.innerHTML = sorted.map(p => {
-                let statusBadge = '';
-                if (p.status === 'Paid') {
-                    statusBadge = '<span class="badge badge-green">Paid</span>';
-                } else if (p.status === 'Unpaid') {
-                    statusBadge = '<span class="badge badge-red">Unpaid</span>';
-                } else if (p.status === 'Free Card') {
-                    statusBadge = '<span class="badge badge-blue">Free Card</span>';
-                }
-
-                return `
-                    <tr>
-                        <td>${p.date}</td>
-                        <td>${p.studentId}</td>
-                        <td>${p.studentName}</td>
-                        <td>${p.class}</td>
-                        <td>${p.month}</td>
-                        <td>Rs. ${p.amount.toFixed(2)}</td>
-                        <td>${statusBadge}</td>
-                    </tr>
-                `;
-            }).join('');
-        }
-
-        // ============================================
-        // ATTENDANCE MANAGEMENT - WORKING VERSION
-        // ============================================
-
-        let currentAttendanceData = {};
-        let currentAttendanceStudents = [];
-
-        function loadAttendanceStudents() {
-            const gradeSelect = document.getElementById('attendanceClassSelect');
-            const dateSelect = document.getElementById('attendanceDateSelect');
-    
-            if (!gradeSelect || !dateSelect) {
-                alert('Error: Controls not found');
-                return;    
-            }
-        
-            const grade = gradeSelect.value;    
-            const date = dateSelect.value;
-        
-            console.log('Loading attendance - Grade:', grade, 'Date:', date);
-        
-            if (!grade) {        
-                alert('⚠️ Please select a class first');        
-                return;    
-            }
-    
-    
-            if (!date) {        
-                alert('⚠️ Please select a date first');        
-                return;    
-            }
-        
-            // Get students for selected grade    
-            currentAttendanceStudents = appData.students.filter(s => s.grade === grade);        
-            console.log('Found students:', currentAttendanceStudents.length);
-        
-            if (currentAttendanceStudents.length === 0) {        
-                alert('âŒ No students in Grade ' + grade + '\n\nPlease add students first.');        
-                document.getElementById('attendanceStudentCard').style.display = 'none';        
-                return;  
-            }
-    
-            // Show attendance card   
-            document.getElementById('attendanceStudentCard').style.display = 'block';    
-    
-            // Load existing attendance data for this date    
-            if (!appData.attendance) {        
-                appData.attendance = {};    
-            }
-        
-            if (appData.attendance[date]) {        
-                currentAttendanceData = { ...appData.attendance[date] };        
-                console.log('Loaded existing attendance:', currentAttendanceData);    
-            } else {        
-                currentAttendanceData = {};        
-                console.log('No existing attendance for this date');    
-            }
-    
-    
-            // Display students    
-            displayAttendanceStudents();
-        }
-
-        function displayAttendanceStudents() {    
-            const container = document.getElementById('attendanceStudentsList');    
-    
-            if (!container) {        
-                console.error('Student list container not found');        
-                return;    
-            }
-        
-            let html = '';    
-    
-            currentAttendanceStudents.forEach(s => {        
-                const isPresent = currentAttendanceData[s.id] === 'present';        
-        
-                html += `            
-                    <div style="background: ${isPresent ? '#D1FAE5' : '#F3F4F6'}; padding: 20px; border-radius: 10px; margin-bottom: 15px; border: 2px solid ${isPresent ? '#10B981' : '#D1D5DB'}; transition: all 0.3s;">                
-                        <div style="display: flex; justify-content: space-between; align-items: center;">                    
-                            <div>                        
-                                <div style="font-weight: 700; font-size: 18px; margin-bottom: 5px; color: #1F2937;">${s.name}</div>                        
-                                <div style="color: #6B7280; font-size: 14px;">ID: ${s.id} | Grade ${s.grade}</div>
-                            </div>
-                            <button onclick="toggleAttendance('${s.id}')"                             
-                            style="background: ${isPresent ? '#10B981' : '#EF4444'}; color: white; padding: 15px 30px; border: none; border-radius: 10px; cursor: pointer; font-size: 18px; font-weight: 700; min-width: 140px; transition: all 0.3s;">
-                            ${isPresent ? 'Present' : 'Absent'}                
-                            </button>
-                        </div>
-                    </div>
-   
-                `;
-    
-            });
-    
-            container.innerHTML = html;
-    
-            updateAttendanceCounts();
-    
-            console.log('Students displayed successfully');
-        }
-   
-        function toggleAttendance(studentId) {            
-            console.log('Toggle attendance for:', studentId);
-            
-            // Toggle status            
-            if (currentAttendanceData[studentId] === 'present') {                    
-                currentAttendanceData[studentId] = 'absent';           
-            } else {                    
-                currentAttendanceData[studentId] = 'present';            
-            }
-                
-            console.log('New status:', currentAttendanceData[studentId]);
-                
-            // Refresh display            
-            displayAttendanceStudents();    
-        }
-    
-        function updateAttendanceCounts() {            
-            const total = currentAttendanceStudents.length;            
-            const present = currentAttendanceStudents.filter(s => currentAttendanceData[s.id] === 'present').length;            
-            const absent = total - present;
-                
-            const totalEl = document.getElementById('attendanceTotalCount');       
-            const presentEl = document.getElementById('attendancePresentCount');            
-            const absentEl = document.getElementById('attendanceAbsentCount');
-                
-            if (totalEl) totalEl.textContent = total;            
-            if (presentEl) presentEl.textContent = present;            
-            if (absentEl) absentEl.textContent = absent;       
-        
-            console.log('Counts updated - Total:', total, 'Present:', present, 'Absent:', absent);
-        }
-    
-        function saveAttendanceData() {            
-            const dateSelect = document.getElementById('attendanceDateSelect');    
-            const gradeSelect = document.getElementById('attendanceClassSelect');
-            
-            if (!dateSelect || !gradeSelect) {                    
-                alert('Error: Controls not found');                    
-                return;            
-            }
-                
-            const date = dateSelect.value;            
-            const grade = gradeSelect.value;        
-        
-            if (!date || !grade) {                    
-                alert('⚠️ Please select class and date first');                    
-                return;            
-            }
-                
-            // Save to appData            
-            if (!appData.attendance) {                   
-                appData.attendance = {};            
-            }
-                
-            appData.attendance[date] = { ...currentAttendanceData };        
-        
-            saveData();        
-        
-            // Calculate stats           
-            const present = currentAttendanceStudents.filter(s => currentAttendanceData[s.id] === 'present').length;            
-            const absent = currentAttendanceStudents.length - present;     
-        
-            alert(`✅ Attendance Saved Successfully!\n\nDate: ${date}\nClass: Grade ${grade}\n\nPresent: ${present}\nAbsent: ${absent}`);        
-        
-            console.log('Attendance saved:', appData.attendance[date]);    
-        }
-    
-        function scanQRForAttendance() {        
-            const gradeSelect = document.getElementById('attendanceClassSelect');
-            
-            if (!gradeSelect || !gradeSelect.value) {              
-                alert('⚠️ Please select a class first');                    
-                return;          
-            }
-            
-            const studentId = prompt('📷 QR Scanner\n\nIn real app, camera would open.\nFor now, enter Student ID:');
-                
-            if (!studentId) return;
-               
-            const student = appData.students.find(s => s.id === studentId.trim());    
-        
-            if (!student) {                    
-                alert('❌ Student not found!\n\nID: ' + studentId);                    
-                return;            
-            }        
-        
-            if (student.grade !== gradeSelect.value) {                    
-                alert(`❌ Wrong Class!\n\nStudent: ${student.name}\nGrade: ${student.grade}\nSelected: ${gradeSelect.value}`);                   
-                return;            
-            }    
-        
-            // Mark as present            
-            currentAttendanceData[studentId.trim()] = 'present';
-            
-            // Check if students are loaded            
-            if (currentAttendanceStudents.length === 0) {                    
-                loadAttendanceStudents();            
-            } else {                    
-                displayAttendanceStudents();            
-            }
-       
-            alert('✅ ' + student.name + ' marked as Present');    
-        }
-
         // ============================================
         // QR CODE GENERATION & DISPLAY
         // ============================================
@@ -2686,89 +1869,6 @@
             this.closePath();    
             return this;
         };
-
-        // REPORTS
-        function generateReport() {
-            const type = document.getElementById('reportType').value;
-            const month = document.getElementById('reportMonth').value;
-            const grade = document.getElementById('reportGrade').value;
-            
-            if (!month) {
-                alert('Select month');
-                return;
-            }
-            
-            let html = '';
-            if (type === 'attendance') html = generateAttendanceReport(month, grade);
-            else html = generatePaymentReport(month, grade);
-            
-            document.getElementById('reportContent').innerHTML = html;
-            document.getElementById('reportPreview').style.display = 'block';
-        }
-
-        function generateAttendanceReport(month, grade) {
-            const students = grade === 'all' ? appData.students : appData.students.filter(s => s.grade === grade);
-            let html = `<h4 style="margin-bottom: 16px;">Attendance Report - ${month}</h4>`;
-            html += '<table><thead><tr><th>ID</th><th>Name</th><th>Grade</th><th>Present</th><th>Absent</th><th>Rate</th></tr></thead><tbody>';
-            
-            students.forEach(s => {
-                let present = 0, total = 0;
-                Object.keys(appData.attendance).forEach(date => {
-                    if (date.startsWith(month)) {
-                        total++;
-                        if (appData.attendance[date][s.id] === 'present') present++;
-                    }
-                });
-                const rate = total > 0 ? Math.round((present / total) * 100) : 0;
-                html += `
-                    <tr>
-                        <td>${s.id}</td>
-                        <td>${s.name}</td>
-                        <td>Grade ${s.grade}</td>
-                        <td>${present}</td>
-                        <td>${total - present}</td>
-                        <td><span class="badge ${rate >= 75 ? 'badge-green' : 'badge-red'}">${rate}%</span></td>
-                    </tr>
-                `;
-            });
-            
-            html += '</tbody></table>';
-            return html;
-        }
-
-        function generatePaymentReport(month, grade) {
-            const students = grade === 'all' ? appData.students : appData.students.filter(s => s.grade === grade);
-            let html = `<h4 style="margin-bottom: 16px;">Payment Report - ${month}</h4>`;
-            html += '<table><thead><tr><th>ID</th><th>Name</th><th>Grade</th><th>Amount</th><th>Status</th></tr></thead><tbody>';
-            
-            let total = 0;
-            students.forEach(s => {
-                const monthPayments = appData.payments.filter(p => p.studentId === s.id && p.month === month);
-                const amount = monthPayments.reduce((sum, p) => sum + p.amount, 0);
-                const status = monthPayments.length > 0 ? 'Paid' : 'Unpaid';
-                if (amount > 0) total += amount;
-                
-                html += `
-                    <tr>
-                        <td>${s.id}</td>
-                        <td>${s.name}</td>
-                        <td>Grade ${s.grade}</td>
-                        <td>Rs. ${amount.toFixed(2)}</td>
-                        <td><span class="badge ${status === 'Paid' ? 'badge-green' : 'badge-red'}">${status}</span></td>
-                    </tr>
-                `;
-            });
-            
-            html += '</tbody></table>';
-            html += `<div style="margin-top: 20px; padding: 16px; background: #EFF6FF; border-radius: 8px;">
-                <strong>Total Collected: Rs. ${total.toFixed(2)}</strong>
-            </div>`;
-            return html;
-        }
-
-        function exportToExcel() {
-            alert('📥 Export to Excel\n\nIn a real app, this would download an Excel file.\n\nFor now, you can copy the table data above.');
-        }
 
         // ============================================
         // QR CODE SCANNER - FIXED VERSION
@@ -3222,245 +2322,6 @@
                 console.error('❌ Export error:', error);
                 alert('⚠️ Error exporting students.');
             }
-        }
-
-        // ============================================
-        // PAYHERE PAYMENT INTEGRATION
-        // ============================================
-
-        // Initialize PayHere payment
-        function initiatePayment(plan) {
-            const sub = appData.subscription;
-    
-            // Check if already on this plan
-            if (sub.plan === plan && sub.status === 'active') {
-                alert('ℹ️ You are already on this plan.');
-                return;
-            }
-    
-            // Get plan details
-            const planDetails = SUBSCRIPTION_PRICES[plan];
-    
-            if (!planDetails) {
-                alert('❌ Invalid plan selected');
-                return;
-            }
-    
-            // Confirm payment
-            const confirmMsg = `💳 Proceed to Payment?\n\nPlan: ${plan === 'monthly' ? 'Monthly' : 'Annual'}\nAmount: Rs. ${planDetails.amount.toLocaleString()}\n\n✓ Unlimited students\n✓ All premium features\n✓ Priority support`;
-    
-            if (!confirm(confirmMsg)) {
-                return;
-            }
-    
-            // Generate unique order ID
-            const orderId = generateOrderId(plan);
-    
-            // Prepare payment data
-            const payment = {
-                sandbox: PAYHERE_CONFIG.sandbox,
-                merchant_id: PAYHERE_CONFIG.merchantId,
-                return_url: PAYHERE_CONFIG.returnUrl,
-                cancel_url: PAYHERE_CONFIG.cancelUrl,
-                notify_url: PAYHERE_CONFIG.notifyUrl,
-                order_id: orderId,
-                items: planDetails.description,
-                amount: planDetails.amount.toFixed(2),
-                currency: planDetails.currency,
-                first_name: getUserName(),
-                last_name: '',
-                email: getUserEmail(),
-                phone: getUserPhone(),
-                address: '',
-                city: 'Colombo',
-                country: 'Sri Lanka',
-                // Custom fields to track subscription
-                custom_1: plan,  // Plan type
-                custom_2: new Date().toISOString()  // Purchase date
-            };
-            
-            // Store pending payment
-            storePendingPayment(orderId, plan, planDetails.amount);
-            
-            // Show PayHere payment window
-            payhere.startPayment(payment);
-        }        
-        
-        // Generate unique order ID
-        function generateOrderId(plan) {
-            const timestamp = Date.now();
-            const random = Math.floor(Math.random() * 1000);
-            return `CM_${plan.toUpperCase()}_${timestamp}_${random}`;
-        }
-
-        // Get user details (you can customize these)
-        function getUserName() {
-            // Try to get from stored data or prompt
-            let userName = localStorage.getItem('userName');
-            if (!userName) {
-                userName = prompt('Enter your name:', 'Teacher') || 'Teacher';
-                localStorage.setItem('userName', userName);
-            }
-            return userName;
-        }
-
-        function getUserEmail() {
-            let userEmail = localStorage.getItem('userEmail');
-            if (!userEmail) {
-                userEmail = prompt('Enter your email:', 'teacher@school.com') || 'teacher@school.com';
-                localStorage.setItem('userEmail', userEmail);
-            }
-            return userEmail;
-        }
-
-        function getUserPhone() {
-            let userPhone = localStorage.getItem('userPhone');
-            if (!userPhone) {
-                userPhone = prompt('Enter your phone number:', '0771234567') || '0771234567';
-                localStorage.setItem('userPhone', userPhone);
-            }
-            return userPhone;
-        }
-
-        // Store pending payment
-        function storePendingPayment(orderId, plan, amount) {
-            const pendingPayments = JSON.parse(localStorage.getItem('pendingPayments') || '[]');
-    
-            pendingPayments.push({
-                orderId: orderId,
-                plan: plan,
-                amount: amount,
-                timestamp: new Date().toISOString(),
-                status: 'pending'
-            });
-    
-            localStorage.setItem('pendingPayments', JSON.stringify(pendingPayments));
-        }
-
-        // PayHere callback handlers
-        payhere.onCompleted = function onCompleted(orderId) {
-            console.log('Payment completed. OrderID:', orderId);
-    
-            // Get payment details
-            const pendingPayments = JSON.parse(localStorage.getItem('pendingPayments') || '[]');
-            const payment = pendingPayments.find(p => p.orderId === orderId);
-    
-            if (payment) {
-                // Activate subscription
-                activateSubscription(payment.plan, orderId);
-        
-                // Update payment status
-                payment.status = 'completed';
-                payment.completedDate = new Date().toISOString();
-                localStorage.setItem('pendingPayments', JSON.stringify(pendingPayments));
-        
-                // Show success message
-                alert(`✅ Payment Successful!\n\nOrder ID: ${orderId}\nPlan: ${payment.plan === 'monthly' ? 'Monthly' : 'Annual'}\n\nYour subscription is now active!`);
-                
-                // Refresh subscription display
-                updateSubscriptionDisplay();
-                
-                // Store payment record
-                storePaymentRecord(payment);
-            } else {
-                alert('✅ Payment Successful!\n\nYour subscription is now active!');
-            }
-        };        
-
-        payhere.onDismissed = function onDismissed() {
-            console.log('Payment dismissed');
-            alert('❌ Payment Cancelled\n\nYou cancelled the payment process.');
-        };
-
-        payhere.onError = function onError(error) {
-            console.log('Payment error:', error);
-            alert(`❌ Payment Failed\n\nError: ${error}\n\nPlease try again or contact support.`);
-        };
-
-        // Activate subscription after successful payment
-        function activateSubscription(plan, orderId) {
-            appData.subscription.plan = plan;
-            appData.subscription.status = 'active';
-            appData.subscription.startDate = new Date().toISOString();
-            appData.subscription.orderId = orderId;
-            appData.subscription.maxStudents = Infinity;
-    
-            // Set expiry date
-            const endDate = new Date();
-            if (plan === 'monthly') {
-                endDate.setMonth(endDate.getMonth() + 1);
-            } else if (plan === 'annual') {
-                endDate.setFullYear(endDate.getFullYear() + 1);
-            }
-            appData.subscription.endDate = endDate.toISOString();
-            
-            // Enable all features
-            appData.subscription.features = {
-                students: true,
-                attendance: true,
-                payments: true,
-                reports: true,
-                backup: true,
-                export: true,
-                priority_support: true
-            };
-            
-            saveData();
-        }
-
-        // Store payment record for history
-        function storePaymentRecord(payment) {
-            if (!appData.paymentHistory) {
-                appData.paymentHistory = [];
-            }
-    
-            appData.paymentHistory.push({
-                orderId: payment.orderId,
-                plan: payment.plan,
-                amount: payment.amount,
-                date: payment.completedDate || new Date().toISOString(),
-                status: 'completed'
-            });
-    
-            saveData();
-        }
-
-        // Display payment history
-        function displayPaymentHistory() {
-            const tbody = document.getElementById('paymentHistoryTableBody');
-    
-            if (!tbody) return;
-    
-            const history = appData.paymentHistory || [];
-    
-            if (history.length === 0) {
-                tbody.innerHTML = `
-                    <tr>
-                        <td colspan="5" style="text-align: center; padding: 40px; color: rgba(255,255,255,0.7);">
-                            No payment history yet
-                                </td>
-                    </tr>
-                `;
-                return;
-            }
-    
-            tbody.innerHTML = history.reverse().map(p => {
-                const date = new Date(p.date).toLocaleDateString();
-                const planName = p.plan === 'monthly' ? 'Monthly' : 'Annual';
-                const statusBadge = p.status === 'completed' 
-                    ? '<span class="badge badge-green">Completed</span>'
-                    : '<span class="badge badge-amber">Pending</span>';
-        
-                return `
-                    <tr>
-                        <td>${date}</td>
-                        <td style="font-family: monospace; font-size: 12px;">${p.orderId}</td>
-                        <td>${planName}</td>
-                        <td>Rs. ${p.amount.toLocaleString('en-LK', { minimumFractionDigits: 2 })}</td>
-                        <td>${statusBadge}</td>
-                    </tr>
-                `;
-            }).join('');
         }
 
         // ============================================
@@ -4239,104 +3100,6 @@
         }
 
         // ============================================
-        // SUBSCRIPTIONS TAB FUNCTIONS
-        // ============================================
-
-        function loadSubscriptionsTab() {
-            if (!isAdmin || !adminPermissions.canManageSubscriptions) {
-                document.getElementById('adminSubscriptionsList').innerHTML = '<p style="color: #ef4444;">❌ You do not have permission to manage subscriptions.</p>';
-                return;
-            }
-    
-            console.log('💳 Loading subscriptions...');
-    
-            const container = document.getElementById('adminSubscriptionsList');
-    
-            if (!allUsersData || allUsersData.length === 0) {
-                container.innerHTML = '<p style="color: #6b7280;">Please load users first from the "All Users" tab.</p>';
-                return;
-            }
-    
-            // Group users by subscription status
-            const activeSubscriptions = allUsersData.filter(u => u.subscription.status === 'active');
-            const expiredSubscriptions = allUsersData.filter(u => u.subscription.status === 'expired');
-            const cancelledSubscriptions = allUsersData.filter(u => u.subscription.status === 'cancelled');
-    
-            container.innerHTML = `
-                <div class="stats-grid" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px; margin-bottom: 20px;">
-                    <div class="stat-card">
-                        <h4 style="margin: 0 0 10px 0; color: #6b7280; font-size: 14px;">Active</h4>
-                        <p style="font-size: 28px; font-weight: 700; margin: 0; color: #10b981;">${activeSubscriptions.length}</p>
-                    </div>
-                    <div class="stat-card">
-                        <h4 style="margin: 0 0 10px 0; color: #6b7280; font-size: 14px;">Expired</h4>
-                        <p style="font-size: 28px; font-weight: 700; margin: 0; color: #f59e0b;">${expiredSubscriptions.length}</p>
-                    </div>
-                    <div class="stat-card">
-                        <h4 style="margin: 0 0 10px 0; color: #6b7280; font-size: 14px;">Cancelled</h4>
-                        <p style="font-size: 28px; font-weight: 700; margin: 0; color: #ef4444;">${cancelledSubscriptions.length}</p>
-                    </div>
-                </div>
-        
-                <div class="card">
-                    <h3 style="margin-top: 0;">All Subscriptions</h3>
-            
-                    <div style="margin-bottom: 15px;">
-                        <input type="text" id="subscriptionSearch" placeholder="🔍 Search by email..." onkeyup="filterSubscriptions()" style="padding: 10px; border: 1px solid #e5e7eb; border-radius: 8px; width: 100%; max-width: 400px;">
-                    </div>
-            
-                    <div style="overflow-x: auto;">
-                        <table class="data-table" style="width: 100%;">
-                            <thead>
-                                <tr>
-                                    <th>Email</th>
-                                    <th>Plan</th>
-                                    <th>Status</th>
-                                    <th>Students</th>
-                                    <th>Start Date</th>
-                                    <th>Actions</th>
-                                </tr>
-                            </thead>
-                            <tbody id="subscriptionsTableBody">
-                                ${allUsersData.map(user => `
-                                    <tr>
-                                        <td>${user.email}</td>
-                                        <td><span class="badge badge-${user.subscription.plan}">${user.subscription.plan}</span></td>
-                                        <td><span class="${user.subscription.status === 'active' ? 'status-active' : 'status-inactive'}">${user.subscription.status}</span></td>
-                                        <td>${user.studentsCount} / ${user.subscription.maxStudents === Infinity ? '∞' : user.subscription.maxStudents}</td>
-                                        <td>${user.subscription.startDate ? new Date(user.subscription.startDate).toLocaleDateString() : 'N/A'}</td>
-                                        <td>
-                                            <button class="btn-small btn-primary" onclick="quickUpgrade('${user.userId}')">⬆️ Upgrade</button>
-                                            <button class="btn-small btn-success" onclick="manageUserSubscription('${user.userId}')">⚙️ Manage</button>
-                                        </td>
-                                    </tr>
-                                `).join('')}
-                            </tbody>
-                        </table>
-                    </div>
-                </div>
-            `;
-        }
-
-        function filterSubscriptions() {
-            const searchTerm = document.getElementById('subscriptionSearch').value.toLowerCase();
-            const rows = document.querySelectorAll('#subscriptionsTableBody tr');
-    
-            rows.forEach(row => {
-                const text = row.textContent.toLowerCase();
-                row.style.display = text.includes(searchTerm) ? '' : 'none';
-            });
-        }
-
-        function quickUpgrade(userId) {
-            if (!confirm('Grant unlimited lifetime access to this user?')) {
-                return;
-            }
-    
-            grantUnlimitedAccess(userId);
-        }
-
-        // ============================================
         // ADMIN SETTINGS TAB FUNCTIONS
         // ============================================
 
@@ -4616,754 +3379,8 @@
     
             return permissionSets[role] || permissionSets.support_admin;
         }
-        
-        // ============================================    
-        // EXCEL EXPORT    
-        // ============================================
-    
-        function exportToExcel() {            
-            const type = document.getElementById('reportType').value;            
-            const month = document.getElementById('reportMonth').value;            
-            const grade = document.getElementById('reportGrade').value;
                 
-            if (!month) {                    
-                alert('⚠️ Please select a month first');                    
-                return;            
-            }
-                
-            if (type === 'attendance') {                    
-                exportAttendanceToExcel(month, grade);            
-            } else if (type === 'payment') {                    
-                exportPaymentToExcel(month, grade);            
-            }    
-        }
-    
-        function exportAttendanceToExcel(month, grade) {            
-            const students = grade === 'all' ? appData.students : appData.students.filter(s => s.grade === grade);
-                
-            // Prepare data            
-            const data = [];
-                
-            // Add headers            
-            data.push(['Student ID', 'Name', 'Grade', 'Present Days', 'Absent Days', 'Attendance Rate']);
-        
-        
-            // Add student rows            
-            students.forEach(s => {                    
-                let presentDays = 0;                    
-                let totalDays = 0;
-                            
-                Object.keys(appData.attendance || {}).forEach(date => {                            
-                    if (date.startsWith(month)) {                                    
-                        totalDays++;                                    
-                        if (appData.attendance[date][s.id] === 'present') {                    
-                        presentDays++;                
-                        }                            
-                    }        
-                });
-                            
-                const rate = totalDays > 0 ? Math.round((presentDays / totalDays) * 100) : 0;
-                    
-                data.push([                        
-                    s.id,                                        
-                    s.name,                           
-                    'Grade ' + s.grade,                            
-                    presentDays,                            
-                    totalDays - presentDays,                            
-                    rate + '%'                    
-                ]);            
-            });
-                
-            // Create workbook            
-            const wb = XLSX.utils.book_new();            
-            const ws = XLSX.utils.aoa_to_sheet(data);
-                
-            // Set column widths            
-            ws['!cols'] = [
-                { wch: 15 }, // Student ID                    
-                { wch: 25 }, // Name                    
-                { wch: 10 }, // Grade                    
-                { wch: 12 }, // Present                    
-                { wch: 12 }, // Absent                    
-                { wch: 15 }  // Rate           
-            ];
-               
-            XLSX.utils.book_append_sheet(wb, ws, 'Attendance Report');
-                
-            // Save file            
-            const filename = `Attendance_Report_${month}_${grade === 'all' ? 'All_Grades' : 'Grade_' + grade}.xlsx`;            
-            XLSX.writeFile(wb, filename);
-                
-            alert('✅ Excel file downloaded!\n\nFile: ' + filename);    
-        }
-    
-        function exportPaymentToExcel(month, grade) {            
-            const students = grade === 'all' ? appData.students : appData.students.filter(s => s.grade === grade);
-                
-            // Prepare data            
-            const data = [];
-                
-            // Add headers            
-            data.push(['Student ID', 'Name', 'Grade', 'Amount Paid', 'Status']);
-                
-            let totalCollected = 0;
-                
-            // Add student rows            
-            students.forEach(s => {                    
-                const monthPayments = (appData.payments || []).filter(p =>                             
-                    p.studentId === s.id && p.month === month                
-                );
-                    
-                const amount = monthPayments.reduce((sum, p) => sum + p.amount, 0);            
-                const status = monthPayments.length > 0 ? 'Paid' : 'Unpaid';
-                    
-                if (amount > 0) totalCollected += amount;
-                    
-                data.push([
-                    s.id,                            
-                    s.name,                            
-                    'Grade ' + s.grade,                           
-                    'Rs. ' + amount.toFixed(2),                            
-                    status                    
-                ]);            
-            });    
-        
-            // Add total row            
-            data.push([]);           
-            data.push(['', '', '', 'Total Collected:', 'Rs. ' + totalCollected.toFixed(2)]);
-                
-            // Create workbook            
-            const wb = XLSX.utils.book_new();            
-            const ws = XLSX.utils.aoa_to_sheet(data);
-                
-            // Set column widths    
-            ws['!cols'] = [
-                { wch: 15 }, // Student ID                    
-                { wch: 25 }, // Name                    
-                { wch: 10 }, // Grade                    
-                { wch: 15 }, // Amount                    
-                { wch: 10 }  // Status            
-            ];
-                
-            XLSX.utils.book_append_sheet(wb, ws, 'Payment Report');
-                
-            // Save file            
-            const filename = `Payment_Report_${month}_${grade === 'all' ? 'All_Grades' : 'Grade_' + grade}.xlsx`;            
-            XLSX.writeFile(wb, filename);
-                
-            alert('✅ Excel file downloaded!\n\nFile: ' + filename);    
-        }
-    
-        // Export Student List    
-        function exportStudentListToExcel() {            
-            const data = [];
-                
-            // Add headers            
-            data.push(['Student ID', 'Name', 'Birthday', 'Gender', 'Class', 'Grade', 'Student Phone', 'Parent Phone']);
-                
-            // Add student rows            
-            appData.students.forEach(s => {                    
-                data.push([
-                    s.id,                       
-                    s.name,                           
-                    s.birthday || '',                            
-                    s.gender || '',                            
-                    s.class || '',                            
-                    'Grade ' + s.grade,                            
-                    s.studentPhone || '',                            
-                    s.parentPhone || ''                    
-                ]);            
-            });
-                
-            // Create workbook            
-            const wb = XLSX.utils.book_new();            
-            const ws = XLSX.utils.aoa_to_sheet(data);
-                
-            // Set column widths            
-            ws['!cols'] = [
-                { wch: 15 },                    
-                { wch: 25 },                    
-                { wch: 12 },                    
-                { wch: 10 },                    
-                { wch: 8 },                    
-                { wch: 10 },                    
-                { wch: 15 },                    
-                { wch: 15 }            
-            ];
-                
-            XLSX.utils.book_append_sheet(wb, ws, 'Student List');        
-        
-            // Save file            
-            XLSX.writeFile(wb, 'Student_List.xlsx');       
-        
-            alert('✅ Student list exported to Excel!');    
-        }
-        
-        // SETTINGS
-        function loadSettings() {    
-            // Load subject name    
-            document.getElementById('subjectNameInput').value = appData.subjectName;    
-            document.getElementById('subjectDisplay').textContent = 'Subject: ' + appData.subjectName;
-        
-            // Load grades list    
-            const list = document.getElementById('gradesList');    
-            list.innerHTML = appData.grades.map(g => `
-                <div style="display: flex; justify-content: space-between; align-items: center; padding: 12px; background: rgba(255,255,255,0.1); border-radius: 8px; margin-bottom: 8px;">
-                    <span style="font-weight: 600; color: #fff;">Grade ${g}</span>
-                    <button class="icon-btn icon-btn-red" onclick="deleteGrade('${g}')">🗑️ Remove</button>
-                </div>         
-            `).join('');
-        
-            // Update last saved time    
-            updateLastSavedTime();
-        
-            // Update last backup time    
-            const lastBackup = localStorage.getItem('lastBackupTime');    
-            const backupTimeEl = document.getElementById('lastBackupTime');    
-            if (backupTimeEl) {        
-                backupTimeEl.textContent = lastBackup || 'Never';    
-            }
-        
-            // Update data statistics    
-            updateDataStatistics();
-            updateLastSyncTimeDisplay();    
-            updateSyncStats();
-        }
-
-        function addGrade() {
-            const newGrade = document.getElementById('newGrade').value.trim();
-            
-            if (!newGrade) {
-                alert('Enter grade number');
-                return;
-            }
-            
-            if (appData.grades.includes(newGrade)) {
-                alert('Grade already exists');
-                return;
-            }
-            
-            appData.grades.push(newGrade);
-            appData.grades.sort();
-            saveData();
-            populateGradeDropdowns();
-            loadSettings();
-            document.getElementById('newGrade').value = '';
-            alert('Grade added!');
-        }
-
-        function deleteGrade(grade) {
-            const hasStudents = appData.students.some(s => s.grade === grade);
-            
-            if (hasStudents) {
-                alert('Cannot delete grade with students');
-                return;
-            }
-            
-            if (!confirm(`Delete Grade ${grade}?`)) return;
-            
-            appData.grades = appData.grades.filter(g => g !== grade);
-            saveData();
-            populateGradeDropdowns();
-            loadSettings();
-            alert('Grade deleted!');
-        }
-
-        function saveSubject() {
-            const subject = document.getElementById('subjectNameInput').value.trim();
-            
-            if (!subject) {
-                alert('Enter subject name');
-                return;
-            }
-            
-            appData.subjectName = subject;
-            saveData();
-            document.getElementById('subjectDisplay').textContent = 'Subject: ' + subject;
-            alert('Subject saved!');
-        }
-
-        function backupData() {
-            const dataStr = JSON.stringify(appData, null, 2);
-            const dataBlob = new Blob([dataStr], { type: 'application/json' });
-            const url = URL.createObjectURL(dataBlob);
-            const link = document.createElement('a');
-            link.href = url;
-            link.download = `class-manager-backup-${new Date().toISOString().split('T')[0]}.json`;
-            link.click();
-            
-            const now = new Date().toLocaleString();
-            localStorage.setItem('lastBackup', now);
-            document.getElementById('lastBackup').textContent = now;
-            alert('Backup downloaded!');
-        }
-
-        // ============================================
-        // SUBSCRIPTION SYSTEM
-        // ============================================
-
-        // Initialize subscription on load
-        function initializeSubscription() {
-            // Check if subscription exists in appData
-            if (!appData.subscription) {
-                appData.subscription = {
-                    plan: 'free_trial',
-                    status: 'active',
-                    startDate: new Date().toISOString(),
-                    endDate: null,
-                    maxStudents: 10,
-                    features: {
-                        students: true,
-                        attendance: true,
-                        payments: true,
-                        reports: true,
-                        backup: true
-                    }
-                };
-                saveData();
-            }
-    
-            // Check subscription status
-            checkSubscriptionStatus();
-        }
-
-        // Check if subscription is valid
-        function checkSubscriptionStatus() {
-            // ✅ ADMIN BYPASS - Admins always have active status
-            if (isAdmin) {
-                return true;
-            }
-    
-            // Regular user - check subscription
-            const sub = appData.subscription;
-
-            if (sub.endDate) {        
-                const endDate = new Date(sub.endDate);        
-                const now = new Date();
-        
-                if (now > endDate) {            
-                    sub.status = 'expired';            
-                    sub.plan = 'free_trial';            
-                    sub.maxStudents = 10;            
-                    saveData();        
-                }    
-            }
-
-            if (sub.plan === 'free_trial' && appData.students.length >= sub.maxStudents) {        
-                return false;    
-            }    
-
-            return sub.status === 'active';
-        }
-
-        // Update subscription display
-        function updateSubscriptionDisplay() {
-            // Show admin status instead of subscription for admins
-            if (isAdmin) {
-                const currentPlanEl = document.getElementById('currentPlanName');
-                if (currentPlanEl) {
-                    currentPlanEl.textContent = '👑 Admin Account';
-                }
-        
-                const statusEl = document.getElementById('subscriptionStatus');
-                if (statusEl) {
-                    statusEl.textContent = 'Unlimited Access';
-                }
-        
-                const maxStudentsEl = document.getElementById('maxStudents');
-                if (maxStudentsEl) {
-                    maxStudentsEl.textContent = '∞';
-                }
-        
-                const currentStudentsEl = document.getElementById('currentStudents');
-                if (currentStudentsEl) {
-                    currentStudentsEl.textContent = appData.students.length;
-                }
-        
-                const warningEl = document.getElementById('subscriptionWarning');
-                if (warningEl) {
-                    warningEl.style.display = 'none';
-                }
-        
-                return; // Don't show regular subscription info
-            }
-    
-            // Regular user subscription display continues below...
-            const sub = appData.subscription;
-    
-            // Update current plan name
-            const planNames = {
-                'free_trial': 'Free Trial',
-                'monthly': 'Monthly Plan',
-                'annual': 'Annual Plan'
-            };
-    
-            const currentPlanEl = document.getElementById('currentPlanName');
-            if (currentPlanEl) {
-                currentPlanEl.textContent = planNames[sub.plan] || 'Free Trial';
-            }
-    
-            // Update status
-            const statusEl = document.getElementById('subscriptionStatus');
-            if (statusEl) {
-                statusEl.textContent = sub.status.charAt(0).toUpperCase() + sub.status.slice(1);
-                statusEl.style.color = sub.status === 'active' ? '#D1FAE5' : '#FEE2E2';
-            }
-    
-            // Update student count
-            const currentStudentsEl = document.getElementById('currentStudents');
-            const maxStudentsEl = document.getElementById('maxStudents');
-            if (currentStudentsEl) currentStudentsEl.textContent = appData.students.length;
-            if (maxStudentsEl) {
-                maxStudentsEl.textContent = sub.plan === 'free_trial' ? sub.maxStudents : '∞';
-            }
-    
-            // Update end date
-            const endDateEl = document.getElementById('subscriptionEndDate');
-            if (endDateEl) {
-                if (sub.endDate) {
-                    const date = new Date(sub.endDate);
-                    endDateEl.textContent = date.toLocaleDateString();
-                } else {
-                    endDateEl.textContent = sub.plan === 'free_trial' ? 'No expiry' : '-';
-                }
-            }
-    
-            // Show warning if needed
-            const warningEl = document.getElementById('subscriptionWarning');
-            const warningMsgEl = document.getElementById('warningMessage');
-    
-            if (sub.plan === 'free_trial' && appData.students.length >= sub.maxStudents - 2) {
-                warningEl.style.display = 'block';
-                warningMsgEl.textContent = `You're using ${appData.students.length} of ${sub.maxStudents} free students. Upgrade to add unlimited students!`;
-            } else if (sub.status === 'expired') {
-                warningEl.style.display = 'block';
-                warningMsgEl.textContent = 'Your subscription has expired. Please renew to continue using premium features.';
-            } else {
-                warningEl.style.display = 'none';
-            }
-    
-            // Update button states
-            updateSubscriptionButtons();
-            displayPaymentHistory();
-        }
-
-        // Update subscription buttons
-        function updateSubscriptionButtons() {
-            const sub = appData.subscription;
-    
-            const btnFreeTrial = document.getElementById('btnFreeTrial');
-            const btnMonthly = document.getElementById('btnMonthly');
-            const btnAnnual = document.getElementById('btnAnnual');
-    
-            // Reset all buttons
-            if (btnFreeTrial) {
-                btnFreeTrial.className = 'btn btn-secondary';
-                btnFreeTrial.textContent = 'Select Plan';
-            }
-            if (btnMonthly) {
-                btnMonthly.className = 'btn btn-success';
-                btnMonthly.textContent = 'Subscribe Monthly';
-            }
-            if (btnAnnual) {
-                btnAnnual.className = 'btn btn-primary';
-                btnAnnual.textContent = 'Subscribe Annual';
-            }
-    
-            // Highlight current plan
-            if (sub.plan === 'free_trial' && btnFreeTrial) {
-                btnFreeTrial.className = 'btn btn-secondary';
-                btnFreeTrial.textContent = 'Current Plan';
-                btnFreeTrial.disabled = true;
-                btnFreeTrial.style.opacity = '0.6';
-            } else if (sub.plan === 'monthly' && btnMonthly) {
-                btnMonthly.className = 'btn btn-success';
-                btnMonthly.textContent = 'Current Plan';
-                btnMonthly.disabled = true;
-                btnMonthly.style.opacity = '0.6';
-            } else if (sub.plan === 'annual' && btnAnnual) {
-                btnAnnual.className = 'btn btn-primary';
-                btnAnnual.textContent = 'Current Plan';
-                btnAnnual.disabled = true;
-                btnAnnual.style.opacity = '0.6';
-            }
-        }
-        
-        // Select a subscription plan (updated for PayHere)
-        function selectPlan(plan) {
-            if (plan === 'free_trial') {
-                // Downgrade to free
-                if (!confirm('⬇️ Downgrade to Free Trial?\n\n⚠️ You will be limited to 10 students\n⚠️ Some premium features will be disabled')) {
-                    return;
-                }
-        
-                appData.subscription.plan = 'free_trial';
-                appData.subscription.status = 'active';
-                appData.subscription.maxStudents = 10;
-                appData.subscription.endDate = null;
-        
-                saveData();
-                updateSubscriptionDisplay();
-        
-                alert('✅ Downgraded to Free Trial\n\nYou can now add up to 10 students.');
-            } else {
-                // Redirect to payment
-                initiatePayment(plan);
-            }
-        }
-
-        // Check before adding student
-        function canAddStudent() {
-            // ADMIN BYPASS - Admins have unlimited access
-            if (isAdmin) {
-                console.log('👑 Admin bypass: Unlimited students allowed');
-                return true;
-            }
-    
-            // Regular user - check subscription limits
-            const sub = appData.subscription;
-
-            if (sub.plan === 'free_trial' && appData.students.length >= sub.maxStudents) {        
-                if (confirm(`⚠️ Student Limit Reached!\n\nYou've reached the limit of ${sub.maxStudents} students on the Free Trial.\n\nWould you like to upgrade to add unlimited students?`)) {            
-                    navigateTo('subscription');        
-                }        
-                return false;   
-            }    
-
-            return true;
-        }
-
-        // Download backup file (JSON)
-        function downloadBackup() {    
-            try {        
-                const dataToBackup = {            
-                    ...appData,            
-                    backupDate: new Date().toISOString(),            
-                    appVersion: '1.0'        
-                };
-                
-                const dataStr = JSON.stringify(dataToBackup, null, 2);        
-                const dataBlob = new Blob([dataStr], { type: 'application/json' });        
-                const url = URL.createObjectURL(dataBlob);        
-                const link = document.createElement('a');        
-                const fileName = `ClassManager_Backup_${new Date().toISOString().split('T')[0]}.json`;
-                
-                link.href = url;        
-                link.download = fileName;        
-                link.click();
-                
-                // Update last backup time        
-                const now = new Date().toLocaleString();        
-                localStorage.setItem('lastBackupTime', now);        
-                const backupTimeEl = document.getElementById('lastBackupTime');        
-                if (backupTimeEl) backupTimeEl.textContent = now;
-                
-                alert('✅ Backup downloaded successfully!\n\nFile: ' + fileName);    
-            } catch (error) {        
-                console.error('❌ Backup error:', error);        
-                alert('⚠️ Error creating backup file.');    
-            }
-        }
-
-        // Upload and restore backup file
-        function uploadBackup() {    
-            const input = document.createElement('input');    
-            input.type = 'file';    
-            input.accept = '.json';
-        
-            input.onchange = (e) => {        
-                const file = e.target.files[0];        
-                if (!file) return;
-                
-                const reader = new FileReader();
-                
-                reader.onload = (event) => {            
-                    try {                
-                        const restored = JSON.parse(event.target.result);
-                                
-                        // Validate data structure                
-                        if (!restored.students || !Array.isArray(restored.students)) {                    
-                            throw new Error('Invalid backup file format');                
-                        }
-                                
-                        // Confirm before restoring                
-                        if (!confirm('⚠️ Restore data from backup?\n\nThis will replace all current data!\n\nStudents: ' + (restored.students?.length || 0) + '\nPayments: ' + (restored.payments?.length || 0))) {                    
-                            return;                
-                        }
-                                
-                        // Restore data                
-                        appData = {                    
-                            students: restored.students || [],                    
-                            grades: restored.grades || ['06', '07', '08', '09', '10', '11', '12'],                    
-                            timetable: restored.timetable || [],                    
-                            attendance: restored.attendance || {},                    
-                            payments: restored.payments || [],                    
-                            subjectName: restored.subjectName || 'Mathematics',                    
-                            selectedStudent: null,                    
-                            editingTimetable: null,                    
-                            selectedPaymentStudent: null                
-                        };
-                                
-                        saveData();                
-                        populateGradeDropdowns();                
-                        updateDashboard();
-                                
-                        // Refresh current screen                
-                        const activeScreen = document.querySelector('.screen.active');                
-                        if (activeScreen) {                    
-                            const screenId = activeScreen.id;                    
-                            if (screenId === 'students') loadStudentsScreen();                    
-                            if (screenId === 'timetable') loadTimetable();                    
-                            if (screenId === 'payments') loadPaymentHistory();                    
-                            if (screenId === 'settings') loadSettings();                
-                        }
-                                
-                        alert('✅ Data restored successfully!\n\nStudents: ' + appData.students.length + '\nPayments: ' + appData.payments.length);                                
-                    } catch (err) {                
-                        console.error('❌ Restore error:', err);                
-                        alert('⚠️ Invalid backup file!\n\nPlease select a valid Class Manager backup file.');            
-                    }        
-                };
-                
-                reader.onerror = () => {            
-                    alert('⚠️ Error reading backup file.');        
-                };
-                    
-                reader.readAsText(file);    
-            };
-        
-            input.click();
-        }
-
-        // Export all data to Excel
-        function exportAllDataToExcel() {    
-            try {        
-                const wb = XLSX.utils.book_new();
-                
-                // Sheet 1: Students        
-                const studentsData = [           
-                    ['Student ID', 'Name', 'Birthday', 'Gender', 'Class', 'Grade', 'Student Phone', 'Parent Phone']        
-                ];        
-                appData.students.forEach(s => {            
-                    studentsData.push([                
-                        s.id,                                    
-                        s.name,                                    
-                        s.birthday || '',                                    
-                        s.gender || '',                                    
-                        s.class || '',                                    
-                        'Grade ' + s.grade,                                    
-                        s.studentPhone || '',                                        
-                        s.parentPhone || ''                            
-                    ]);                        
-                });                    
-                const wsStudents = XLSX.utils.aoa_to_sheet(studentsData);                    
-                XLSX.utils.book_append_sheet(wb, wsStudents, 'Students');
-                            
-                // Sheet 2: Payments                    
-                const paymentsData = [
-                    ['Date', 'Student ID', 'Student Name', 'Grade', 'Month', 'Amount', 'Status']                   
-                ];        
-                (appData.payments || []).forEach(p => {            
-                    paymentsData.push([                
-                        p.date,                
-                        p.studentId,                
-                        p.studentName,                
-                        p.class,                
-                        p.month,                
-                        p.amount,                
-                        p.status            
-                    ]);        
-                });        
-                const wsPayments = XLSX.utils.aoa_to_sheet(paymentsData);        
-                XLSX.utils.book_append_sheet(wb, wsPayments, 'Payments');
-                
-                // Sheet 3: Timetable        
-                const timetableData = [            
-                    ['Day', 'Time', 'Grade', 'Notes']                    
-                ];        
-                appData.timetable.forEach(t => {            
-                    timetableData.push([
-                        t.day,
-                        t.time,
-                        'Grade ' + t.grade,
-                        t.notes || ''            
-                    ]);        
-                });        
-                const wsTimetable = XLSX.utils.aoa_to_sheet(timetableData);        
-                XLSX.utils.book_append_sheet(wb, wsTimetable, 'Timetable');
-        
-        
-                // Sheet 4: Attendance Summary        
-                const attendanceData = [
-                    ['Date', 'Grade', 'Total Students', 'Present', 'Absent', 'Rate']        
-                ];
-                
-                Object.keys(appData.attendance || {}).forEach(date => {            
-                    const dayData = appData.attendance[date];            
-                    const total = Object.keys(dayData).length;            
-                    const present = Object.values(dayData).filter(s => s === 'present').length;            
-                    const absent = total - present;            
-                    const rate = total > 0 ? Math.round((present / total) * 100) + '%' : '0%';
-                        
-                    // Get grade from first student            
-                    const firstStudentId = Object.keys(dayData)[0];            
-                    const student = appData.students.find(s => s.id === firstStudentId);            
-                    const grade = student ? 'Grade ' + student.grade : 'N/A';
-                        
-                    attendanceData.push([                
-                        date,                
-                        grade,                
-                        total,                
-                        present,                
-                        absent,                
-                        rate                            
-                    ]);                    
-                });                    
-                const wsAttendance = XLSX.utils.aoa_to_sheet(attendanceData);                    
-                XLSX.utils.book_append_sheet(wb, wsAttendance, 'Attendance');
-                            
-                // Download file                    
-                const fileName = `ClassManager_Complete_Export_${new Date().toISOString().split('T')[0]}.xlsx`;                   
-                XLSX.writeFile(wb, fileName);
-                            
-                alert('✅ All data exported to Excel!\n\nFile: ' + fileName + '\n\nSheets:\n- Students\n- Payments\n- Timetable\n- Attendance');            
-            } catch (error) {                   
-                console.error('❌ Export error:', error);                    
-                alert('⚠️ Error exporting data to Excel.');                    
-            }    
-        }
-    
-        // Clear all data    
-        function clearAllData() {            
-            if (!confirm('⚠️ DELETE ALL DATA?\n\nThis will permanently delete:\n- All students\n- All payments\n- All attendance records\n- All timetable entries\n\nThis CANNOT be undone!')) {                    
-                return;            
-            }
-                
-            if (!confirm('⚠️ Are you ABSOLUTELY SURE?\n\nThis is your last chance to cancel!')) {                    
-                return;            
-            }
-                
-            // Clear localStorage            
-            localStorage.clear();
-                
-            alert('✅ All data cleared!\n\nThe app will now reload.');
-                
-            // Reload page            
-            location.reload();    
-        }
-    
-        // Update data statistics in settings    
-        function updateDataStatistics() {            
-            const statsStudents = document.getElementById('statsStudents');            
-            const statsPayments = document.getElementById('statsPayments');            
-            const statsTimetable = document.getElementById('statsTimetable');            
-            const statsAttendance = document.getElementById('statsAttendance');        
-        
-            if (statsStudents) statsStudents.textContent = appData.students.length;            
-            if (statsPayments) statsPayments.textContent = (appData.payments || []).length;            
-            if (statsTimetable) statsTimetable.textContent = appData.timetable.length;            
-            if (statsAttendance) statsAttendance.textContent = Object.keys(appData.attendance || {}).length;   
-        }
+       
                    
         // Initialize app               
         init();
@@ -5373,6 +3390,7 @@
     </script>
 </body>
 </html>
+
 
 
 
