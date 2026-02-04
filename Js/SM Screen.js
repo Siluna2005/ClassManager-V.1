@@ -1,4 +1,4 @@
-// ============================================
+        // ============================================
         // STUDENT MANAGEMENT - UPDATED VERSION
         // ============================================
 
@@ -94,32 +94,93 @@
             `).join(''); 
         }
 
-        function selectStudentForEdit(student) {
-            selectedStudentForEdit = student;
-            
-            // Fill form with student data
-            document.getElementById('studentFormTitle').textContent = 'Edit Student';
-            document.getElementById('studentNameInput').value = student.name;
-            document.getElementById('studentBirthdayInput').value = student.birthday || '';
-            document.getElementById('studentGenderInput').value = student.gender || '';
-            document.getElementById('studentClassInput').value = student.class || '';
-            document.getElementById('studentGradeInput').value = student.grade;
-            document.getElementById('studentPhoneInput').value = student.studentPhone || '';
-            document.getElementById('parentPhoneInput').value = student.parentPhone || '';
-            
-            // Show student ID and QR
-            document.getElementById('studentIdDisplay').value = student.id;
-            document.getElementById('qrCodeDisplay').textContent = student.id;
-            document.getElementById('studentIdDisplaySection').style.display = 'block';
-            
-            // Show/hide buttons
-            document.getElementById('addStudentBtn').style.display = 'none';
-            document.getElementById('updateStudentBtn').style.display = 'block';
-            document.getElementById('deleteStudentBtn').style.display = 'block';
-            
-            // Update selected styling
-            filterStudentsByTab();
-        }
+       function selectStudentForEdit(student) {                               
+           console.log('📝 Selecting student for edit:', student.name);    
+    
+               selectedStudentForEdit = student;
+       
+               // Fill form with student data
+               const nameInput = document.getElementById('studentNameInput');
+               const birthdayInput = document.getElementById('studentBirthdayInput');
+               const genderInput = document.getElementById('studentGenderInput');
+               const classInput = document.getElementById('studentClassInput');
+               const gradeInput = document.getElementById('studentGradeInput');
+               const studentPhoneInput = document.getElementById('studentPhoneInput');
+               const parentPhoneInput = document.getElementById('parentPhoneInput');
+    
+               if (nameInput) nameInput.value = student.name || '';
+               if (birthdayInput) birthdayInput.value = student.birthday || '';
+               if (genderInput) genderInput.value = student.gender || '';
+               if (classInput) classInput.value = student.class || '';
+               if (gradeInput) gradeInput.value = student.grade || '';
+               if (studentPhoneInput) studentPhoneInput.value = student.studentPhone || '';
+               if (parentPhoneInput) parentPhoneInput.value = student.parentPhone || '';
+    
+               // Update form title
+               const formTitle = document.getElementById('studentFormTitle');
+               if (formTitle) {
+                   formTitle.textContent = 'Edit Student';
+               }
+    
+               // Show student ID and QR section
+               const studentIdDisplay = document.getElementById('studentIdDisplay');
+               const studentIdDisplaySection = document.getElementById('studentIdDisplaySection');
+               const qrCodeText = document.getElementById('qrCodeText');
+    
+               if (studentIdDisplay) {
+                   studentIdDisplay.value = student.id;
+               }
+    
+               if (qrCodeText) {
+                   qrCodeText.textContent = `Student ID: ${student.id}`;
+               }
+    
+               if (studentIdDisplaySection) {
+                   studentIdDisplaySection.style.display = 'block';
+               }
+    
+               // ⭐ SHOW/HIDE BUTTONS - THIS IS THE FIX
+               const addStudentBtn = document.getElementById('addStudentBtn');
+               const updateStudentBtn = document.getElementById('updateStudentBtn');
+               const deleteStudentBtn = document.getElementById('deleteStudentBtn');
+               const clearStudentBtn = document.getElementById('clearStudentBtn');
+    
+               console.log('🔘 Button elements:', {
+                   addBtn: addStudentBtn ? 'found' : 'NOT FOUND',
+                   updateBtn: updateStudentBtn ? 'found' : 'NOT FOUND',
+                   deleteBtn: deleteStudentBtn ? 'found' : 'NOT FOUND',
+                   clearBtn: clearStudentBtn ? 'found' : 'NOT FOUND' 
+               });
+       
+               // Hide Add button    
+               if (addStudentBtn) {                            
+                       addStudentBtn.style.display = 'none';      
+                       console.log('✅ Add button hidden');    
+               }
+       
+               // Show Update button   
+               if (updateStudentBtn) {    
+                       updateStudentBtn.style.display = 'block';    
+                       console.log('✅ Update button shown');    
+               }
+        
+               // Show Delete button    
+               if (deleteStudentBtn) {        
+                       deleteStudentBtn.style.display = 'block';      
+                       console.log('✅ Delete button shown');    
+               }
+        
+               // Keep Clear button visible    
+               if (clearStudentBtn) {        
+                       clearStudentBtn.style.display = 'block';        
+                       console.log('✅ Clear button shown');    
+               }
+       
+               // Update selected styling in list    
+               filterStudentsByTab();    
+    
+               console.log('✅ Student selected for editing:', student.name);
+       }
 
         function addNewStudent() {
            
@@ -250,25 +311,76 @@
             alert('✅ Student deleted successfully!');
         }
 
-        function clearStudentForm() {
+        function clearStudentForm() {  
+            console.log('🧹 Clearing student form');    
+                   
             selectedStudentForEdit = null;
-            
-            document.getElementById('studentFormTitle').textContent = 'Add New Student';
-            document.getElementById('studentNameInput').value = '';
-            document.getElementById('studentBirthdayInput').value = '';
-            document.getElementById('studentGenderInput').value = '';
-            document.getElementById('studentClassInput').value = '';
-            document.getElementById('studentGradeInput').value = '';
-            document.getElementById('studentPhoneInput').value = '';
-            document.getElementById('parentPhoneInput').value = '';
-            
-            document.getElementById('studentIdDisplaySection').style.display = 'none';
-            
-            document.getElementById('addStudentBtn').style.display = 'block';
-            document.getElementById('updateStudentBtn').style.display = 'none';
-            document.getElementById('deleteStudentBtn').style.display = 'none';
-            
+                        
+            // Clear form title    
+            const formTitle = document.getElementById('studentFormTitle');    
+            if (formTitle) {        
+                formTitle.textContent = 'Add New Student';           
+            }
+        
+            // Clear all input fields    
+            const nameInput = document.getElementById('studentNameInput');                    
+            const birthdayInput = document.getElementById('studentBirthdayInput');    
+            const genderInput = document.getElementById('studentGenderInput');    
+            const classInput = document.getElementById('studentClassInput');    
+            const gradeInput = document.getElementById('studentGradeInput');    
+            const studentPhoneInput = document.getElementById('studentPhoneInput');    
+            const parentPhoneInput = document.getElementById('parentPhoneInput');
+    
+            if (nameInput) nameInput.value = '';
+            if (birthdayInput) birthdayInput.value = '';
+            if (genderInput) genderInput.value = '';
+            if (classInput) classInput.value = '';
+            if (gradeInput) gradeInput.value = '';
+            if (studentPhoneInput) studentPhoneInput.value = '';
+            if (parentPhoneInput) parentPhoneInput.value = '';
+                    
+            // Hide student ID section
+            const studentIdDisplaySection = document.getElementById('studentIdDisplaySection');
+            if (studentIdDisplaySection) {
+                studentIdDisplaySection.style.display = 'none';
+            }
+    
+            // ⭐ RESET BUTTONS - THIS IS THE FIX
+            const addStudentBtn = document.getElementById('addStudentBtn');
+            const updateStudentBtn = document.getElementById('updateStudentBtn');
+            const deleteStudentBtn = document.getElementById('deleteStudentBtn');
+            const clearStudentBtn = document.getElementById('clearStudentBtn');
+    
+            console.log('🔘 Resetting button visibility...');
+    
+            // Show Add button
+            if (addStudentBtn) {
+                addStudentBtn.style.display = 'block';
+                console.log('✅ Add button shown');
+            }
+    
+            // Hide Update button
+            if (updateStudentBtn) {
+                updateStudentBtn.style.display = 'none';
+                console.log('✅ Update button hidden');
+            }
+    
+            // Hide Delete button
+            if (deleteStudentBtn) {
+                deleteStudentBtn.style.display = 'none';
+                console.log('✅ Delete button hidden');
+            }
+    
+            // Keep Clear button visible
+            if (clearStudentBtn) {
+                clearStudentBtn.style.display = 'block';
+                console.log('✅ Clear button shown');
+            }
+    
+            // Remove selection styling from list
             filterStudentsByTab();
+    
+            console.log('✅ Form cleared and reset to Add mode');
         }
 
         function printStudentQR() {
@@ -290,4 +402,87 @@
             }
         
             showQRCode(selectedStudentForEdit);
+
         }
+
+// ============================================
+// DIAGNOSTIC SCRIPT - RUN IN BROWSER CONSOLE
+// This will help identify the button visibility issue
+// ============================================
+
+// Run this in your browser console to check button setup
+function diagnoseStudentButtons() {
+    console.log('🔍 DIAGNOSING STUDENT BUTTONS...');
+    console.log('================================');
+    
+    const addBtn = document.getElementById('addStudentBtn');
+    const updateBtn = document.getElementById('updateStudentBtn');
+    const deleteBtn = document.getElementById('deleteStudentBtn');
+    const clearBtn = document.getElementById('clearStudentBtn');
+    
+    console.log('\n📋 BUTTON ELEMENTS:');
+    console.log('Add button:', addBtn);
+    console.log('Update button:', updateBtn);
+    console.log('Delete button:', deleteBtn);
+    console.log('Clear button:', clearBtn);
+    
+    if (!addBtn) console.error('❌ Add button NOT FOUND - Check HTML id="addStudentBtn"');
+    if (!updateBtn) console.error('❌ Update button NOT FOUND - Check HTML id="updateStudentBtn"');
+    if (!deleteBtn) console.error('❌ Delete button NOT FOUND - Check HTML id="deleteStudentBtn"');
+    if (!clearBtn) console.error('❌ Clear button NOT FOUND - Check HTML id="clearStudentBtn"');
+    
+    console.log('\n🎨 CURRENT STYLES:');
+    if (addBtn) {
+        console.log('Add button display:', window.getComputedStyle(addBtn).display);
+        console.log('Add button visibility:', window.getComputedStyle(addBtn).visibility);
+    }
+    if (updateBtn) {
+        console.log('Update button display:', window.getComputedStyle(updateBtn).display);
+        console.log('Update button visibility:', window.getComputedStyle(updateBtn).visibility);
+    }
+    if (deleteBtn) {
+        console.log('Delete button display:', window.getComputedStyle(deleteBtn).display);
+        console.log('Delete button visibility:', window.getComputedStyle(deleteBtn).visibility);
+    }
+    
+    console.log('\n📝 EXPECTED BEHAVIOR:');
+    console.log('- Add mode: Add=visible, Update=hidden, Delete=hidden');
+    console.log('- Edit mode: Add=hidden, Update=visible, Delete=visible');
+    
+    console.log('\n🔧 TESTING BUTTON TOGGLE:');
+    
+    // Test hiding Add button
+    if (addBtn) {
+        console.log('Testing: Hide Add button...');
+        addBtn.style.display = 'none';
+        console.log('Result:', window.getComputedStyle(addBtn).display);
+    }
+    
+    // Test showing Update button
+    if (updateBtn) {
+        console.log('Testing: Show Update button...');
+        updateBtn.style.display = 'block';
+        console.log('Result:', window.getComputedStyle(updateBtn).display);
+    }
+    
+    // Test showing Delete button
+    if (deleteBtn) {
+        console.log('Testing: Show Delete button...');
+        deleteBtn.style.display = 'block';
+        console.log('Result:', window.getComputedStyle(deleteBtn).display);
+    }
+    
+    console.log('\n✅ DIAGNOSTIC COMPLETE');
+    console.log('================================');
+    
+    // Reset buttons after test
+    setTimeout(() => {
+        if (addBtn) addBtn.style.display = 'block';
+        if (updateBtn) updateBtn.style.display = 'none';
+        if (deleteBtn) deleteBtn.style.display = 'none';
+        console.log('🔄 Buttons reset to default state');
+    }, 2000);
+}
+
+// Run the diagnostic
+diagnoseStudentButtons();
