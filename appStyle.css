@@ -521,3 +521,18 @@ table tbody tr:last-child td { border-bottom: none; }
 #subscription [style*="font-size: 14px"][style*="color: rgba(255,255,255,0.7)"] {
     color: #4b5563 !important;
 }
+
+@keyframes pulse-sync {
+    0%, 100% { 
+        opacity: 1; 
+        transform: scale(1);
+    }
+    50% { 
+        opacity: 0.5; 
+        transform: scale(1.2);
+    }
+}
+
+#syncIndicator {
+    animation: pulse-sync 2s infinite;
+}
