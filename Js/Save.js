@@ -572,4 +572,110 @@ async function migrateLocalStorageToFirebase() {
             if (statsPayments) statsPayments.textContent = (appData.payments || []).length;            
             if (statsTimetable) statsTimetable.textContent = appData.timetable.length;            
             if (statsAttendance) statsAttendance.textContent = Object.keys(appData.attendance || {}).length;   
+
         }
+
+// ============================================
+// SYNC BUTTON DIAGNOSTIC
+// Run this in browser console to diagnose the issue
+// ============================================
+
+function diagnoseSyncButton() {
+    console.log('🔍 DIAGNOSING SYNC BUTTON...');
+    console.log('================================');
+    
+    // Check if button exists
+    const syncBtn = document.getElementById('syncNowBtn');
+    console.log('1. Sync button element:', syncBtn ? '✅ FOUND' : '❌ NOT FOUND');
+    
+    if (syncBtn) {
+        console.log('   - onclick:', syncBtn.getAttribute('onclick'));
+        console.log('   - disabled:', syncBtn.disabled);
+        console.log('   - display:', window.getComputedStyle(syncBtn).display);
+    }
+    
+    // Check if function exists
+    console.log('2. syncNowManual function:', typeof syncNowManual !== 'undefined' ? '✅ EXISTS' : '❌ NOT FOUND');
+    
+    if (typeof syncNowManual === 'undefined') {
+        console.error('❌ ERROR: syncNowManual() function is not defined!');
+        console.log('   Solution: Add the sync functions to your code');
+    }
+    
+    // Check supporting functions
+    console.log('3. updateSyncStats function:', typeof updateSyncStats !== 'undefined' ? '✅ EXISTS' : '❌ NOT FOUND');
+    console.log('4. updateLastSyncTimeDisplay function:', typeof updateLastSyncTimeDisplay !== 'undefined' ? '✅ EXISTS' : '❌ NOT FOUND');
+    
+    // Check UI elements
+    const syncStatus = document.getElementById('syncStatusMessage');
+    const syncText = document.getElementById('syncStatusText');
+    const lastSyncTime = document.getElementById('lastSyncTime');
+    const syncIndicator = document.getElementById('syncIndicator');
+    
+    console.log('5. UI Elements:');
+    console.log('   - syncStatusMessage:', syncStatus ? '✅' : '❌');
+    console.log('   - syncStatusText:', syncText ? '✅' : '❌');
+    console.log('   - lastSyncTime:', lastSyncTime ? '✅' : '❌');
+    console.log('   - syncIndicator:', syncIndicator ? '✅' : '❌');
+    
+    // Check Firebase
+    console.log('6. Firebase:');
+    console.log('   - database:', typeof database !== 'undefined' ? '✅' : '❌');
+    console.log('   - currentUserId:', typeof currentUserId !== 'undefined' && currentUserId ? '✅ ' + currentUserId : '❌');
+    
+    // Check saveData and loadData
+    console.log('7. Core Functions:');
+    console.log('   - saveData:', typeof saveData !== 'undefined' ? '✅' : '❌');
+    console.log('   - loadData:', typeof loadData !== 'undefined' ? '✅' : '❌');
+    
+    console.log('\n🔧 RECOMMENDED ACTIONS:');
+    
+    if (typeof syncNowManual === 'undefined') {
+        console.log('❌ CRITICAL: syncNowManual() function missing!');
+        console.log('   → Add SYNC_FUNCTIONS_COMPLETE.js to your code');
+    }
+    
+    if (typeof updateSyncStats === 'undefined') {
+        console.log('❌ updateSyncStats() function missing!');
+        console.log('   → Add from SYNC_FUNCTIONS_COMPLETE.js');
+    }
+    
+    if (typeof updateLastSyncTimeDisplay === 'undefined') {
+        console.log('❌ updateLastSyncTimeDisplay() function missing!');
+        console.log('   → Add from SYNC_FUNCTIONS_COMPLETE.js');
+    }
+    
+    if (!syncBtn) {
+        console.log('❌ Sync button HTML missing!');
+        console.log('   → Add sync button HTML to Settings screen');
+    }
+    
+    console.log('\n================================');
+    console.log('✅ DIAGNOSTIC COMPLETE');
+    
+    // Try to manually trigger sync
+    if (typeof syncNowManual !== 'undefined') {
+        console.log('\n🧪 TESTING: Attempting manual sync...');
+        try {
+            syncNowManual();
+            console.log('✅ Sync function executed');
+        } catch (error) {
+            console.error('❌ Sync function error:', error);
+        }
+    }
+}
+
+// Run diagnostic
+diagnoseSyncButton();
+
+
+
+
+
+
+
+
+
+
+
+
