@@ -174,105 +174,105 @@
                             <p>Subscription management tools coming soon...</p>        
                         </div>      
                     </div>
-
+ 
                     <!-- Admin Analytics Tab -->
-                    <div id="admin-analytics-tab" class="admin-tab-content" style="display: none;">    
-                        <h2 style="color: #fff; margin-bottom: 24px;">📊 Analytics Overview</h2>
-        
+                    <div id="admin-analytics-tab" class="admin-tab-content" style="display: none;">   
+                        <h2 style="color: #000; margin-bottom: 24px;">📊 Analytics Overview</h2>    
+   
                         <!-- Statistics Cards -->    
                         <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 16px; margin-bottom: 24px;">
-                
+               
                             <!-- Total Users Card -->        
                             <div class="card" style="background: linear-gradient(135deg, rgba(139,92,246,0.2) 0%, rgba(139,92,246,0.05) 100%); border: 1px solid rgba(139,92,246,0.3);">            
-                                <p style="color: rgba(255,255,255,0.7); font-size: 12px; margin: 0 0 8px 0; text-transform: uppercase; letter-spacing: 0.5px;">Total Users</p>  
-                                <h2 id="adminTotalUsers" style="color: #fff; font-size: 32px; font-weight: 700; margin: 0;">0</h2>            
-                                <p style="color: rgba(255,255,255,0.6); font-size: 12px; margin: 8px 0 0 0;">Registered accounts</p>        
-                            </div>
-                
-                            <!-- Active Users Card -->        
-                            <div class="card" style="background: linear-gradient(135deg, rgba(16,185,129,0.2) 0%, rgba(16,185,129,0.05) 100%); border: 1px solid rgba(16,185,129,0.3);">            
-                                <p style="color: rgba(255,255,255,0.7); font-size: 12px; margin: 0 0 8px 0; text-transform: uppercase; letter-spacing: 0.5px;">Active This Month</p>  
-                                <h2 id="adminActiveUsers" style="color: #fff; font-size: 32px; font-weight: 700; margin: 0;">0</h2>      
-                                <p style="color: rgba(255,255,255,0.6); font-size: 12px; margin: 8px 0 0 0;">Users with activity</p>        
+                                <p style="color: #000; font-size: 12px; margin: 0 0 8px 0; text-transform: uppercase; letter-spacing: 0.5px; opacity: 0.7;">Total Users</p>            
+                                <h2 id="adminTotalUsers" style="color: #000; font-size: 32px; font-weight: 700; margin: 0;">0</h2>            
+                                <p style="color: #000; font-size: 12px; margin: 8px 0 0 0; opacity: 0.6;">Registered accounts</p>        
                             </div>
                
-                            <!-- New Users Card -->       
-                            <div class="card" style="background: linear-gradient(135deg, rgba(59,130,246,0.2) 0%, rgba(59,130,246,0.05) 100%); border: 1px solid rgba(59,130,246,0.3);">          
-                                <p style="color: rgba(255,255,255,0.7); font-size: 12px; margin: 0 0 8px 0; text-transform: uppercase; letter-spacing: 0.5px;">New This Month</p>  
-                                <h2 id="adminNewUsers" style="color: #fff; font-size: 32px; font-weight: 700; margin: 0;">0</h2>         
-                                <p style="color: rgba(255,255,255,0.6); font-size: 12px; margin: 8px 0 0 0;">Recent signups</p>        
-                            </div>   
+                            <!-- Active Users Card -->       
+                            <div class="card" style="background: linear-gradient(135deg, rgba(16,185,129,0.2) 0%, rgba(16,185,129,0.05) 100%); border: 1px solid rgba(16,185,129,0.3);">          
+                                <p style="color: #000; font-size: 12px; margin: 0 0 8px 0; text-transform: uppercase; letter-spacing: 0.5px; opacity: 0.7;">Active This Month</p>          
+                                <h2 id="adminActiveUsers" style="color: #000; font-size: 32px; font-weight: 700; margin: 0;">0</h2>          
+                                <p style="color: #000; font-size: 12px; margin: 8px 0 0 0; opacity: 0.6;">Users with activity</p>      
+                            </div>
+             
+                            <!-- New Users Card -->      
+                            <div class="card" style="background: linear-gradient(135deg, rgba(59,130,246,0.2) 0%, rgba(59,130,246,0.05) 100%); border: 1px solid rgba(59,130,246,0.3);">         
+                                <p style="color: #000; font-size: 12px; margin: 0 0 8px 0; text-transform: uppercase; letter-spacing: 0.5px; opacity: 0.7;">New This Month</p>          
+                                <h2 id="adminNewUsers" style="color: #000; font-size: 32px; font-weight: 700; margin: 0;">0</h2>        
+                                <p style="color: #000; font-size: 12px; margin: 8px 0 0 0; opacity: 0.6;">Recent signups</p>       
+                            </div>  
                         </div>
         
                         <!-- User Growth Chart -->   
-                        <div class="card">        
-                            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">            
-                                <h3 class="card-title" style="margin: 0;">📈 User Growth</h3>            
-                                <button class="btn btn-secondary" onclick="createAdminUserGrowthChart()" style="padding: 8px 16px; font-size: 13px;">               
-                                    🔄 Refresh            
-                                </button>        
+                        <div class="card">      
+                            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">         
+                                <h3 class="card-title" style="margin: 0; color: #000;">📈 User Growth</h3>         
+                                <button class="btn btn-secondary" onclick="createAdminUserGrowthChart()" style="padding: 8px 16px; font-size: 13px;">          
+                                    🔄 Refresh          
+                                </button>       
+                            </div>
+            
+                            <!-- Chart Container -->       
+                            <div style="position: relative; height: 350px; background: rgba(0,0,0,0.05); border-radius: 12px; padding: 20px;">         
+                                <canvas id="adminUserGrowthChart"></canvas>       
                             </div>
                
-                            <!-- Chart Container -->        
-                            <div style="position: relative; height: 350px; background: rgba(0,0,0,0.2); border-radius: 12px; padding: 20px;">            
-                                <canvas id="adminUserGrowthChart"></canvas>        
-                            </div>
-                
-                            <!-- Chart Info -->       
-                            <div style="margin-top: 16px; padding: 12px; background: rgba(139,92,246,0.1); border-radius: 8px; border-left: 4px solid #8b5cf6;">          
-                                <p style="color: rgba(255,255,255,0.8); font-size: 13px; margin: 0; line-height: 1.6;">            
-                                    <strong>📊 User Growth Tracking:</strong> This chart shows the cumulative growth of registered users over time. Each point represents the total number of users who have signed up by that date.          
-                                </p>      
+                            <!-- Chart Info -->        
+                            <div style="margin-top: 16px; padding: 12px; background: rgba(139,92,246,0.1); border-radius: 8px; border-left: 4px solid #8b5cf6;">            
+                                <p style="color: #000; font-size: 13px; margin: 0; line-height: 1.6;">             
+                                    <strong>📊 User Growth Tracking:</strong> This chart shows the cumulative growth of registered users over time. Each point represents the total number of users who have signed up by that date.            
+                                </p>        
                             </div>   
                         </div>
-        
-                        <!-- Additional Analytics -->    
+       
+                        <!-- Additional Analytics -->   
                         <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 16px; margin-top: 24px;">
-                
+               
                             <!-- User Activity Card -->        
                             <div class="card">            
-                                <h3 class="card-title">📊 User Activity</h3>            
-                                <div style="padding: 12px; background: rgba(255,255,255,0.05); border-radius: 8px; margin-bottom: 12px;">                
+                                <h3 class="card-title" style="color: #000;">📊 User Activity</h3>            
+                                <div style="padding: 12px; background: rgba(0,0,0,0.05); border-radius: 8px; margin-bottom: 12px;">               
                                     <div style="display: flex; justify-content: space-between; align-items: center;">                    
-                                        <span style="color: rgba(255,255,255,0.7); font-size: 13px;">Daily Active Users</span>                    
-                                        <strong id="adminDAU" style="color: #fff;">0</strong>                
-                                    </div>            
-                                </div>           
-                                <div style="padding: 12px; background: rgba(255,255,255,0.05); border-radius: 8px; margin-bottom: 12px;">               
-                                    <div style="display: flex; justify-content: space-between; align-items: center;">                  
-                                        <span style="color: rgba(255,255,255,0.7); font-size: 13px;">Weekly Active Users</span>                  
-                                        <strong id="adminWAU" style="color: #fff;">0</strong>               
-                                    </div>            
-                                </div>         
-                                <div style="padding: 12px; background: rgba(255,255,255,0.05); border-radius: 8px;">           
-                                    <div style="display: flex; justify-content: space-between; align-items: center;">            
-                                        <span style="color: rgba(255,255,255,0.7); font-size: 13px;">Monthly Active Users</span>             
-                                        <strong id="adminMAU" style="color: #fff;">0</strong>              
+                                        <span style="color: #000; font-size: 13px; opacity: 0.7;">Daily Active Users</span>                    
+                                        <strong id="adminDAU" style="color: #000;">0</strong>                
                                     </div>           
-                                </div>      
-                            </div>
-               
-                            <!-- User Retention Card -->       
-                            <div class="card">           
-                                <h3 class="card-title">🎯 User Retention</h3>           
-                                <div style="padding: 12px; background: rgba(255,255,255,0.05); border-radius: 8px; margin-bottom: 12px;">               
+                                </div>            
+                                <div style="padding: 12px; background: rgba(0,0,0,0.05); border-radius: 8px; margin-bottom: 12px;">               
+                                    <div style="display: flex; justify-content: space-between; align-items: center;">                    
+                                        <span style="color: #000; font-size: 13px; opacity: 0.7;">Weekly Active Users</span>                    
+                                        <strong id="adminWAU" style="color: #000;">0</strong>                
+                                    </div>           
+                                </div>            
+                                <div style="padding: 12px; background: rgba(0,0,0,0.05); border-radius: 8px;">               
                                     <div style="display: flex; justify-content: space-between; align-items: center;">                   
-                                        <span style="color: rgba(255,255,255,0.7); font-size: 13px;">7-Day Retention</span>                   
+                                        <span style="color: #000; font-size: 13px; opacity: 0.7;">Monthly Active Users</span>                   
+                                        <strong id="adminMAU" style="color: #000;">0</strong>               
+                                    </div>            
+                                </div>        
+                            </div>
+                
+                            <!-- User Retention Card -->        
+                            <div class="card">            
+                                <h3 class="card-title" style="color: #000;">🎯 User Retention</h3>            
+                                <div style="padding: 12px; background: rgba(0,0,0,0.05); border-radius: 8px; margin-bottom: 12px;">                
+                                    <div style="display: flex; justify-content: space-between; align-items: center;">                   
+                                        <span style="color: #000; font-size: 13px; opacity: 0.7;">7-Day Retention</span>                   
                                         <strong id="admin7DayRetention" style="color: #10b981;">0%</strong>                
-                                    </div>           
-                                </div>           
-                                <div style="padding: 12px; background: rgba(255,255,255,0.05); border-radius: 8px; margin-bottom: 12px;">                
-                                    <div style="display: flex; justify-content: space-between; align-items: center;">                    
-                                        <span style="color: rgba(255,255,255,0.7); font-size: 13px;">30-Day Retention</span>                   
-                                        <strong id="admin30DayRetention" style="color: #10b981;">0%</strong>               
                                     </div>            
                                 </div>           
-                                <div style="padding: 12px; background: rgba(255,255,255,0.05); border-radius: 8px;">               
-                                    <div style="display: flex; justify-content: space-between; align-items: center;">                    
-                                        <span style="color: rgba(255,255,255,0.7); font-size: 13px;">90-Day Retention</span>                    
-                                        <strong id="admin90DayRetention" style="color: #10b981;">0%</strong>               
+                                <div style="padding: 12px; background: rgba(0,0,0,0.05); border-radius: 8px; margin-bottom: 12px;">              
+                                    <div style="display: flex; justify-content: space-between; align-items: center;">              
+                                        <span style="color: #000; font-size: 13px; opacity: 0.7;">30-Day Retention</span>              
+                                        <strong id="admin30DayRetention" style="color: #10b981;">0%</strong>             
                                     </div>           
-                                </div>       
+                                </div>            
+                                <div style="padding: 12px; background: rgba(0,0,0,0.05); border-radius: 8px;">                
+                                    <div style="display: flex; justify-content: space-between; align-items: center;">                    
+                                        <span style="color: #000; font-size: 13px; opacity: 0.7;">90-Day Retention</span>                    
+                                        <strong id="admin90DayRetention" style="color: #10b981;">0%</strong>                
+                                    </div>           
+                                </div>        
                             </div>   
                         </div>
                     </div>
@@ -3016,23 +3016,26 @@
                         pointHoverBorderWidth: 3
                     }]
                 },
-                options: {
-                    responsive: true,
-                    maintainAspectRatio: false,
-                    plugins: {
-                        legend: {
-                            display: true,
-                            labels: {
-                                color: '#fff',
-                                font: {
-                                    size: 13,
-                                    weight: '600'
-                                },
-                                padding: 15
-                            }
+                options: {  
+                    responsive: true,   
+                    maintainAspectRatio: false,  
+                    plugins: {       
+                        legend: {           
+                            display: true,          
+                            labels: {                                                 
+                                color: '#000',  // ⭐ Changed to black               
+                                font: {                    
+                                    size: 13,                    
+                                    weight: '600'               
+                                },               
+                                padding: 15          
+                            }       
                         },
+      
                         tooltip: {
+          
                             backgroundColor: 'rgba(0, 0, 0, 0.8)',
+           
                             titleColor: '#fff',
                             bodyColor: '#fff',
                             borderColor: '#8b5cf6',
@@ -3049,11 +3052,11 @@
                     scales: {
                         x: {
                             grid: {
-                                color: 'rgba(255, 255, 255, 0.1)',
+                                color: 'rgba(0, 0, 0, 0.1)',  // ⭐ Changed to black
                                 drawBorder: false
                             },
                             ticks: {
-                                color: 'rgba(255, 255, 255, 0.7)',
+                                color: '#000',  // ⭐ Changed to black
                                 font: {
                                     size: 11
                                 },
@@ -3064,20 +3067,20 @@
                         y: {
                             beginAtZero: true,
                             grid: {
-                                color: 'rgba(255, 255, 255, 0.1)',
+                                color: 'rgba(0, 0, 0, 0.1)',  // ⭐ Changed to black
                                 drawBorder: false
                             },
                             ticks: {
-                                color: 'rgba(255, 255, 255, 0.7)',
+                                color: '#000',  // ⭐ Changed to black
                                 font: {
-                                   size: 11
+                                    size: 11
                                 },
                                 stepSize: 1,
                                 callback: function(value) {
                                     return Math.floor(value);
                                 }
                             }
-                       }                   
+                        }
                     },
                     interaction: {
                         intersect: false,
@@ -3881,6 +3884,7 @@
     </script>
 </body>
 </html>
+
 
 
 
