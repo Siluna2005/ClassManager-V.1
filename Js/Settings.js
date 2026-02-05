@@ -281,25 +281,28 @@ async function syncNowManual() {
 // ============================================
 
 function updateSyncStats() {
-    const studentsCount = document.getElementById('syncStudentsCount');
-    const classesCount = document.getElementById('syncClassesCount');
-    const paymentsCount = document.getElementById('syncPaymentsCount');
+    // Try to access appData from window scope
+    const data = window.appData || (typeof appData !== 'undefined' ? appData : null);
     
-    // Access appData from global scope
-    if (typeof appData !== 'undefined') {
-        if (studentsCount && appData.students) {
-            studentsCount.textContent = appData.students.length;
+    if (data) {
+        const studentsCount = document.getElementById('syncStudentsCount');
+        const classesCount = document.getElementById('syncClassesCount');
+        const paymentsCount = document.getElementById('syncPaymentsCount');
+        
+        if (studentsCount && data.students) {
+            studentsCount.textContent = data.students.length;
         }
         
-        if (classesCount && appData.timetable) {
-            classesCount.textContent = appData.timetable.length;
+        if (classesCount && data.timetable) {
+            classesCount.textContent = data.timetable.length;
         }
         
-        if (paymentsCount && appData.payments) {
-            paymentsCount.textContent = appData.payments.length;
+        if (paymentsCount && data.payments) {
+            paymentsCount.textContent = data.payments.length;
         }
     } else {
-        console.warn('⚠️ appData not available for sync stats');
+        // Silently fail - not critical
+        console.debug('appData not yet available');
     }
 }
 
@@ -379,5 +382,6 @@ setTimeout(() => {
         updateSyncStats();
     }
 }, 100);
+
 
 
