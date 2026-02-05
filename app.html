@@ -3093,15 +3093,37 @@
         // 5. UPDATE ADMIN ANALYTICS TAB
         // ============================================
 
-        function updateAdminAnalyticsTab() {
+        async function updateAdminAnalyticsTab() {
             console.log('📊 Updating admin analytics tab...');
     
-            // Update user growth chart
-            createAdminUserGrowthChart();
+            // Show loading state on stats cards
+            const totalUsersEl = document.getElementById('adminTotalUsers');
+            const newUsersEl = document.getElementById('adminNewUsers');
+            const activeUsersEl = document.getElementById('adminActiveUsers');
     
-            // Update other admin stats here...
+            if (totalUsersEl) totalUsersEl.textContent = '...';
+            if (newUsersEl) newUsersEl.textContent = '...';
+            if (activeUsersEl) activeUsersEl.textContent = '...';
     
-            console.log('✅ Admin analytics tab updated');
+            try {
+                // ⭐ UPDATE ALL METRICS IN PARALLEL
+                await Promise.all([
+                    updateAdminStatsCards(),
+                    updateUserActivityMetrics(),
+                    updateUserRetention(),
+                    createAdminUserGrowthChart()
+                ]);
+        
+                console.log('✅ Admin analytics tab updated successfully');
+        
+            } catch (error) {
+                console.error('❌ Error updating admin analytics:', error);
+        
+                // Show error state
+                if (totalUsersEl) totalUsersEl.textContent = 'Error';
+                if (newUsersEl) newUsersEl.textContent = 'Error';
+                if (activeUsersEl) activeUsersEl.textContent = 'Error';
+            }
         }
 
         // Make functions globally available
@@ -3110,6 +3132,466 @@
 
         console.log('✅ Admin user growth chart functions loaded');
 
+        async function updateAdminStatsCards() {
+            console.log('📊 Updating admin statistics cards...');
+    
+            try {
+                // Fetch all users
+                const usersSnapshot = await database.ref('users').once('value');
+                const usersData = usersSnapshot.val();
+        
+                if (!usersData) {
+                    console.log('⚠️ No users found');
+            
+                    const totalUsersEl = document.getElementById('adminTotalUsers');
+                    const newUsersEl = document.getElementById('adminNewUsers');
+                    const activeUsersEl = document.getElementById('adminActiveUsers');
+            
+                    if (totalUsersEl) totalUsersEl.textContent = '0';
+                    if (newUsersEl) newUsersEl.textContent = '0';
+                    if (activeUsersEl) activeUsersEl.textContent = '0';
+            
+                    return;
+                }
+        
+                // Convert to array
+                const usersArray = Object.keys(usersData).map(userId => ({
+                    userId: userId,
+                    email: usersData[userId].profile?.email || 'Unknown',
+                    createdAt: usersData[userId].profile?.createdAt || 
+                              usersData[userId].createdAt || 
+                              new Date().toISOString(),
+                    lastActivity: usersData[userId].profile?.lastActivity ||
+                                 usersData[userId].profile?.lastSaved ||
+                                 usersData[userId].data?.lastSaved ||
+                                 usersData[userId].createdAt
+                }));
+        
+                // Total users
+                const totalUsers = usersArray.length;
+        
+                // Get current month start
+                const now = new Date();
+                const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
+                const oneMonthAgo = new Date(now.getTime() - 30*24*60*60*1000);
+        
+                // New users this month
+                const newUsersThisMonth = usersArray.filter(user => {
+                    const createdDate = new Date(user.createdAt);
+                    return createdDate >= startOfMonth;
+                }).length;
+        
+                // Active users this month (users with activity in last 30 days)
+                const activeUsersThisMonth = usersArray.filter(user => {
+                    if (!user.lastActivity) return false;
+                    const activityDate = new Date(user.lastActivity);
+                    return activityDate >= oneMonthAgo;
+                }).length;
+        
+                // Update UI
+                const totalUsersEl = document.getElementById('adminTotalUsers');
+                const newUsersEl = document.getElementById('adminNewUsers');
+                const activeUsersEl = document.getElementById('adminActiveUsers');
+        
+                if (totalUsersEl) totalUsersEl.textContent = totalUsers;
+                if (newUsersEl) newUsersEl.textContent = newUsersThisMonth;
+                if (activeUsersEl) activeUsersEl.textContent = activeUsersThisMonth;
+        
+                console.log('✅ Admin stats updated:', {
+                    totalUsers,
+                    newUsersThisMonth,
+                    activeUsersThisMonth
+                });
+        
+                return {
+                    totalUsers,
+                    newUsersThisMonth,
+                    activeUsersThisMonth
+                };
+        
+            } catch (error) {
+                console.error('❌ Error updating admin stats:', error);
+                return null;
+            }
+        }
+
+        // Make functions globally available
+        window.updateAdminAnalyticsTab = updateAdminAnalyticsTab;
+        window.updateAdminStatsCards = updateAdminStatsCards;
+
+        // ============================================
+        // 1. UPDATE USER ACTIVITY METRICS (DAU, WAU, MAU)
+        // ============================================
+
+        async function updateUserActivityMetrics() {
+            console.log('📊 Calculating user activity metrics...');
+    
+            try {
+                // Show loading state
+                const dauEl = document.getElementById('adminDAU');
+                const wauEl = document.getElementById('adminWAU');
+                const mauEl = document.getElementById('adminMAU');
+        
+                if (dauEl) dauEl.textContent = '...';
+                if (wauEl) wauEl.textContent = '...';
+                if (mauEl) mauEl.textContent = '...';
+        
+                // Fetch all users with their last activity
+                const usersSnapshot = await database.ref('users').once('value');
+                const usersData = usersSnapshot.val();
+        
+                if (!usersData) {
+                    console.log('⚠️ No users found');
+                    if (dauEl) dauEl.textContent = '0';
+                    if (wauEl) wauEl.textContent = '0';
+                    if (mauEl) mauEl.textContent = '0';
+                    return;
+                }
+        
+                // Calculate time thresholds
+                const now = new Date();
+                const oneDayAgo = new Date(now.getTime() - 24*60*60*1000);
+                const oneWeekAgo = new Date(now.getTime() - 7*24*60*60*1000);
+                const oneMonthAgo = new Date(now.getTime() - 30*24*60*60*1000);
+        
+                let dailyActive = 0;
+                let weeklyActive = 0;
+                let monthlyActive = 0;
+        
+                // Process each user
+                Object.keys(usersData).forEach(userId => {
+                    const user = usersData[userId];
+            
+                    // Try to get last activity from multiple sources
+                    const lastActivity = 
+                        user.profile?.lastActivity || 
+                        user.profile?.lastSaved ||
+                        user.data?.lastSaved || 
+                        user.lastActivity ||
+                        user.createdAt ||
+                        null;
+            
+                    if (lastActivity) {
+                        const activityDate = new Date(lastActivity);
+                
+                        // Count for each period
+                        if (activityDate >= oneDayAgo) {
+                            dailyActive++;
+                        }
+                        if (activityDate >= oneWeekAgo) {
+                            weeklyActive++;
+                        }
+                        if (activityDate >= oneMonthAgo) {
+                            monthlyActive++;
+                        }
+                    }
+                });
+        
+                // Update UI
+                if (dauEl) dauEl.textContent = dailyActive;
+                if (wauEl) wauEl.textContent = weeklyActive;
+                if (mauEl) mauEl.textContent = monthlyActive;
+        
+                console.log('✅ Activity metrics updated:', {
+                    dailyActive,
+                    weeklyActive,
+                    monthlyActive,
+                    totalUsers: Object.keys(usersData).length
+                });
+        
+                return {
+                    dailyActive,
+                    weeklyActive,
+                    monthlyActive
+                };
+        
+            } catch (error) {
+                console.error('❌ Error calculating activity metrics:', error);
+        
+                // Show error state
+                const dauEl = document.getElementById('adminDAU');
+                const wauEl = document.getElementById('adminWAU');
+                const mauEl = document.getElementById('adminMAU');
+        
+                if (dauEl) dauEl.textContent = 'Error';
+                if (wauEl) wauEl.textContent = 'Error';
+                if (mauEl) mauEl.textContent = 'Error';
+        
+                return null;
+            }
+        }
+
+        // ============================================
+        // 2. UPDATE USER RETENTION METRICS
+        // ============================================
+
+        async function updateUserRetention() {
+            console.log('📊 Calculating user retention...');
+    
+            try {
+                // Show loading state
+                const r7El = document.getElementById('admin7DayRetention');
+                const r30El = document.getElementById('admin30DayRetention');
+                const r90El = document.getElementById('admin90DayRetention');
+        
+                if (r7El) r7El.textContent = '...';
+                if (r30El) r30El.textContent = '...';
+                if (r90El) r90El.textContent = '...';
+        
+                // Fetch all users
+                const usersSnapshot = await database.ref('users').once('value');
+                const usersData = usersSnapshot.val();
+        
+                if (!usersData) {
+                    console.log('⚠️ No users found');
+                    if (r7El) r7El.textContent = '0%';
+                    if (r30El) r30El.textContent = '0%';
+                    if (r90El) r90El.textContent = '0%';
+                    return;
+                }
+        
+                // Calculate time thresholds
+                const now = new Date();
+                const sevenDaysAgo = new Date(now.getTime() - 7*24*60*60*1000);
+                const thirtyDaysAgo = new Date(now.getTime() - 30*24*60*60*1000);
+                const ninetyDaysAgo = new Date(now.getTime() - 90*24*60*60*1000);
+        
+                // Counters for cohorts
+                let users7DaysOld = 0;
+                let users7DaysActive = 0;
+                let users30DaysOld = 0;
+                let users30DaysActive = 0;
+                let users90DaysOld = 0;
+                let users90DaysActive = 0;
+        
+                // Process each user
+                Object.keys(usersData).forEach(userId => {
+                    const user = usersData[userId];
+            
+                    // Get creation date
+                    const createdAt = new Date(
+                        user.profile?.createdAt || 
+                        user.createdAt || 
+                        now
+                    );
+            
+                    // Get last activity
+                    const lastActivity = new Date(
+                        user.profile?.lastActivity || 
+                        user.profile?.lastSaved ||
+                        user.data?.lastSaved || 
+                        user.lastActivity ||
+                        createdAt
+                    );
+            
+                    // 7-day retention
+                    if (createdAt <= sevenDaysAgo) {
+                        users7DaysOld++;
+                        // User is retained if they were active in the last 7 days
+                        if (lastActivity >= sevenDaysAgo) {
+                            users7DaysActive++;
+                        }
+                    }
+            
+                    // 30-day retention
+                    if (createdAt <= thirtyDaysAgo) {
+                        users30DaysOld++;
+                        // User is retained if they were active in the last 30 days
+                        if (lastActivity >= thirtyDaysAgo) {
+                            users30DaysActive++;
+                        }
+                    }
+            
+                    // 90-day retention
+                    if (createdAt <= ninetyDaysAgo) {
+                        users90DaysOld++;
+                        // User is retained if they were active in the last 90 days
+                        if (lastActivity >= ninetyDaysAgo) {
+                            users90DaysActive++;
+                        }
+                    }
+                });
+        
+                // Calculate percentages
+                const retention7Day = users7DaysOld > 0 
+                    ? ((users7DaysActive / users7DaysOld) * 100).toFixed(1) 
+                    : 0;
+            
+                const retention30Day = users30DaysOld > 0 
+                    ? ((users30DaysActive / users30DaysOld) * 100).toFixed(1) 
+                    : 0;
+            
+                const retention90Day = users90DaysOld > 0 
+                    ? ((users90DaysActive / users90DaysOld) * 100).toFixed(1) 
+                    : 0;
+        
+                // Update UI with color coding
+                if (r7El) {
+                    r7El.textContent = retention7Day + '%';
+                    r7El.style.color = getRetentionColor(retention7Day);
+                }
+        
+                if (r30El) {
+                    r30El.textContent = retention30Day + '%';
+                    r30El.style.color = getRetentionColor(retention30Day);
+                }
+        
+                if (r90El) {
+                    r90El.textContent = retention90Day + '%';
+                    r90El.style.color = getRetentionColor(retention90Day);
+                }
+        
+                console.log('✅ Retention metrics updated:', {
+                    '7-day': {
+                        cohort: users7DaysOld,
+                        retained: users7DaysActive,
+                        percentage: retention7Day + '%'
+                    },
+                    '30-day': {
+                        cohort: users30DaysOld,
+                        retained: users30DaysActive,
+                        percentage: retention30Day + '%'
+                    },
+                    '90-day': {
+                        cohort: users90DaysOld,
+                        retained: users90DaysActive,
+                        percentage: retention90Day + '%'
+                    }
+                });
+        
+                return {
+                    retention7Day,
+                    retention30Day,
+                    retention90Day
+                };
+        
+            } catch (error) {
+                console.error('❌ Error calculating retention:', error);
+        
+                // Show error state
+                const r7El = document.getElementById('admin7DayRetention');
+                const r30El = document.getElementById('admin30DayRetention');
+                const r90El = document.getElementById('admin90DayRetention');
+        
+                if (r7El) r7El.textContent = 'Error';
+                if (r30El) r30El.textContent = 'Error';
+                if (r90El) r90El.textContent = 'Error';
+        
+                return null;
+            }
+        }
+
+        // ============================================
+        // 3. GET COLOR BASED ON RETENTION PERCENTAGE
+        // ============================================
+
+        function getRetentionColor(percentage) {
+            const value = parseFloat(percentage);
+    
+            if (value >= 70) {
+                return '#10b981'; // Green - Excellent
+            } else if (value >= 50) {
+                return '#f59e0b'; // Orange - Good
+            } else if (value >= 30) {
+                return '#ef4444'; // Red - Needs improvement
+            } else {
+                return '#6b7280'; // Gray - Poor
+            }
+        }
+
+        // ============================================
+        // 4. UPDATE LAST ACTIVITY TIMESTAMP
+        // ============================================
+
+        function updateUserLastActivity(userId) {
+            if (!userId) return;
+    
+            const now = new Date().toISOString();
+    
+            // Update in Firebase
+            database.ref('users/' + userId + '/profile/lastActivity').set(now)
+                .then(() => {
+                    console.log('✅ Last activity updated for user:', userId);
+                })
+                .catch((error) => {
+                    console.error('❌ Error updating last activity:', error);
+                });
+        }
+
+        // ============================================
+        // 5. CALL ON USER LOGIN
+        // ============================================
+
+        // Add this to your authentication handler
+        function onUserAuthenticated(user) {
+            const userId = user.uid;
+    
+            // Update last activity
+            updateUserLastActivity(userId);
+    
+            // Also update in profile if it doesn't exist
+            database.ref('users/' + userId + '/profile').once('value')
+                .then((snapshot) => {
+                    const profile = snapshot.val();
+            
+                    if (!profile) {
+                        // First time user - create profile
+                        database.ref('users/' + userId + '/profile').set({
+                            email: user.email,
+                            createdAt: new Date().toISOString(),
+                            lastActivity: new Date().toISOString()
+                        });
+                    } else if (!profile.createdAt) {
+                        // Existing user without createdAt - add it
+                        database.ref('users/' + userId + '/profile/createdAt')
+                            .set(new Date().toISOString());
+                    }
+                });
+        }
+
+        // ============================================
+        // 6. TRACK USER ACTIVITY (CALL ON ACTIONS)
+        // ============================================
+
+        function trackUserActivity() {
+            if (currentUserId) {
+                updateUserLastActivity(currentUserId);
+            }
+        }
+
+        // ============================================
+        // 8. COMBINED UPDATE FUNCTION
+        // ============================================
+
+        async function updateActivityAndRetention() {
+            console.log('📊 Updating activity and retention metrics...');
+    
+            try {
+                // Update both in parallel
+                const [activity, retention] = await Promise.all([
+                    updateUserActivityMetrics(),
+                    updateUserRetention()
+                ]);
+        
+                console.log('✅ All metrics updated successfully');
+        
+                return { activity, retention };
+        
+            } catch (error) {
+                console.error('❌ Error updating metrics:', error);
+                return null;
+            }
+        }
+
+        // Make functions globally available
+        window.updateUserActivityMetrics = updateUserActivityMetrics;
+        window.updateUserRetention = updateUserRetention;
+        window.updateActivityAndRetention = updateActivityAndRetention;
+        window.updateUserLastActivity = updateUserLastActivity;
+        window.trackUserActivity = trackUserActivity;
+
+        console.log('✅ User activity & retention functions loaded');
+        
         // ============================================
         // ADMIN SETTINGS TAB FUNCTIONS
         // ============================================
@@ -3399,6 +3881,7 @@
     </script>
 </body>
 </html>
+
 
 
 
