@@ -25,7 +25,7 @@
         
             // Update data statistics    
             updateDataStatistics();
-            updateLastSyncTimeDisplay();    
+            updateLastSyncTimeDisplay();                    
             updateSyncStats();
         }
 
@@ -95,4 +95,5 @@
             localStorage.setItem('lastBackup', now);
             document.getElementById('lastBackup').textContent = now;
             alert('Backup downloaded!');
+
         }
