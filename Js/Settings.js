@@ -25,8 +25,14 @@
         
             // Update data statistics    
             updateDataStatistics();
-            updateLastSyncTimeDisplay();                    
-            updateSyncStats();
+            // Only call if functions exist    
+            if (typeof updateLastSyncTimeDisplay === 'function') {        
+                updateLastSyncTimeDisplay();                
+            }
+    
+            if (typeof updateSyncStats === 'function') {
+                updateSyncStats();
+            }
         }
 
         function addGrade() {
@@ -373,4 +379,5 @@ setTimeout(() => {
         updateSyncStats();
     }
 }, 100);
+
 
