@@ -53,6 +53,15 @@ function saveData() {
         updateSyncStatus('error');
         return Promise.reject(error);
     }
+
+    .then(() => {
+        console.log('✅ Data saved');
+    
+        // ⭐ ADD THIS
+        if (currentUserId) {
+            updateUserLastActivity(currentUserId);
+        }
+    });
 }
 
 // ============================================
@@ -667,6 +676,7 @@ function diagnoseSyncButton() {
 
 // Run diagnostic
 diagnoseSyncButton();
+
 
 
 
