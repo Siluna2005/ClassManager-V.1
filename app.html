@@ -13,6 +13,7 @@
     <link rel="icon" type="image/x-icon" href="assets/favicon.ico">
     <title>Class Manager</title>
     <link rel="stylesheet" href="appStyle.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
 </head>
 <body>
 
@@ -2466,6 +2467,557 @@
         }
 
         // ============================================
+        // 1. UPDATE ADMIN STATS CARDS
+        // ============================================
+
+        async function updateAdminStatsCards() {
+            console.log('📊 Updating admin statistics cards...');
+    
+            try {
+                // Fetch all users
+                const usersSnapshot = await database.ref('users').once('value');
+                const usersData = usersSnapshot.val();
+        
+                if (!usersData) {
+                    console.log('⚠️ No users found');
+                    return;
+                }
+        
+                const usersArray = Object.keys(usersData).map(userId => ({
+                    userId: userId,
+                    ...usersData[userId].profile,
+                    createdAt: usersData[userId].profile?.createdAt || 
+                              usersData[userId].createdAt || 
+                              new Date().toISOString()
+                }));
+        
+                // Total users
+                const totalUsers = usersArray.length;
+        
+                // Get current month start
+                const now = new Date();
+                const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
+        
+                // New users this month
+                const newUsersThisMonth = usersArray.filter(user => {
+                    const createdDate = new Date(user.createdAt);
+                    return createdDate >= startOfMonth;
+                }).length;
+        
+                // Update UI
+                const totalUsersEl = document.getElementById('adminTotalUsers');
+                const newUsersEl = document.getElementById('adminNewUsers');
+                const activeUsersEl = document.getElementById('adminActiveUsers');
+        
+                if (totalUsersEl) totalUsersEl.textContent = totalUsers;
+                if (newUsersEl) newUsersEl.textContent = newUsersThisMonth;
+                if (activeUsersEl) activeUsersEl.textContent = totalUsers; // Placeholder
+        
+                console.log('✅ Admin stats updated:', {
+                    totalUsers,
+                    newUsersThisMonth
+                });
+        
+            } catch (error) {
+                console.error('❌ Error updating admin stats:', error);
+            }
+        }
+
+        // ============================================
+        // 2. CALCULATE USER ACTIVITY METRICS
+        // ============================================
+
+        async function updateUserActivityMetrics() {
+            console.log('📊 Calculating user activity metrics...');
+    
+            try {
+                // Fetch all users with their last activity
+                const usersSnapshot = await database.ref('users').once('value');
+                const usersData = usersSnapshot.val();
+        
+                if (!usersData) {
+                    return;
+                }
+        
+                const now = new Date();
+                const oneDayAgo = new Date(now.getTime() - 24*60*60*1000);
+                const oneWeekAgo = new Date(now.getTime() - 7*24*60*60*1000);
+                const oneMonthAgo = new Date(now.getTime() - 30*24*60*60*1000);
+        
+                let dailyActive = 0;
+                let weeklyActive = 0;
+                let monthlyActive = 0;
+        
+                Object.keys(usersData).forEach(userId => {
+                    const user = usersData[userId];
+                    const lastActivity = user.profile?.lastActivity || 
+                                       user.data?.lastSaved || 
+                                       user.createdAt;
+            
+                    if (lastActivity) {
+                        const activityDate = new Date(lastActivity);
+                
+                        if (activityDate >= oneDayAgo) dailyActive++;
+                        if (activityDate >= oneWeekAgo) weeklyActive++;
+                        if (activityDate >= oneMonthAgo) monthlyActive++;
+                    }
+                });
+        
+                // Update UI
+                const dauEl = document.getElementById('adminDAU');
+                const wauEl = document.getElementById('adminWAU');
+                const mauEl = document.getElementById('adminMAU');
+        
+                if (dauEl) dauEl.textContent = dailyActive;
+                if (wauEl) wauEl.textContent = weeklyActive;
+                if (mauEl) mauEl.textContent = monthlyActive;
+        
+                console.log('✅ Activity metrics updated:', {
+                    dailyActive,
+                    weeklyActive,
+                    monthlyActive
+                });
+        
+            } catch (error) {
+                console.error('❌ Error calculating activity metrics:', error);
+            }
+        }
+
+        // ============================================
+        // 3. CALCULATE USER RETENTION
+        // ============================================
+
+        async function updateUserRetention() {
+            console.log('📊 Calculating user retention...');
+    
+            try {
+                // Fetch all users
+                const usersSnapshot = await database.ref('users').once('value');
+                const usersData = usersSnapshot.val();
+        
+                if (!usersData) {
+                    return;
+                }
+        
+                const now = new Date();
+                const sevenDaysAgo = new Date(now.getTime() - 7*24*60*60*1000);
+                const thirtyDaysAgo = new Date(now.getTime() - 30*24*60*60*1000);
+                const ninetyDaysAgo = new Date(now.getTime() - 90*24*60*60*1000);
+        
+                let users7DaysOld = 0;
+                let users7DaysActive = 0;
+                let users30DaysOld = 0;
+                let users30DaysActive = 0;
+                let users90DaysOld = 0;
+                let users90DaysActive = 0;
+        
+                Object.keys(usersData).forEach(userId => {
+                    const user = usersData[userId];
+                    const createdAt = new Date(user.profile?.createdAt || user.createdAt || now);
+                    const lastActivity = new Date(user.profile?.lastActivity || user.data?.lastSaved || createdAt);
+            
+                    // 7-day retention
+                    if (createdAt <= sevenDaysAgo) {
+                        users7DaysOld++;
+                        if (lastActivity >= sevenDaysAgo) {
+                            users7DaysActive++;
+                        }
+                    }
+            
+                    // 30-day retention
+                    if (createdAt <= thirtyDaysAgo) {
+                        users30DaysOld++;
+                        if (lastActivity >= thirtyDaysAgo) {
+                           users30DaysActive++;
+                        }
+                    }
+            
+                    // 90-day retention
+                    if (createdAt <= ninetyDaysAgo) {
+                        users90DaysOld++;
+                        if (lastActivity >= ninetyDaysAgo) {
+                            users90DaysActive++;
+                        }
+                    }
+                });
+        
+                // Calculate percentages
+                const retention7Day = users7DaysOld > 0 ? ((users7DaysActive / users7DaysOld) * 100).toFixed(1) : 0;
+                const retention30Day = users30DaysOld > 0 ? ((users30DaysActive / users30DaysOld) * 100).toFixed(1) : 0;
+                const retention90Day = users90DaysOld > 0 ? ((users90DaysActive / users90DaysOld) * 100).toFixed(1) : 0;
+        
+                // Update UI
+                const r7El = document.getElementById('admin7DayRetention');
+                const r30El = document.getElementById('admin30DayRetention');
+                const r90El = document.getElementById('admin90DayRetention');
+        
+                if (r7El) r7El.textContent = retention7Day + '%';
+                if (r30El) r30El.textContent = retention30Day + '%';
+                if (r90El) r90El.textContent = retention90Day + '%';
+        
+                console.log('✅ Retention metrics updated:', {
+                    retention7Day,
+                    retention30Day,
+                    retention90Day
+                });
+                
+            } catch (error) {
+                console.error('❌ Error calculating retention:', error);
+            }
+        }
+
+        // ============================================
+        // 4. UPDATE ALL ADMIN ANALYTICS
+        // ============================================
+
+        async function updateAdminAnalyticsTab() {
+            console.log('📊 Updating admin analytics tab...');
+    
+            // Show loading state
+            const totalUsersEl = document.getElementById('adminTotalUsers');
+            if (totalUsersEl) totalUsersEl.textContent = '...';
+    
+            try {
+                // Update all metrics
+                await updateAdminStatsCards();
+                await updateUserActivityMetrics();
+                await updateUserRetention();
+        
+                // Update growth chart
+                await createAdminUserGrowthChart();
+        
+                console.log('✅ Admin analytics tab updated successfully');
+        
+            } catch (error) {
+                console.error('❌ Error updating admin analytics:', error);
+            }
+        }
+
+        // Make functions globally available
+        window.updateAdminStatsCards = updateAdminStatsCards;
+        window.updateUserActivityMetrics = updateUserActivityMetrics;
+        window.updateUserRetention = updateUserRetention;
+        window.updateAdminAnalyticsTab = updateAdminAnalyticsTab;
+
+        console.log('✅ Admin analytics stats functions loaded');
+
+        // ============================================
+        // 1. GENERATE USER GROWTH DATA FOR ADMIN
+        // ============================================
+
+        function generateAdminUserGrowthData() {
+            console.log('📊 Generating admin user growth data...');
+    
+            // Get all users from Firebase (you'll need to query all users)
+            // For now, we'll simulate with sample data structure
+            // You'll need to replace this with actual Firebase query
+    
+            // This should query: /users/{userId}/profile for all users
+            // For demo purposes, here's the structure:
+    
+            const usersData = [
+                { email: 'user1@example.com', createdAt: '2024-01-15T10:00:00Z' },
+                { email: 'user2@example.com', createdAt: '2024-01-20T14:30:00Z' },
+                { email: 'user3@example.com', createdAt: '2024-02-01T09:15:00Z' },
+                { email: 'user4@example.com', createdAt: '2024-02-05T16:45:00Z' },
+                // ... more users
+            ];
+    
+            if (usersData.length === 0) {
+                console.log('⚠️ No users found for growth chart');
+                return null;
+            }
+    
+            // Create a map of dates to user counts
+            const growthMap = new Map();
+    
+            usersData.forEach(user => {
+                const dateAdded = new Date(user.createdAt);
+                const dateKey = dateAdded.toISOString().split('T')[0]; // YYYY-MM-DD
+        
+                if (!growthMap.has(dateKey)) {
+                    growthMap.set(dateKey, 0);
+                }
+                growthMap.set(dateKey, growthMap.get(dateKey) + 1);
+            });
+    
+            // Sort dates
+            const sortedDates = Array.from(growthMap.keys()).sort();
+    
+            // Calculate cumulative growth
+            let cumulative = 0;
+            const labels = [];
+            const data = [];
+    
+            sortedDates.forEach(date => {
+                cumulative += growthMap.get(date);
+                labels.push(formatDateForAdminChart(date));
+                data.push(cumulative);
+            });
+    
+            console.log('✅ Admin growth data generated:', { labels, data });
+    
+            return { labels, data };
+        }
+
+        // ============================================
+        // 2. FETCH ALL USERS FROM FIREBASE
+        // ============================================
+
+        async function fetchAllUsersForGrowth() {
+            console.log('📥 Fetching all users from Firebase...');
+    
+            try {
+                // Query all users
+                const usersSnapshot = await database.ref('users').once('value');
+                const usersData = usersSnapshot.val();
+        
+                if (!usersData) {
+                    console.log('⚠️ No users found in database');
+                    return [];
+                }
+        
+                // Convert to array with createdAt dates
+                const usersArray = [];
+        
+                Object.keys(usersData).forEach(userId => {
+                    const userData = usersData[userId];
+                    const profile = userData.profile || {};
+                    const data = userData.data || {};
+            
+                    // Try to get creation date from multiple sources
+                    const createdAt = profile.createdAt || 
+                                    userData.createdAt || 
+                                    data.createdAt || 
+                                    new Date().toISOString();
+            
+                    usersArray.push({
+                        userId: userId,
+                        email: profile.email || 'Unknown',
+                        createdAt: createdAt
+                    });
+                });
+        
+                console.log(`✅ Fetched ${usersArray.length} users`);
+                return usersArray;
+        
+            } catch (error) {
+                console.error('❌ Error fetching users:', error);
+                return [];
+            }
+        }
+
+        // ============================================
+        // 3. FORMAT DATE FOR ADMIN CHART
+        // ============================================
+
+        function formatDateForAdminChart(dateString) {
+            const date = new Date(dateString);
+            const options = { month: 'short', day: 'numeric' };
+            return date.toLocaleDateString('en-US', options);
+        }
+
+        // ============================================
+        // 4. CREATE ADMIN USER GROWTH CHART
+        // ============================================
+
+        async function createAdminUserGrowthChart() {
+            console.log('📈 Creating admin user growth chart...');
+    
+            // Get canvas element
+            const canvas = document.getElementById('adminUserGrowthChart');
+            if (!canvas) {
+                console.error('❌ Canvas element not found: adminUserGrowthChart');
+                return;
+            }
+    
+            // Show loading state
+            const container = canvas.parentElement;
+            const originalContent = container.innerHTML;
+            container.innerHTML = `
+                <div style="display: flex; align-items: center; justify-content: center; height: 300px;">
+                    <div style="text-align: center;">
+                        <div style="font-size: 32px; margin-bottom: 12px;">⏳</div>
+                        <p style="color: rgba(255,255,255,0.7);">Loading user growth data...</p>
+                    </div>
+                </div>
+            `;
+    
+            // Fetch all users
+            const usersArray = await fetchAllUsersForGrowth();
+    
+            // Restore canvas
+            container.innerHTML = originalContent;
+            const newCanvas = document.getElementById('adminUserGrowthChart');
+    
+            if (usersArray.length === 0) {
+                // Show "No data" message
+                container.innerHTML = `
+                    <div style="display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 40px; text-align: center;">
+                        <div style="font-size: 48px; margin-bottom: 16px; opacity: 0.5;">📊</div>
+                        <h3 style="color: rgba(255,255,255,0.9); margin-bottom: 8px;">No User Data Yet</h3>
+                        <p style="color: rgba(255,255,255,0.6); font-size: 14px;">User growth will appear here once users sign up</p>
+                    </div>
+                `;
+                return;
+            }
+    
+            // Process user growth data
+            const growthMap = new Map();
+    
+            usersArray.forEach(user => {
+                const dateAdded = new Date(user.createdAt);
+                const dateKey = dateAdded.toISOString().split('T')[0];
+        
+                if (!growthMap.has(dateKey)) {
+                    growthMap.set(dateKey, 0);
+                }
+                growthMap.set(dateKey, growthMap.get(dateKey) + 1);
+            });
+    
+            // Sort and calculate cumulative
+            const sortedDates = Array.from(growthMap.keys()).sort();
+            let cumulative = 0;
+            const labels = [];
+            const data = [];
+    
+            sortedDates.forEach(date => {
+                cumulative += growthMap.get(date);
+                labels.push(formatDateForAdminChart(date));
+                data.push(cumulative);
+            });
+    
+            // Destroy existing chart if it exists
+            if (window.adminUserGrowthChartInstance) {
+                window.adminUserGrowthChartInstance.destroy();
+            }
+    
+            // Get canvas context
+            const ctx = newCanvas.getContext('2d');
+    
+            // Create gradient
+            const gradient = ctx.createLinearGradient(0, 0, 0, 300);
+            gradient.addColorStop(0, 'rgba(139, 92, 246, 0.5)');
+            gradient.addColorStop(1, 'rgba(139, 92, 246, 0.0)');
+    
+            // Create chart
+            window.adminUserGrowthChartInstance = new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: labels,
+                    datasets: [{
+                        label: 'Total Users',
+                        data: data,
+                        borderColor: '#8b5cf6',
+                        backgroundColor: gradient,
+                        borderWidth: 3,
+                        fill: true,
+                        tension: 0.4,
+                        pointBackgroundColor: '#8b5cf6',
+                        pointBorderColor: '#fff',
+                        pointBorderWidth: 2,
+                        pointRadius: 5,
+                        pointHoverRadius: 7,
+                        pointHoverBackgroundColor: '#8b5cf6',
+                        pointHoverBorderColor: '#fff',
+                        pointHoverBorderWidth: 3
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            display: true,
+                            labels: {
+                                color: '#fff',
+                                font: {
+                                    size: 13,
+                                    weight: '600'
+                                },
+                                padding: 15
+                            }
+                        },
+                        tooltip: {
+                            backgroundColor: 'rgba(0, 0, 0, 0.8)',
+                            titleColor: '#fff',
+                            bodyColor: '#fff',
+                            borderColor: '#8b5cf6',
+                            borderWidth: 1,
+                            padding: 12,
+                            displayColors: false,
+                            callbacks: {
+                                label: function(context) {
+                                    return 'Total Users: ' + context.parsed.y;
+                                }
+                            }
+                        }
+                    },
+                    scales: {
+                        x: {
+                            grid: {
+                                color: 'rgba(255, 255, 255, 0.1)',
+                                drawBorder: false
+                            },
+                            ticks: {
+                                color: 'rgba(255, 255, 255, 0.7)',
+                                font: {
+                                    size: 11
+                                },
+                                maxRotation: 45,
+                                minRotation: 45
+                            }
+                        },
+                        y: {
+                            beginAtZero: true,
+                            grid: {
+                                color: 'rgba(255, 255, 255, 0.1)',
+                                drawBorder: false
+                            },
+                            ticks: {
+                                color: 'rgba(255, 255, 255, 0.7)',
+                                font: {
+                                   size: 11
+                                },
+                                stepSize: 1,
+                                callback: function(value) {
+                                    return Math.floor(value);
+                                }
+                            }
+                       }                   
+                    },
+                    interaction: {
+                        intersect: false,
+                        mode: 'index'
+                    }
+                }
+            });
+    
+            console.log('✅ Admin user growth chart created');
+        }
+
+        // ============================================
+        // 5. UPDATE ADMIN ANALYTICS TAB
+        // ============================================
+
+        function updateAdminAnalyticsTab() {
+            console.log('📊 Updating admin analytics tab...');
+    
+            // Update user growth chart
+            createAdminUserGrowthChart();
+    
+            // Update other admin stats here...
+    
+            console.log('✅ Admin analytics tab updated');
+        }
+
+        // Make functions globally available
+        window.createAdminUserGrowthChart = createAdminUserGrowthChart;
+        window.updateAdminAnalyticsTab = updateAdminAnalyticsTab;
+
+        console.log('✅ Admin user growth chart functions loaded');
+
+        // ============================================
         // ADMIN SETTINGS TAB FUNCTIONS
         // ============================================
 
@@ -2754,6 +3306,7 @@
     </script>
 </body>
 </html>
+
 
 
 
