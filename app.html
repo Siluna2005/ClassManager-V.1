@@ -1587,6 +1587,21 @@
         }
 
         // ============================================
+        // 3. HELPER FUNCTION: Check if Unlimited
+        // ============================================
+
+        function isUnlimitedSubscription(user) {
+            const subscription = user.data?.subscription || user.subscription;
+    
+            if (!subscription) return false;
+    
+            // Check for unlimited plan or very high maxStudents
+            return subscription.plan === 'unlimited' || 
+                   subscription.maxStudents >= 999999 ||
+                   subscription.features?.unlimitedStudents === true;
+        }
+
+        // ============================================
         // REAL-TIME SYNC FUNCTION
         // ============================================
 
@@ -2088,84 +2103,124 @@
             document.body.insertAdjacentHTML('beforeend', modal);
         }
 
-        async function updateSubscription(userId) {
-            const plan = document.getElementById('newSubscriptionPlan').value;
-            const status = document.getElementById('newSubscriptionStatus').value;
+        function updateSubscription(userId, plan) {
+            console.log('💳 Updating subscription for user:', userId, 'Plan:', plan);
     
-            const maxStudents = plan === 'free_trial' ? 10 : Infinity;
+            let subscription;
     
-            const newSubscription = {
-                plan: plan,
-                status: status,
-                maxStudents: maxStudents,
-                startDate: new Date().toISOString(),
-                endDate: plan === 'lifetime' ? null : new Date(Date.now() + 365 * 24 * 60 * 60 * 1000).toISOString(),
-                features: {
-                    students: true,
-                    attendance: true,
-                    payments: true,
-                    reports: true,
-                    backup: true,
-                    export: true
-                },
-                updatedBy: currentUserId,
-                updatedAt: new Date().toISOString()
-            };
-    
-            try {
-                await database.ref('users/' + userId + '/data/subscription').set(newSubscription);
-        
-                // Log admin action
-                await logAdminAction('update_subscription', userId, { newPlan: plan, newStatus: status });
-        
-                alert('✅ Subscription updated successfully!');
-                closeModal('subscriptionModal');
-                loadAllUsers(); // Refresh
-        
-            } catch (error) {
-                console.error('Error updating subscription:', error);
-                alert('Failed to update subscription');
+            if (plan === 'free') {
+                subscription = {
+                    plan: 'free',
+                    status: 'active',
+                    maxStudents: 5,
+                    startDate: new Date().toISOString(),
+                    endDate: null,
+                    features: {
+                        unlimitedStudents: false,
+                        unlimitedClasses: false,
+                        unlimitedPayments: false,
+                        analytics: false,
+                        exportData: false,
+                        priority: false
+                    }
+                };
+            } else if (plan === 'pro') {
+                subscription = {
+                    plan: 'pro',
+                    status: 'active',
+                    maxStudents: 50,
+                    startDate: new Date().toISOString(),
+                    endDate: new Date(Date.now() + 365*24*60*60*1000).toISOString(), // 1 year
+                    features: {
+                        unlimitedStudents: false,
+                        unlimitedClasses: true,
+                        unlimitedPayments: true,
+                        analytics: true,
+                        exportData: true,
+                        priority: true
+                    }
+                };
+            } else if (plan === 'unlimited') {
+                subscription = {
+                    plan: 'unlimited',
+                    status: 'active',
+                    maxStudents: 999999,  // ⭐ Changed from Infinity
+                    startDate: new Date().toISOString(),
+                    endDate: null,
+                    features: {
+                        unlimitedStudents: true,
+                        unlimitedClasses: true,
+                        unlimitedPayments: true,
+                        analytics: true,
+                        exportData: true,
+                        priority: true
+                    }
+                };
             }
+    
+            database.ref('users/' + userId + '/data/subscription').set(subscription)
+                .then(() => {
+                    console.log('✅ Subscription updated successfully');
+                    alert('✅ Subscription updated to ' + plan + '!');
+                    
+                    // Log admin action
+                    logAdminAction('update_subscription', {
+                        targetUser: userId,
+                        newPlan: plan,
+                        updatedBy: currentUserId
+                    });
+            
+                    // Reload users list
+                    loadAllUsers();
+                })
+                .catch((error) => {
+                    console.error('❌ Error updating subscription:', error);
+                    alert('❌ Failed to update subscription: ' + error.message);
+                });
         }
 
-        async function grantUnlimitedAccess(userId) {
-            if (!confirm('Grant unlimited lifetime access to this user?')) {
-                return;
-            }
+        function grantUnlimitedAccess(userId) {
+            console.log('🚀 Granting unlimited access to user:', userId);
+    
+            // ❌ DON'T USE Infinity - Firebase doesn't support it
+            // ✅ USE a very large number instead (like 999999)
     
             const unlimitedSubscription = {
-                plan: 'lifetime',
+                plan: 'unlimited',
                 status: 'active',
-                maxStudents: Infinity,
+                maxStudents: 999999,  // ⭐ Changed from Infinity
                 startDate: new Date().toISOString(),
-                endDate: null,
+                endDate: null,  // null = never expires
                 features: {
-                    students: true,
-                    attendance: true,
-                    payments: true,
-                    reports: true,
-                    backup: true,
-                    export: true,
-                    priority_support: true
+                    unlimitedStudents: true,
+                    unlimitedClasses: true,
+                    unlimitedPayments: true,
+                    analytics: true,
+                    exportData: true,
+                    priority: true
                 },
                 grantedBy: currentUserId,
                 grantedAt: new Date().toISOString()
             };
     
-            try {
-                await database.ref('users/' + userId + '/data/subscription').set(unlimitedSubscription);
-        
-                await logAdminAction('grant_unlimited', userId, unlimitedSubscription);
-        
-                alert('✅ Unlimited access granted!');
-                closeModal('userDetailsModal');
-                closeModal('subscriptionModal');
-                loadAllUsers();
-        
-            } catch (error) {
-                console.error('Error granting access:', error);
-                alert('Failed to grant access');
-            }
+            database.ref('users/' + userId + '/data/subscription').set(unlimitedSubscription)
+                .then(() => {
+                    console.log('✅ Unlimited access granted successfully');
+                    alert('✅ Unlimited access granted!\n\nUser now has unlimited students and all features.');
+            
+                    // Log admin action
+                    logAdminAction('grant_unlimited_access', {
+                        targetUser: userId,
+                        grantedBy: currentUserId
+                    });
+            
+                    // Reload users list
+                    loadAllUsers();
+                })
+                .catch((error) => {
+                    console.error('❌ Error granting access:', error);
+                    alert('❌ Failed to grant access: ' + error.message);
+                });
         }
 
         async function logAdminAction(action, targetUserId, details) {
@@ -3875,6 +3930,95 @@
     
             return permissionSets[role] || permissionSets.support_admin;
         }
+
+        // ============================================
+        // 4. DISPLAY UNLIMITED IN UI
+        // ============================================
+
+        function getSubscriptionDisplay(user) {
+            const subscription = user.data?.subscription || user.subscription;
+    
+            if (!subscription) {
+                return {
+                    plan: 'Free',
+                    maxStudents: '5',
+                    color: '#6b7280'
+                };
+            }
+    
+            // Check if unlimited
+            if (isUnlimitedSubscription(user)) {
+                return {
+                    plan: 'Unlimited',
+                    maxStudents: '∞',  // ⭐ Display infinity symbol
+                    color: '#8b5cf6'
+                };
+            }
+    
+            // Regular plans
+            if (subscription.plan === 'pro') {
+               return {
+                    plan: 'Pro',
+                    maxStudents: subscription.maxStudents.toString(),
+                    color: '#3b82f6'
+                };
+            }
+    
+            return {
+                plan: 'Free',
+                maxStudents: subscription.maxStudents.toString(),
+                color: '#6b7280'
+            };
+        }
+
+        // ============================================
+        // 5. USE IN DISPLAY
+        // ============================================
+
+        // When displaying in users table or admin panel:
+        function displayUserSubscription(user) {
+            const subInfo = getSubscriptionDisplay(user);
+    
+            return `
+                <span style="color: ${subInfo.color}; font-weight: 600;">
+                    ${subInfo.plan}
+                </span>
+                <br>
+                <small style="color: rgba(0,0,0,0.6);">
+                    Max: ${subInfo.maxStudents} students
+                </small>
+            `;
+        }
+
+        // ============================================
+        // 6. CHECK STUDENT LIMIT
+        // ============================================
+
+        function checkStudentLimit(user) {
+            const subscription = user.data?.subscription || user.subscription || {};
+            const studentCount = user.data?.students?.length || 0;
+    
+            // Check if unlimited
+            if (isUnlimitedSubscription(user)) {
+                return {
+                    allowed: true,
+                    unlimited: true,
+                    current: studentCount,
+                    max: 'unlimited'
+                };
+            }
+    
+            const maxStudents = subscription.maxStudents || 5;
+    
+            return {
+                allowed: studentCount < maxStudents,
+                unlimited: false,
+                current: studentCount,
+                max: maxStudents
+            };
+        }
+
+        console.log('✅ Fixed subscription functions loaded (no Infinity)');
                                    
         // Initialize app               
         init();
@@ -3884,6 +4028,7 @@
     </script>
 </body>
 </html>
+
 
 
 
