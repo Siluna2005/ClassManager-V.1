@@ -179,10 +179,29 @@
                     <div id="admin-analytics-tab" class="admin-tab-content" style="display: none;">      
                         <h3 class="card-title">Platform Analytics</h3>        
                         <div id="adminAnalytics">        
-                            <p>Analytics dashboard coming soon...</p>        
+                            <!-- User Growth Chart Card -->
+                            <div class="card">    
+                                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">        
+                                    <h3 class="card-title" style="margin: 0;">📈 User Growth</h3>       
+                                    <button class="btn btn-secondary" onclick="createAdminUserGrowthChart()" style="padding: 8px 16px; font-size: 13px;">           
+                                        🔄 Refresh       
+                                    </button>   
+                                </div>    
+    
+                                <!-- Chart Container -->   
+                                <div style="position: relative; height: 350px; background: rgba(0,0,0,0.2); border-radius: 12px; padding: 20px;">   
+                                    <canvas id="adminUserGrowthChart"></canvas>   
+                                </div>    
+   
+                                <!-- Chart Info -->    
+                                <div style="margin-top: 16px; padding: 12px; background: rgba(139,92,246,0.1); border-radius: 8px; border-left: 4px solid #8b5cf6;">   
+                                    <p style="color: rgba(255,255,255,0.8); font-size: 13px; margin: 0; line-height: 1.6;">    
+                                        <strong>📊 User Growth Tracking:</strong> This chart shows the cumulative growth of registered users over time. Each point represents the total number of users who have signed up by that date.     
+                                    </p>   
+                                </div>
+                            </div>       
                         </div>      
                     </div>
-
      
                     <!-- Admin Settings Tab -->    
                     <div id="admin-settings-tab" class="admin-tab-content" style="display: none;">      
@@ -3306,6 +3325,7 @@
     </script>
 </body>
 </html>
+
 
 
 
