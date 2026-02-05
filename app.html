@@ -2408,19 +2408,12 @@
             } else if (tabName === 'subscriptions') {        
                 setTimeout(() => loadSubscriptionsTab(), 100);
             
-            } else if (tabName === 'analytics') {        
-                setTimeout(() => loadAdminAnalytics(), 100);
-            
-            } else if (tabName === 'settings') {        
-                setTimeout(() => loadAdminSettingsTab(), 100);   
-            
             } else if (tabName === 'analytics') {
-                console.log('📊 Loading analytics...');
-       
-                updateAdminAnalyticsTab();
-   
-            }
-        
+                console.log('📊 Loading analytics...');       
+                updateAdminAnalyticsTab();            
+            } else if (tabName === 'settings') {        
+                setTimeout(() => loadAdminSettingsTab(), 100); 
+            }        
         }
 
         // ============================================
@@ -3406,6 +3399,7 @@
     </script>
 </body>
 </html>
+
 
 
 
