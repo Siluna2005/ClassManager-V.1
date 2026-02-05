@@ -97,3 +97,280 @@
             alert('Backup downloaded!');
 
         }
+
+// ============================================
+// 1. SYNC NOW - Main Function
+// ============================================
+
+async function syncNowManual() {
+    console.log('🔄 Manual sync triggered by user');
+    
+    const syncBtn = document.getElementById('syncNowBtn');
+    const syncBtnText = document.getElementById('syncNowBtnText');
+    const syncStatus = document.getElementById('syncStatusMessage');
+    const syncStatusText = document.getElementById('syncStatusText');
+    const lastSyncTime = document.getElementById('lastSyncTime');
+    const syncIndicator = document.getElementById('syncIndicator');
+    
+    // Disable button
+    if (syncBtn) {
+        syncBtn.disabled = true;
+        syncBtn.style.opacity = '0.6';
+    }
+    
+    if (syncBtnText) syncBtnText.textContent = '⏳ Syncing...';
+    if (syncIndicator) {
+        syncIndicator.style.background = '#f59e0b';
+        syncIndicator.style.animation = 'pulse-sync 0.5s infinite';
+    }
+    
+    try {
+        // Step 1: Upload local data to Firebase
+        console.log('📤 Step 1: Uploading local data to Firebase...');
+        
+        if (syncStatus && syncStatusText) {
+            syncStatus.style.display = 'block';
+            syncStatus.style.background = 'rgba(59,130,246,0.2)';
+            syncStatus.style.border = '1px solid rgba(59,130,246,0.3)';
+            syncStatusText.style.color = '#DBEAFE';
+            syncStatusText.textContent = '📤 Uploading your data to cloud...';
+        }
+        
+        // Save current data (saveData is in Save.js)
+        if (typeof saveData === 'function') {
+            await saveData();
+            console.log('✅ Local data uploaded');
+        } else {
+            throw new Error('saveData function not found');
+        }
+        
+        // Wait for visual feedback
+        await new Promise(resolve => setTimeout(resolve, 500));
+        
+        // Step 2: Download latest data from Firebase
+        console.log('📥 Step 2: Downloading latest data from Firebase...');
+        
+        if (syncStatusText) {
+            syncStatusText.textContent = '📥 Downloading latest data from cloud...';
+        }
+        
+        // Reload data from Firebase (loadData is in Save.js)
+        if (typeof loadData === 'function') {
+            loadData();
+            console.log('✅ Latest data downloaded');
+        } else {
+            throw new Error('loadData function not found');
+        }
+        
+        // Wait a moment
+        await new Promise(resolve => setTimeout(resolve, 500));
+        
+        // Step 3: Update UI
+        console.log('🔄 Step 3: Updating UI...');
+        
+        if (syncStatusText) {
+            syncStatusText.textContent = '🔄 Refreshing display...';
+        }
+        
+        // Update sync stats
+        updateSyncStats();
+        
+        // Refresh current screen
+        const currentScreen = document.querySelector('.screen.active');
+        if (currentScreen) {
+            const screenId = currentScreen.id;
+            console.log('Refreshing screen:', screenId);
+            
+            if (screenId === 'students' && typeof loadStudentsScreen === 'function') {
+                loadStudentsScreen();
+            } else if (screenId === 'timetable' && typeof loadTimetable === 'function') {
+                loadTimetable();
+            } else if (screenId === 'payments' && typeof loadPaymentHistory === 'function') {
+                loadPaymentHistory();
+            } else if (screenId === 'settings' && typeof loadSettings === 'function') {
+                loadSettings();
+            } else if (screenId === 'dashboard' && typeof updateDashboard === 'function') {
+                updateDashboard();
+            } else if (screenId === 'subscription' && typeof updateSubscriptionDisplay === 'function') {
+                updateSubscriptionDisplay();
+            }
+        }
+        
+        // Step 4: Update last sync time
+        const now = new Date();
+        const timeString = now.toLocaleTimeString('en-US', { 
+            hour: '2-digit', 
+            minute: '2-digit' 
+        });
+        const dateString = now.toLocaleDateString('en-US', { 
+            month: 'short', 
+            day: 'numeric',
+            year: 'numeric'
+        });
+        
+        if (lastSyncTime) {
+            lastSyncTime.textContent = `${dateString} at ${timeString}`;
+        }
+        
+        localStorage.setItem('lastManualSync', now.toISOString());
+        
+        // Step 5: Show success
+        console.log('✅ Sync completed successfully!');
+        
+        if (syncStatus && syncStatusText) {
+            syncStatus.style.background = 'rgba(16,185,129,0.2)';
+            syncStatus.style.border = '1px solid rgba(16,185,129,0.3)';
+            syncStatusText.style.color = '#D1FAE5';
+            syncStatusText.textContent = '✅ Sync completed successfully!';
+        }
+        
+        if (syncIndicator) {
+            syncIndicator.style.background = '#10b981';
+            syncIndicator.style.animation = 'pulse-sync 2s infinite';
+        }
+        
+        // Hide success message after 3 seconds
+        setTimeout(() => {
+            if (syncStatus) syncStatus.style.display = 'none';
+        }, 3000);
+        
+    } catch (error) {
+        console.error('❌ Sync failed:', error);
+        
+        // Show error
+        if (syncStatus && syncStatusText) {
+            syncStatus.style.display = 'block';
+            syncStatus.style.background = 'rgba(239,68,68,0.2)';
+            syncStatus.style.border = '1px solid rgba(239,68,68,0.3)';
+            syncStatusText.style.color = '#FEE2E2';
+            syncStatusText.textContent = '❌ Sync failed: ' + error.message;
+        }
+        
+        if (syncIndicator) {
+            syncIndicator.style.background = '#ef4444';
+            syncIndicator.style.animation = 'none';
+        }
+        
+        // Hide error after 5 seconds
+        setTimeout(() => {
+            if (syncStatus) syncStatus.style.display = 'none';
+            if (syncIndicator) {
+                syncIndicator.style.background = '#10b981';
+                syncIndicator.style.animation = 'pulse-sync 2s infinite';
+            }
+        }, 5000);
+        
+    } finally {
+        // Re-enable button
+        if (syncBtn) {
+            syncBtn.disabled = false;
+            syncBtn.style.opacity = '1';
+        }
+        if (syncBtnText) syncBtnText.textContent = '🔄 Sync Now';
+    }
+}
+
+// ============================================
+// 2. UPDATE SYNC STATISTICS
+// ============================================
+
+function updateSyncStats() {
+    const studentsCount = document.getElementById('syncStudentsCount');
+    const classesCount = document.getElementById('syncClassesCount');
+    const paymentsCount = document.getElementById('syncPaymentsCount');
+    
+    // Access appData from global scope
+    if (typeof appData !== 'undefined') {
+        if (studentsCount && appData.students) {
+            studentsCount.textContent = appData.students.length;
+        }
+        
+        if (classesCount && appData.timetable) {
+            classesCount.textContent = appData.timetable.length;
+        }
+        
+        if (paymentsCount && appData.payments) {
+            paymentsCount.textContent = appData.payments.length;
+        }
+    } else {
+        console.warn('⚠️ appData not available for sync stats');
+    }
+}
+
+// ============================================
+// 3. UPDATE LAST SYNC TIME DISPLAY
+// ============================================
+
+function updateLastSyncTimeDisplay() {
+    const lastSyncTime = document.getElementById('lastSyncTime');
+    if (!lastSyncTime) return;
+    
+    const lastSync = localStorage.getItem('lastManualSync');
+    
+    if (lastSync) {
+        const syncDate = new Date(lastSync);
+        const now = new Date();
+        const diffMs = now - syncDate;
+        const diffMins = Math.floor(diffMs / 60000);
+        
+        let timeText;
+        
+        if (diffMins < 1) {
+            timeText = 'Just now';
+        } else if (diffMins < 60) {
+            timeText = `${diffMins} minute${diffMins !== 1 ? 's' : ''} ago`;
+        } else if (diffMins < 1440) {
+            const hours = Math.floor(diffMins / 60);
+            timeText = `${hours} hour${hours !== 1 ? 's' : ''} ago`;
+        } else {
+            const days = Math.floor(diffMins / 1440);
+            if (days === 1) {
+                timeText = 'Yesterday';
+            } else if (days < 7) {
+                timeText = `${days} days ago`;
+            } else {
+                const timeString = syncDate.toLocaleTimeString('en-US', { 
+                    hour: '2-digit', 
+                    minute: '2-digit' 
+                });
+                const dateString = syncDate.toLocaleDateString('en-US', { 
+                    month: 'short', 
+                    day: 'numeric',
+                    year: 'numeric'
+                });
+                timeText = `${dateString} at ${timeString}`;
+            }
+        }
+        
+        lastSyncTime.textContent = timeText;
+    } else {
+        lastSyncTime.textContent = 'Never';
+    }
+}
+
+// ============================================
+// 4. AUTO-UPDATE LAST SYNC TIME
+// ============================================
+
+setInterval(() => {
+    if (document.getElementById('lastSyncTime')) {
+        updateLastSyncTimeDisplay();
+    }
+}, 60000); // Every 60 seconds
+
+// ============================================
+// INITIALIZE
+// ============================================
+
+console.log('✅ Sync functions loaded in Settings.js');
+
+// Update sync time immediately if elements exist
+setTimeout(() => {
+    if (document.getElementById('lastSyncTime')) {
+        updateLastSyncTimeDisplay();
+    }
+    if (document.getElementById('syncStudentsCount')) {
+        updateSyncStats();
+    }
+}, 100);
+
