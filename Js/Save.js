@@ -473,46 +473,83 @@ function diagnoseSyncButton() {
 // Run diagnostic
 diagnoseSyncButton();
 
-// Make functions globally available
-window.saveData = saveData;
-window.loadData = loadData;
-window.enableRealtimeSync = enableRealtimeSync;
+// ============================================
+// ADD THIS TO THE VERY END OF Save.js
+// This makes all functions globally available
+// ============================================
+
+// Check if functions exist before making them global
+if (typeof saveData === 'function') {
+    window.saveData = saveData;
+    console.log('✅ saveData made globally available');
+} else {
+    console.error('❌ saveData function not found in Save.js');
+}
+
+if (typeof loadData === 'function') {
+    window.loadData = loadData;
+    console.log('✅ loadData made globally available');
+} else {
+    console.error('❌ loadData function not found in Save.js');
+}
+
+if (typeof enableRealtimeSync === 'function') {
+    window.enableRealtimeSync = enableRealtimeSync;
+    console.log('✅ enableRealtimeSync made globally available');
+}
 
 // Migration function
 window.migrateLocalStorageToFirebase = async function() {
     if (!currentUserId) {
-        console.log('✅ No migration needed');
+        console.log('⚠️ Cannot migrate: No user authenticated');
         return;
     }
     
     console.log('🔄 Checking for local data migration...');
-    const oldKey = 'classManagerData_' + currentUserId;
-    const oldData = localStorage.getItem(oldKey);
     
-    if (oldData) {
-        console.log('📦 Found old data - migrating...');
-        localStorage.removeItem(oldKey);
-        console.log('✅ Migration complete');
-    } else {
-        console.log('✅ No old localStorage data found');
+    try {
+        // Check for old localStorage data
+        const oldLocalDataKey = 'classManagerData_' + currentUserId;
+        const oldLocalData = localStorage.getItem(oldLocalDataKey);
+        
+        if (oldLocalData) {
+            console.log('📦 Found old localStorage data');
+            const parsedData = JSON.parse(oldLocalData);
+            
+            // Check if Firebase already has data
+            const snapshot = await database.ref('users/' + currentUserId + '/data').once('value');
+            
+            if (!snapshot.exists()) {
+                // Firebase is empty - migrate localStorage data
+                console.log('📤 Migrating localStorage data to Firebase...');
+                
+                await database.ref('users/' + currentUserId + '/data').set({
+                    ...parsedData,
+                    lastSaved: new Date().toISOString(),
+                    migratedAt: new Date().toISOString()
+                });
+                
+                console.log('✅ Migration complete - removing old localStorage data');
+                localStorage.removeItem(oldLocalDataKey);
+                
+            } else {
+                // Firebase already has data - just remove old localStorage
+                console.log('ℹ️ Firebase data exists - removing redundant localStorage');
+                localStorage.removeItem(oldLocalDataKey);
+            }
+            
+        } else {
+            console.log('✅ No old localStorage data found - migration not needed');
+        }
+    } catch (error) {
+        console.error('❌ Migration error:', error);
     }
 };
 
-console.log('✅ Save.js loaded - Functions available globally');
+console.log('✅ migrateLocalStorageToFirebase made globally available');
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+// Final confirmation
+console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
+console.log('✅ Save.js loaded successfully');
+console.log('✅ All functions available globally');
+console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
