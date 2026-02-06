@@ -203,7 +203,6 @@ function downloadBackup() {
 function uploadBackup() {
     console.log('📂 Opening file picker for backup restore...');
     
-    // Create file input
     const input = document.createElement('input');
     input.type = 'file';
     input.accept = '.json';
@@ -222,15 +221,13 @@ function uploadBackup() {
         
         reader.onload = (event) => {
             try {
-                // Parse JSON
                 const importedData = JSON.parse(event.target.result);
                 
                 console.log('📥 Data parsed successfully');
                 
-                // Confirm before restoring
                 const confirm = window.confirm(
                     '⚠️ Restore Backup?\n\n' +
-                    'This will replace ALL your current data with the backup.\n\n' +
+                    'This will replace ALL your current data.\n\n' +
                     'Students: ' + (importedData.students?.length || 0) + '\n' +
                     'Classes: ' + (importedData.timetable?.length || 0) + '\n' +
                     'Payments: ' + (importedData.payments?.length || 0) + '\n\n' +
@@ -242,32 +239,35 @@ function uploadBackup() {
                     return;
                 }
                 
-                // Merge imported data with appData
+                // Update appData
                 appData = {
                     ...appData,
                     students: importedData.students || [],
                     timetable: importedData.timetable || [],
                     payments: importedData.payments || [],
                     attendance: importedData.attendance || {},
-                    grades: importedData.grades || appData.grades,
-                    subjectName: importedData.subjectName || appData.subjectName
+                    grades: importedData.grades || appData.grades
                 };
                 
-                // Save to Firebase
-                saveData()
+                // ⭐ FIX: Call saveData properly
+                const savePromise = typeof window.saveData === 'function' 
+                    ? window.saveData() 
+                    : (typeof saveData === 'function' ? saveData() : Promise.reject('saveData not found'));
+                
+                savePromise
                     .then(() => {
                         console.log('✅ Backup restored successfully');
-                        alert('✅ Backup restored successfully!\n\nPage will reload to show updated data.');
+                        alert('✅ Backup restored!\n\nPage will reload.');
                         location.reload();
                     })
                     .catch((error) => {
                         console.error('❌ Error saving restored data:', error);
-                        alert('❌ Failed to save restored data: ' + error.message);
+                        alert('❌ Failed to save: ' + error.message);
                     });
                 
             } catch (error) {
                 console.error('❌ Error parsing backup file:', error);
-                alert('❌ Invalid backup file!\n\nPlease select a valid JSON backup file.');
+                alert('❌ Invalid backup file!');
             }
         };
         
@@ -279,20 +279,8 @@ function uploadBackup() {
         reader.readAsText(file);
     };
     
-    // Trigger file picker
     input.click();
 }
-
-// ============================================
-// Make functions globally available
-// ============================================
-
-window.migrateLocalStorageToFirebase = migrateLocalStorageToFirebase;
-window.updateDataStatistics = updateDataStatistics;
-window.downloadBackup = downloadBackup;
-window.uploadBackup = uploadBackup;
-
-console.log('✅ Missing functions added');
 
 // ============================================
 // 1. SYNC NOW - Main Function
@@ -301,168 +289,76 @@ console.log('✅ Missing functions added');
 async function syncNowManual() {
     console.log('🔄 Manual sync triggered by user');
     
-    const syncBtn = document.getElementById('syncNowBtn');
-    const syncBtnText = document.getElementById('syncNowBtnText');
-    const syncStatus = document.getElementById('syncStatusMessage');
-    const syncStatusText = document.getElementById('syncStatusText');
-    const lastSyncTime = document.getElementById('lastSyncTime');
-    const syncIndicator = document.getElementById('syncIndicator');
-    
-    // Disable button
-    if (syncBtn) {
-        syncBtn.disabled = true;
-        syncBtn.style.opacity = '0.6';
-    }
-    
-    if (syncBtnText) syncBtnText.textContent = '⏳ Syncing...';
-    if (syncIndicator) {
-        syncIndicator.style.background = '#f59e0b';
-        syncIndicator.style.animation = 'pulse-sync 0.5s infinite';
-    }
+    // Get button reference
+    const syncButton = document.getElementById('syncNowButton');
     
     try {
-        // Step 1: Upload local data to Firebase
-        console.log('📤 Step 1: Uploading local data to Firebase...');
-        
-        if (syncStatus && syncStatusText) {
-            syncStatus.style.display = 'block';
-            syncStatus.style.background = 'rgba(59,130,246,0.2)';
-            syncStatus.style.border = '1px solid rgba(59,130,246,0.3)';
-            syncStatusText.style.color = '#DBEAFE';
-            syncStatusText.textContent = '📤 Uploading your data to cloud...';
+        // Disable button during sync
+        if (syncButton) {
+            syncButton.disabled = true;
+            syncButton.textContent = '⏳ Syncing...';
         }
         
-        // Save current data (saveData is in Save.js)
-        if (typeof saveData === 'function') {
+        console.log('📤 Step 1: Uploading local data to Firebase...');
+        
+        // ⭐ FIX: Check if saveData exists and call it properly
+        if (typeof window.saveData === 'function') {
+            await window.saveData();
+            console.log('✅ Local data uploaded');
+        } else if (typeof saveData === 'function') {
             await saveData();
             console.log('✅ Local data uploaded');
         } else {
             throw new Error('saveData function not found');
         }
         
-        // Wait for visual feedback
-        await new Promise(resolve => setTimeout(resolve, 500));
-        
-        // Step 2: Download latest data from Firebase
         console.log('📥 Step 2: Downloading latest data from Firebase...');
         
-        if (syncStatusText) {
-            syncStatusText.textContent = '📥 Downloading latest data from cloud...';
-        }
-        
-        // Reload data from Firebase (loadData is in Save.js)
-        if (typeof loadData === 'function') {
-            loadData();
+        // ⭐ FIX: Check if loadData exists and call it properly
+        if (typeof window.loadData === 'function') {
+            await window.loadData();
+            console.log('✅ Latest data downloaded');
+        } else if (typeof loadData === 'function') {
+            await loadData();
             console.log('✅ Latest data downloaded');
         } else {
             throw new Error('loadData function not found');
         }
         
-        // Wait a moment
-        await new Promise(resolve => setTimeout(resolve, 500));
-        
-        // Step 3: Update UI
         console.log('🔄 Step 3: Updating UI...');
+        updateDataStatistics();
         
-        if (syncStatusText) {
-            syncStatusText.textContent = '🔄 Refreshing display...';
-        }
+        // Update last sync time
+        const now = new Date().toLocaleString();
+        localStorage.setItem('lastSyncTime', now);
+        updateLastSyncTimeDisplay();
         
-        // Update sync stats
-        updateSyncStats();
-        
-        // Refresh current screen
-        const currentScreen = document.querySelector('.screen.active');
-        if (currentScreen) {
-            const screenId = currentScreen.id;
-            console.log('Refreshing screen:', screenId);
-            
-            if (screenId === 'students' && typeof loadStudentsScreen === 'function') {
-                loadStudentsScreen();
-            } else if (screenId === 'timetable' && typeof loadTimetable === 'function') {
-                loadTimetable();
-            } else if (screenId === 'payments' && typeof loadPaymentHistory === 'function') {
-                loadPaymentHistory();
-            } else if (screenId === 'settings' && typeof loadSettings === 'function') {
-                loadSettings();
-            } else if (screenId === 'dashboard' && typeof updateDashboard === 'function') {
-                updateDashboard();
-            } else if (screenId === 'subscription' && typeof updateSubscriptionDisplay === 'function') {
-                updateSubscriptionDisplay();
-            }
-        }
-        
-        // Step 4: Update last sync time
-        const now = new Date();
-        const timeString = now.toLocaleTimeString('en-US', { 
-            hour: '2-digit', 
-            minute: '2-digit' 
-        });
-        const dateString = now.toLocaleDateString('en-US', { 
-            month: 'short', 
-            day: 'numeric',
-            year: 'numeric'
-        });
-        
-        if (lastSyncTime) {
-            lastSyncTime.textContent = `${dateString} at ${timeString}`;
-        }
-        
-        localStorage.setItem('lastManualSync', now.toISOString());
-        
-        // Step 5: Show success
+        // Show success message
         console.log('✅ Sync completed successfully!');
         
-        if (syncStatus && syncStatusText) {
-            syncStatus.style.background = 'rgba(16,185,129,0.2)';
-            syncStatus.style.border = '1px solid rgba(16,185,129,0.3)';
-            syncStatusText.style.color = '#D1FAE5';
-            syncStatusText.textContent = '✅ Sync completed successfully!';
+        if (syncButton) {
+            syncButton.textContent = '✅ Synced!';
+            setTimeout(() => {
+                syncButton.textContent = '🔄 Sync Now';
+                syncButton.disabled = false;
+            }, 2000);
         }
         
-        if (syncIndicator) {
-            syncIndicator.style.background = '#10b981';
-            syncIndicator.style.animation = 'pulse-sync 2s infinite';
-        }
-        
-        // Hide success message after 3 seconds
-        setTimeout(() => {
-            if (syncStatus) syncStatus.style.display = 'none';
-        }, 3000);
+        // Optional: Show success alert
+        // alert('✅ Sync completed successfully!');
         
     } catch (error) {
         console.error('❌ Sync failed:', error);
         
-        // Show error
-        if (syncStatus && syncStatusText) {
-            syncStatus.style.display = 'block';
-            syncStatus.style.background = 'rgba(239,68,68,0.2)';
-            syncStatus.style.border = '1px solid rgba(239,68,68,0.3)';
-            syncStatusText.style.color = '#FEE2E2';
-            syncStatusText.textContent = '❌ Sync failed: ' + error.message;
+        if (syncButton) {
+            syncButton.textContent = '❌ Sync Failed';
+            setTimeout(() => {
+                syncButton.textContent = '🔄 Sync Now';
+                syncButton.disabled = false;
+            }, 2000);
         }
         
-        if (syncIndicator) {
-            syncIndicator.style.background = '#ef4444';
-            syncIndicator.style.animation = 'none';
-        }
-        
-        // Hide error after 5 seconds
-        setTimeout(() => {
-            if (syncStatus) syncStatus.style.display = 'none';
-            if (syncIndicator) {
-                syncIndicator.style.background = '#10b981';
-                syncIndicator.style.animation = 'pulse-sync 2s infinite';
-            }
-        }, 5000);
-        
-    } finally {
-        // Re-enable button
-        if (syncBtn) {
-            syncBtn.disabled = false;
-            syncBtn.style.opacity = '1';
-        }
-        if (syncBtnText) syncBtnText.textContent = '🔄 Sync Now';
+        alert('❌ Sync failed: ' + error.message + '\n\nPlease check your internet connection and try again.');
     }
 }
 
@@ -572,6 +468,20 @@ setTimeout(() => {
         updateSyncStats();
     }
 }, 100);
+
+
+
+// ============================================
+// Make functions globally available
+// ============================================
+
+window.migrateLocalStorageToFirebase = migrateLocalStorageToFirebase;
+window.updateDataStatistics = updateDataStatistics;
+window.downloadBackup = downloadBackup;
+window.uploadBackup = uploadBackup;
+
+console.log('✅ Missing functions added');
+
 
 
 
