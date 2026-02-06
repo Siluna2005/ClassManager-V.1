@@ -255,6 +255,10 @@ function enableRealtimeSync() {
 // Call it ONCE during app initialization
 // ============================================
 
+// ============================================
+// 1. MIGRATION FUNCTION (Add to Save.js or app.html)
+// ============================================
+
 async function migrateLocalStorageToFirebase() {
     if (!currentUserId) {
         console.log('⚠️ Cannot migrate: No user authenticated');
@@ -288,170 +292,19 @@ async function migrateLocalStorageToFirebase() {
                 console.log('✅ Migration complete - removing old localStorage data');
                 localStorage.removeItem(oldLocalDataKey);
                 
-                // Show success message
-                alert('✅ Data Migration Complete!\n\nYour data has been successfully migrated to the cloud.\n\n✓ Your data is now safely stored in Firebase\n✓ Your data will sync across all your devices\n✓ Old local storage has been removed');
-                
             } else {
-                // Firebase already has data
-                const firebaseData = snapshot.val();
-                const firebaseDate = new Date(firebaseData.lastSaved || 0);
-                const localDate = new Date(parsedData.lastSaved || 0);
-                
-                if (localDate > firebaseDate) {
-                    // Local data is newer - ask user
-                    const migrate = confirm('🔄 Data Conflict Detected\n\nYou have data in both:\n- Cloud (Firebase)\n- Local device storage\n\nYour LOCAL data is newer.\n\nDo you want to UPLOAD your local data to the cloud?\n\n✓ Click OK to upload local data\n✗ Click Cancel to keep cloud data');
-                    
-                    if (migrate) {
-                        console.log('📤 User chose to upload local data');
-                        
-                        await database.ref('users/' + currentUserId + '/data').set({
-                            ...parsedData,
-                            lastSaved: new Date().toISOString(),
-                            migratedAt: new Date().toISOString()
-                        });
-                        
-                        console.log('✅ Local data uploaded - removing old localStorage');
-                        localStorage.removeItem(oldLocalDataKey);
-                        
-                        alert('✅ Local data uploaded successfully!\n\nYour newer local data is now in the cloud.');
-                        
-                        // Reload to show updated data
-                        location.reload();
-                    } else {
-                        console.log('ℹ️ User chose to keep cloud data - removing old localStorage');
-                        localStorage.removeItem(oldLocalDataKey);
-                        
-                        alert('ℹ️ Cloud data preserved\n\nOld local storage has been removed.\n\nUsing cloud data.');
-                    }
-                } else {
-                    // Cloud data is newer or same - just remove local copy
-                    console.log('ℹ️ Firebase data is current - removing redundant localStorage');
-                    localStorage.removeItem(oldLocalDataKey);
-                    
-                    console.log('✅ Migration complete - old localStorage removed');
-                }
+                // Firebase already has data - just remove old localStorage
+                console.log('ℹ️ Firebase data exists - removing redundant localStorage');
+                localStorage.removeItem(oldLocalDataKey);
             }
             
         } catch (error) {
             console.error('❌ Migration error:', error);
-            
-            // Ask user what to do
-            const retry = confirm('❌ Migration Error\n\nFailed to migrate your local data to the cloud.\n\nError: ' + error.message + '\n\nDo you want to keep trying?\n\n✓ Click OK to keep local data for manual backup\n✗ Click Cancel to discard local data');
-            
-            if (!retry) {
-                console.log('⚠️ User chose to discard local data');
-                localStorage.removeItem(oldLocalDataKey);
-            } else {
-                console.log('ℹ️ User chose to keep local data - will retry on next login');
-                alert('ℹ️ Local data preserved\n\nWe\'ll try to migrate it again on your next login.\n\nIn the meantime, you can manually backup using Settings → Download Backup.');
-            }
         }
     } else {
         console.log('✅ No old localStorage data found - migration not needed');
     }
 }
-
-    // Download backup file (JSON)
-        function downloadBackup() {    
-            try {        
-                const dataToBackup = {            
-                    ...appData,            
-                    backupDate: new Date().toISOString(),            
-                    appVersion: '1.0'        
-                };
-                
-                const dataStr = JSON.stringify(dataToBackup, null, 2);        
-                const dataBlob = new Blob([dataStr], { type: 'application/json' });        
-                const url = URL.createObjectURL(dataBlob);        
-                const link = document.createElement('a');        
-                const fileName = `ClassManager_Backup_${new Date().toISOString().split('T')[0]}.json`;
-                
-                link.href = url;        
-                link.download = fileName;        
-                link.click();
-                
-                // Update last backup time        
-                const now = new Date().toLocaleString();        
-                localStorage.setItem('lastBackupTime', now);        
-                const backupTimeEl = document.getElementById('lastBackupTime');        
-                if (backupTimeEl) backupTimeEl.textContent = now;
-                
-                alert('✅ Backup downloaded successfully!\n\nFile: ' + fileName);    
-            } catch (error) {        
-                console.error('❌ Backup error:', error);        
-                alert('⚠️ Error creating backup file.');    
-            }
-        }
-
-        // Upload and restore backup file
-        function uploadBackup() {    
-            const input = document.createElement('input');    
-            input.type = 'file';    
-            input.accept = '.json';
-        
-            input.onchange = (e) => {        
-                const file = e.target.files[0];        
-                if (!file) return;
-                
-                const reader = new FileReader();
-                
-                reader.onload = (event) => {            
-                    try {                
-                        const restored = JSON.parse(event.target.result);
-                                
-                        // Validate data structure                
-                        if (!restored.students || !Array.isArray(restored.students)) {                    
-                            throw new Error('Invalid backup file format');                
-                        }
-                                
-                        // Confirm before restoring                
-                        if (!confirm('⚠️ Restore data from backup?\n\nThis will replace all current data!\n\nStudents: ' + (restored.students?.length || 0) + '\nPayments: ' + (restored.payments?.length || 0))) {                    
-                            return;                
-                        }
-                                
-                        // Restore data                
-                        appData = {                    
-                            students: restored.students || [],                    
-                            grades: restored.grades || ['06', '07', '08', '09', '10', '11', '12'],                    
-                            timetable: restored.timetable || [],                    
-                            attendance: restored.attendance || {},                    
-                            payments: restored.payments || [],                    
-                            subjectName: restored.subjectName || 'Mathematics',                    
-                            selectedStudent: null,                    
-                            editingTimetable: null,                    
-                            selectedPaymentStudent: null                
-                        };
-                                
-                        saveData();                
-                        populateGradeDropdowns();                
-                        updateDashboard();
-                                
-                        // Refresh current screen                
-                        const activeScreen = document.querySelector('.screen.active');                
-                        if (activeScreen) {                    
-                            const screenId = activeScreen.id;                    
-                            if (screenId === 'students') loadStudentsScreen();                    
-                            if (screenId === 'timetable') loadTimetable();                    
-                            if (screenId === 'payments') loadPaymentHistory();                    
-                            if (screenId === 'settings') loadSettings();                
-                        }
-                                
-                        alert('✅ Data restored successfully!\n\nStudents: ' + appData.students.length + '\nPayments: ' + appData.payments.length);                                
-                    } catch (err) {                
-                        console.error('❌ Restore error:', err);                
-                        alert('⚠️ Invalid backup file!\n\nPlease select a valid Class Manager backup file.');            
-                    }        
-                };
-                
-                reader.onerror = () => {            
-                    alert('⚠️ Error reading backup file.');        
-                };
-                    
-                reader.readAsText(file);    
-            };
-        
-            input.click();
-        }
 
         // Export all data to Excel
         function exportAllDataToExcel() {    
@@ -676,6 +529,7 @@ function diagnoseSyncButton() {
 
 // Run diagnostic
 diagnoseSyncButton();
+
 
 
 
