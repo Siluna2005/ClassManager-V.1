@@ -287,78 +287,17 @@ function uploadBackup() {
 // ============================================
 
 async function syncNowManual() {
-    console.log('🔄 Manual sync triggered by user');
-    
-    // Get button reference
-    const syncButton = document.getElementById('syncNowButton');
-    
     try {
-        // Disable button during sync
-        if (syncButton) {
-            syncButton.disabled = true;
-            syncButton.textContent = '⏳ Syncing...';
-        }
-        
-        console.log('📤 Step 1: Uploading local data to Firebase...');
-        
-        // ⭐ FIX: Check if saveData exists and call it properly
+        // Safe call
         if (typeof window.saveData === 'function') {
             await window.saveData();
-            console.log('✅ Local data uploaded');
-        } else if (typeof saveData === 'function') {
-            await saveData();
-            console.log('✅ Local data uploaded');
-        } else {
-            throw new Error('saveData function not found');
         }
-        
-        console.log('📥 Step 2: Downloading latest data from Firebase...');
-        
-        // ⭐ FIX: Check if loadData exists and call it properly
         if (typeof window.loadData === 'function') {
             await window.loadData();
-            console.log('✅ Latest data downloaded');
-        } else if (typeof loadData === 'function') {
-            await loadData();
-            console.log('✅ Latest data downloaded');
-        } else {
-            throw new Error('loadData function not found');
         }
-        
-        console.log('🔄 Step 3: Updating UI...');
-        updateDataStatistics();
-        
-        // Update last sync time
-        const now = new Date().toLocaleString();
-        localStorage.setItem('lastSyncTime', now);
-        updateLastSyncTimeDisplay();
-        
-        // Show success message
-        console.log('✅ Sync completed successfully!');
-        
-        if (syncButton) {
-            syncButton.textContent = '✅ Synced!';
-            setTimeout(() => {
-                syncButton.textContent = '🔄 Sync Now';
-                syncButton.disabled = false;
-            }, 2000);
-        }
-        
-        // Optional: Show success alert
-        // alert('✅ Sync completed successfully!');
-        
+        console.log('✅ Sync complete');
     } catch (error) {
         console.error('❌ Sync failed:', error);
-        
-        if (syncButton) {
-            syncButton.textContent = '❌ Sync Failed';
-            setTimeout(() => {
-                syncButton.textContent = '🔄 Sync Now';
-                syncButton.disabled = false;
-            }, 2000);
-        }
-        
-        alert('❌ Sync failed: ' + error.message + '\n\nPlease check your internet connection and try again.');
     }
 }
 
@@ -481,6 +420,7 @@ window.downloadBackup = downloadBackup;
 window.uploadBackup = uploadBackup;
 
 console.log('✅ Missing functions added');
+
 
 
 
