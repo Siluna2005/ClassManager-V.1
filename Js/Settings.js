@@ -104,6 +104,196 @@
 
         }
 
+function updateDataStatistics() {
+    // Update statistics display
+    const studentsCount = appData.students?.length || 0;
+    const paymentsCount = appData.payments?.length || 0;
+    const classesCount = appData.timetable?.length || 0;
+    
+    // Calculate attendance records
+    let attendanceCount = 0;
+    if (appData.attendance) {
+        Object.keys(appData.attendance).forEach(classId => {
+            if (appData.attendance[classId]) {
+                attendanceCount += Object.keys(appData.attendance[classId]).length;
+            }
+        });
+    }
+    
+    // Update UI elements
+    const statsStudents = document.getElementById('statsStudents');
+    const statsPayments = document.getElementById('statsPayments');
+    const statsTimetable = document.getElementById('statsTimetable');
+    const statsAttendance = document.getElementById('statsAttendance');
+    
+    if (statsStudents) statsStudents.textContent = studentsCount;
+    if (statsPayments) statsPayments.textContent = paymentsCount;
+    if (statsTimetable) statsTimetable.textContent = classesCount;
+    if (statsAttendance) statsAttendance.textContent = attendanceCount;
+    
+    console.log('📊 Data statistics updated:', {
+        students: studentsCount,
+        payments: paymentsCount,
+        classes: classesCount,
+        attendance: attendanceCount
+    });
+}
+
+// ============================================
+// 3. DOWNLOAD BACKUP (Add to Settings.js)
+// ============================================
+
+function downloadBackup() {
+    console.log('💾 Downloading backup...');
+    
+    try {
+        // Create backup data
+        const backupData = {
+            ...appData,
+            backupDate: new Date().toISOString(),
+            version: '1.0'
+        };
+        
+        // Convert to JSON string
+        const dataStr = JSON.stringify(backupData, null, 2);
+        
+        // Create blob
+        const dataBlob = new Blob([dataStr], { type: 'application/json' });
+        
+        // Create download link
+        const url = URL.createObjectURL(dataBlob);
+        const link = document.createElement('a');
+        link.href = url;
+        
+        // Generate filename with date
+        const date = new Date().toISOString().split('T')[0];
+        link.download = `class-manager-backup-${date}.json`;
+        
+        // Trigger download
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+        
+        // Clean up
+        URL.revokeObjectURL(url);
+        
+        // Update last backup time
+        const now = new Date().toLocaleString();
+        localStorage.setItem('lastBackupTime', now);
+        
+        // Update display
+        const backupTimeEl = document.getElementById('lastBackupTime');
+        if (backupTimeEl) {
+            backupTimeEl.textContent = now;
+        }
+        
+        console.log('✅ Backup downloaded successfully');
+        alert('✅ Backup downloaded successfully!');
+        
+    } catch (error) {
+        console.error('❌ Error downloading backup:', error);
+        alert('❌ Failed to download backup: ' + error.message);
+    }
+}
+
+// ============================================
+// 4. UPLOAD BACKUP (Add to Settings.js)
+// ============================================
+
+function uploadBackup() {
+    console.log('📂 Opening file picker for backup restore...');
+    
+    // Create file input
+    const input = document.createElement('input');
+    input.type = 'file';
+    input.accept = '.json';
+    
+    input.onchange = (e) => {
+        const file = e.target.files[0];
+        
+        if (!file) {
+            console.log('⚠️ No file selected');
+            return;
+        }
+        
+        console.log('📄 Reading file:', file.name);
+        
+        const reader = new FileReader();
+        
+        reader.onload = (event) => {
+            try {
+                // Parse JSON
+                const importedData = JSON.parse(event.target.result);
+                
+                console.log('📥 Data parsed successfully');
+                
+                // Confirm before restoring
+                const confirm = window.confirm(
+                    '⚠️ Restore Backup?\n\n' +
+                    'This will replace ALL your current data with the backup.\n\n' +
+                    'Students: ' + (importedData.students?.length || 0) + '\n' +
+                    'Classes: ' + (importedData.timetable?.length || 0) + '\n' +
+                    'Payments: ' + (importedData.payments?.length || 0) + '\n\n' +
+                    'Continue?'
+                );
+                
+                if (!confirm) {
+                    console.log('⚠️ Restore cancelled by user');
+                    return;
+                }
+                
+                // Merge imported data with appData
+                appData = {
+                    ...appData,
+                    students: importedData.students || [],
+                    timetable: importedData.timetable || [],
+                    payments: importedData.payments || [],
+                    attendance: importedData.attendance || {},
+                    grades: importedData.grades || appData.grades,
+                    subjectName: importedData.subjectName || appData.subjectName
+                };
+                
+                // Save to Firebase
+                saveData()
+                    .then(() => {
+                        console.log('✅ Backup restored successfully');
+                        alert('✅ Backup restored successfully!\n\nPage will reload to show updated data.');
+                        location.reload();
+                    })
+                    .catch((error) => {
+                        console.error('❌ Error saving restored data:', error);
+                        alert('❌ Failed to save restored data: ' + error.message);
+                    });
+                
+            } catch (error) {
+                console.error('❌ Error parsing backup file:', error);
+                alert('❌ Invalid backup file!\n\nPlease select a valid JSON backup file.');
+            }
+        };
+        
+        reader.onerror = (error) => {
+            console.error('❌ Error reading file:', error);
+            alert('❌ Failed to read file!');
+        };
+        
+        reader.readAsText(file);
+    };
+    
+    // Trigger file picker
+    input.click();
+}
+
+// ============================================
+// Make functions globally available
+// ============================================
+
+window.migrateLocalStorageToFirebase = migrateLocalStorageToFirebase;
+window.updateDataStatistics = updateDataStatistics;
+window.downloadBackup = downloadBackup;
+window.uploadBackup = uploadBackup;
+
+console.log('✅ Missing functions added');
+
 // ============================================
 // 1. SYNC NOW - Main Function
 // ============================================
@@ -382,6 +572,7 @@ setTimeout(() => {
         updateSyncStats();
     }
 }, 100);
+
 
 
 
