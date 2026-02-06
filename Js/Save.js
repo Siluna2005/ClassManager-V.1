@@ -530,6 +530,15 @@ function diagnoseSyncButton() {
 // Run diagnostic
 diagnoseSyncButton();
 
+// At the END of Save.js, add:
+window.saveData = saveData;
+window.loadData = loadData;
+window.migrateLocalStorageToFirebase = migrateLocalStorageToFirebase;
+window.enableRealtimeSync = enableRealtimeSync;
+
+console.log('✅ Save.js functions made globally available');
+
+
 
 
 
