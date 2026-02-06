@@ -249,63 +249,6 @@ function enableRealtimeSync() {
     });
 }
 
-// ============================================
-// DATA MIGRATION FUNCTION
-// Add this NEW function to your code
-// Call it ONCE during app initialization
-// ============================================
-
-// ============================================
-// 1. MIGRATION FUNCTION (Add to Save.js or app.html)
-// ============================================
-
-async function migrateLocalStorageToFirebase() {
-    if (!currentUserId) {
-        console.log('⚠️ Cannot migrate: No user authenticated');
-        return;
-    }
-    
-    console.log('🔄 Checking for local data migration...');
-    
-    // Check if old localStorage data exists
-    const oldLocalDataKey = 'classManagerData_' + currentUserId;
-    const oldLocalData = localStorage.getItem(oldLocalDataKey);
-    
-    if (oldLocalData) {
-        try {
-            console.log('📦 Found old localStorage data');
-            const parsedData = JSON.parse(oldLocalData);
-            
-            // Check if Firebase already has data
-            const snapshot = await database.ref('users/' + currentUserId + '/data').once('value');
-            
-            if (!snapshot.exists()) {
-                // Firebase is empty - migrate localStorage data
-                console.log('📤 Migrating localStorage data to Firebase...');
-                
-                await database.ref('users/' + currentUserId + '/data').set({
-                    ...parsedData,
-                    lastSaved: new Date().toISOString(),
-                    migratedAt: new Date().toISOString()
-                });
-                
-                console.log('✅ Migration complete - removing old localStorage data');
-                localStorage.removeItem(oldLocalDataKey);
-                
-            } else {
-                // Firebase already has data - just remove old localStorage
-                console.log('ℹ️ Firebase data exists - removing redundant localStorage');
-                localStorage.removeItem(oldLocalDataKey);
-            }
-            
-        } catch (error) {
-            console.error('❌ Migration error:', error);
-        }
-    } else {
-        console.log('✅ No old localStorage data found - migration not needed');
-    }
-}
-
         // Export all data to Excel
         function exportAllDataToExcel() {    
             try {        
@@ -530,13 +473,33 @@ function diagnoseSyncButton() {
 // Run diagnostic
 diagnoseSyncButton();
 
-// At the END of Save.js, add:
+// Make functions globally available
 window.saveData = saveData;
 window.loadData = loadData;
-window.migrateLocalStorageToFirebase = migrateLocalStorageToFirebase;
 window.enableRealtimeSync = enableRealtimeSync;
 
-console.log('✅ Save.js functions made globally available');
+// Migration function
+window.migrateLocalStorageToFirebase = async function() {
+    if (!currentUserId) {
+        console.log('✅ No migration needed');
+        return;
+    }
+    
+    console.log('🔄 Checking for local data migration...');
+    const oldKey = 'classManagerData_' + currentUserId;
+    const oldData = localStorage.getItem(oldKey);
+    
+    if (oldData) {
+        console.log('📦 Found old data - migrating...');
+        localStorage.removeItem(oldKey);
+        console.log('✅ Migration complete');
+    } else {
+        console.log('✅ No old localStorage data found');
+    }
+};
+
+console.log('✅ Save.js loaded - Functions available globally');
+
 
 
 
