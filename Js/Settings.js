@@ -1,108 +1,118 @@
-        // SETTINGS
-        function loadSettings() {    
-            // Load subject name    
-            document.getElementById('subjectNameInput').value = appData.subjectName;    
-            document.getElementById('subjectDisplay').textContent = 'Subject: ' + appData.subjectName;
-        
-            // Load grades list    
-            const list = document.getElementById('gradesList');    
-            list.innerHTML = appData.grades.map(g => `
-                <div style="display: flex; justify-content: space-between; align-items: center; padding: 12px; background: rgba(255,255,255,0.1); border-radius: 8px; margin-bottom: 8px;">
-                    <span style="font-weight: 600; color: #fff;">Grade ${g}</span>
-                    <button class="icon-btn icon-btn-red" onclick="deleteGrade('${g}')">🗑️ Remove</button>
-                </div>         
-            `).join('');
-        
-            // Update last saved time    
-            updateLastSavedTime();
-        
-            // Update last backup time    
-            const lastBackup = localStorage.getItem('lastBackupTime');    
-            const backupTimeEl = document.getElementById('lastBackupTime');    
-            if (backupTimeEl) {        
-                backupTimeEl.textContent = lastBackup || 'Never';    
-            }
-        
-            // Update data statistics    
-            updateDataStatistics();
-            // Only call if functions exist    
-            if (typeof updateLastSyncTimeDisplay === 'function') {        
-                updateLastSyncTimeDisplay();                
-            }
+// ============================================
+// CORRECTED SETTINGS.JS
+// All syntax errors fixed
+// Removed duplicate functions and trailing code
+// ============================================
+
+// SETTINGS
+function loadSettings() {    
+    // Load subject name    
+    document.getElementById('subjectNameInput').value = appData.subjectName;    
+    document.getElementById('subjectDisplay').textContent = 'Subject: ' + appData.subjectName;
+
+    // Load grades list    
+    const list = document.getElementById('gradesList');    
+    list.innerHTML = appData.grades.map(g => `
+        <div style="display: flex; justify-content: space-between; align-items: center; padding: 12px; background: rgba(255,255,255,0.1); border-radius: 8px; margin-bottom: 8px;">
+            <span style="font-weight: 600; color: #fff;">Grade ${g}</span>
+            <button class="icon-btn icon-btn-red" onclick="deleteGrade('${g}')">🗑️ Remove</button>
+        </div>         
+    `).join('');
+
+    // Update last saved time    
+    updateLastSavedTime();
+
+    // Update last backup time    
+    const lastBackup = localStorage.getItem('lastBackupTime');    
+    const backupTimeEl = document.getElementById('lastBackupTime');    
+    if (backupTimeEl) {        
+        backupTimeEl.textContent = lastBackup || 'Never';    
+    }
+
+    // Update data statistics    
+    updateDataStatistics();
     
-            if (typeof updateSyncStats === 'function') {
-                updateSyncStats();
-            }
-        }
+    // Only call if functions exist    
+    if (typeof updateLastSyncTimeDisplay === 'function') {        
+        updateLastSyncTimeDisplay();                
+    }
 
-        function addGrade() {
-            const newGrade = document.getElementById('newGrade').value.trim();
-            
-            if (!newGrade) {
-                alert('Enter grade number');
-                return;
-            }
-            
-            if (appData.grades.includes(newGrade)) {
-                alert('Grade already exists');
-                return;
-            }
-            
-            appData.grades.push(newGrade);
-            appData.grades.sort();
-            saveData();
-            populateGradeDropdowns();
-            loadSettings();
-            document.getElementById('newGrade').value = '';
-            alert('Grade added!');
-        }
+    if (typeof updateSyncStats === 'function') {
+        updateSyncStats();
+    }
+}
 
-        function deleteGrade(grade) {
-            const hasStudents = appData.students.some(s => s.grade === grade);
-            
-            if (hasStudents) {
-                alert('Cannot delete grade with students');
-                return;
-            }
-            
-            if (!confirm(`Delete Grade ${grade}?`)) return;
-            
-            appData.grades = appData.grades.filter(g => g !== grade);
-            saveData();
-            populateGradeDropdowns();
-            loadSettings();
-            alert('Grade deleted!');
-        }
+function addGrade() {
+    const newGrade = document.getElementById('newGrade').value.trim();
+    
+    if (!newGrade) {
+        alert('Enter grade number');
+        return;
+    }
+    
+    if (appData.grades.includes(newGrade)) {
+        alert('Grade already exists');
+        return;
+    }
+    
+    appData.grades.push(newGrade);
+    appData.grades.sort();
+    saveData();
+    populateGradeDropdowns();
+    loadSettings();
+    document.getElementById('newGrade').value = '';
+    alert('Grade added!');
+}
 
-        function saveSubject() {
-            const subject = document.getElementById('subjectNameInput').value.trim();
-            
-            if (!subject) {
-                alert('Enter subject name');
-                return;
-            }
-            
-            appData.subjectName = subject;
-            saveData();
-            document.getElementById('subjectDisplay').textContent = 'Subject: ' + subject;
-            alert('Subject saved!');
-        }
+function deleteGrade(grade) {
+    const hasStudents = appData.students.some(s => s.grade === grade);
+    
+    if (hasStudents) {
+        alert('Cannot delete grade with students');
+        return;
+    }
+    
+    if (!confirm(`Delete Grade ${grade}?`)) return;
+    
+    appData.grades = appData.grades.filter(g => g !== grade);
+    saveData();
+    populateGradeDropdowns();
+    loadSettings();
+    alert('Grade deleted!');
+}
 
-        function backupData() {
-            const dataStr = JSON.stringify(appData, null, 2);
-            const dataBlob = new Blob([dataStr], { type: 'application/json' });
-            const url = URL.createObjectURL(dataBlob);
-            const link = document.createElement('a');
-            link.href = url;
-            link.download = `class-manager-backup-${new Date().toISOString().split('T')[0]}.json`;
-            link.click();
-            
-            const now = new Date().toLocaleString();
-            localStorage.setItem('lastBackup', now);
-            document.getElementById('lastBackup').textContent = now;
-            alert('Backup downloaded!');
+function saveSubject() {
+    const subject = document.getElementById('subjectNameInput').value.trim();
+    
+    if (!subject) {
+        alert('Enter subject name');
+        return;
+    }
+    
+    appData.subjectName = subject;
+    saveData();
+    document.getElementById('subjectDisplay').textContent = 'Subject: ' + subject;
+    alert('Subject saved!');
+}
 
-        }
+function backupData() {
+    const dataStr = JSON.stringify(appData, null, 2);
+    const dataBlob = new Blob([dataStr], { type: 'application/json' });
+    const url = URL.createObjectURL(dataBlob);
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = `class-manager-backup-${new Date().toISOString().split('T')[0]}.json`;
+    link.click();
+    
+    const now = new Date().toLocaleString();
+    localStorage.setItem('lastBackup', now);
+    document.getElementById('lastBackup').textContent = now;
+    alert('Backup downloaded!');
+}
+
+// ============================================
+// UPDATE DATA STATISTICS
+// ============================================
 
 function updateDataStatistics() {
     // Update statistics display
@@ -140,7 +150,7 @@ function updateDataStatistics() {
 }
 
 // ============================================
-// 3. DOWNLOAD BACKUP (Add to Settings.js)
+// DOWNLOAD BACKUP
 // ============================================
 
 function downloadBackup() {
@@ -197,7 +207,7 @@ function downloadBackup() {
 }
 
 // ============================================
-// 4. UPLOAD BACKUP (Add to Settings.js)
+// UPLOAD BACKUP
 // ============================================
 
 function uploadBackup() {
@@ -225,7 +235,7 @@ function uploadBackup() {
                 
                 console.log('📥 Data parsed successfully');
                 
-                const confirm = window.confirm(
+                const confirmRestore = window.confirm(
                     '⚠️ Restore Backup?\n\n' +
                     'This will replace ALL your current data.\n\n' +
                     'Students: ' + (importedData.students?.length || 0) + '\n' +
@@ -234,7 +244,7 @@ function uploadBackup() {
                     'Continue?'
                 );
                 
-                if (!confirm) {
+                if (!confirmRestore) {
                     console.log('⚠️ Restore cancelled by user');
                     return;
                 }
@@ -249,7 +259,7 @@ function uploadBackup() {
                     grades: importedData.grades || appData.grades
                 };
                 
-                // ⭐ FIX: Call saveData properly
+                // Call saveData properly
                 const savePromise = typeof window.saveData === 'function' 
                     ? window.saveData() 
                     : (typeof saveData === 'function' ? saveData() : Promise.reject('saveData not found'));
@@ -282,7 +292,10 @@ function uploadBackup() {
     input.click();
 }
 
-// Export all data to Excel        
+// ============================================
+// EXPORT ALL DATA TO EXCEL
+// ============================================
+
 function exportAllDataToExcel() {                
     try {                            
         const wb = XLSX.utils.book_new();
@@ -380,7 +393,10 @@ function exportAllDataToExcel() {
     }            
 }
             
-// Clear all data            
+// ============================================
+// CLEAR ALL DATA
+// ============================================
+
 function clearAllData() {                        
     if (!confirm('⚠️ DELETE ALL DATA?\n\nThis will permanently delete:\n- All students\n- All payments\n- All attendance records\n- All timetable entries\n\nThis CANNOT be undone!')) {                                    
         return;                        
@@ -400,26 +416,82 @@ function clearAllData() {
 }
             
 // ============================================
-// 1. SYNC NOW - Main Function
+// SYNC NOW - Manual Sync
 // ============================================
 
 async function syncNowManual() {
+    console.log('🔄 Manual sync triggered by user');
+    
+    const syncButton = document.getElementById('syncNowButton');
+    
     try {
-        // Safe call
+        // Disable button during sync
+        if (syncButton) {
+            syncButton.disabled = true;
+            syncButton.textContent = '⏳ Syncing...';
+        }
+        
+        console.log('📤 Step 1: Uploading local data to Firebase...');
+        
+        // Safe call to saveData
         if (typeof window.saveData === 'function') {
             await window.saveData();
+            console.log('✅ Upload complete');
+        } else if (typeof saveData === 'function') {
+            await saveData();
+            console.log('✅ Upload complete');
+        } else {
+            throw new Error('saveData function not found');
         }
+        
+        console.log('📥 Step 2: Downloading latest data from Firebase...');
+        
+        // Safe call to loadData
         if (typeof window.loadData === 'function') {
             await window.loadData();
+            console.log('✅ Download complete');
+        } else if (typeof loadData === 'function') {
+            await loadData();
+            console.log('✅ Download complete');
+        } else {
+            throw new Error('loadData function not found');
         }
+        
+        console.log('🔄 Step 3: Updating UI...');
+        updateDataStatistics();
+        
+        // Update last sync time
+        const now = new Date().toISOString();
+        localStorage.setItem('lastManualSync', now);
+        updateLastSyncTimeDisplay();
+        
         console.log('✅ Sync complete');
+        
+        if (syncButton) {
+            syncButton.textContent = '✅ Synced!';
+            setTimeout(() => {
+                syncButton.textContent = '🔄 Sync Now';
+                syncButton.disabled = false;
+            }, 2000);
+        }
+        
     } catch (error) {
         console.error('❌ Sync failed:', error);
+        
+        if (syncButton) {
+            syncButton.textContent = '❌ Failed';
+            setTimeout(() => {
+                syncButton.textContent = '🔄 Sync Now';
+                syncButton.disabled = false;
+            }, 2000);
+        }
+        
+        alert('❌ Sync failed: ' + error.message);
     }
 }
 
 // ============================================
-// 2. UPDATE SYNC STATISTICS
+// UPDATE SYNC STATISTICS
 // ============================================
 
 function updateSyncStats() {
@@ -449,7 +521,7 @@ function updateSyncStats() {
 }
 
 // ============================================
-// 3. UPDATE LAST SYNC TIME DISPLAY
+// UPDATE LAST SYNC TIME DISPLAY
 // ============================================
 
 function updateLastSyncTimeDisplay() {
@@ -500,7 +572,7 @@ function updateLastSyncTimeDisplay() {
 }
 
 // ============================================
-// 4. AUTO-UPDATE LAST SYNC TIME
+// AUTO-UPDATE LAST SYNC TIME
 // ============================================
 
 setInterval(() => {
@@ -508,6 +580,17 @@ setInterval(() => {
         updateLastSyncTimeDisplay();
     }
 }, 60000); // Every 60 seconds
+
+// ============================================
+// MAKE FUNCTIONS GLOBALLY AVAILABLE
+// ============================================
+
+window.updateDataStatistics = updateDataStatistics;
+window.downloadBackup = downloadBackup;
+window.uploadBackup = uploadBackup;
+window.syncNowManual = syncNowManual;
+window.updateSyncStats = updateSyncStats;
+window.updateLastSyncTimeDisplay = updateLastSyncTimeDisplay;
 
 // ============================================
 // INITIALIZE
@@ -524,23 +607,3 @@ setTimeout(() => {
         updateSyncStats();
     }
 }, 100);
-
-
-
-// ============================================
-// Make functions globally available
-// ============================================
-
-window.migrateLocalStorageToFirebase = migrateLocalStorageToFirebase;
-window.updateDataStatistics = updateDataStatistics;
-window.downloadBackup = downloadBackup;
-window.uploadBackup = uploadBackup;
-
-console.log('✅ Missing functions added');
-
-
-
-
-
-
-
