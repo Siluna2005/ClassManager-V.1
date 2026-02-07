@@ -282,6 +282,123 @@ function uploadBackup() {
     input.click();
 }
 
+// Export all data to Excel        
+function exportAllDataToExcel() {                
+    try {                            
+        const wb = XLSX.utils.book_new();
+                                
+        // Sheet 1: Students                        
+        const studentsData = [                               
+            ['Student ID', 'Name', 'Birthday', 'Gender', 'Class', 'Grade', 'Student Phone', 'Parent Phone']                        
+        ];                        
+        appData.students.forEach(s => {                                
+            studentsData.push([                                        
+                s.id,                                                            
+                s.name,                                                            
+                s.birthday || '',                                                            
+                s.gender || '',                                                            
+                s.class || '',                                                            
+                'Grade ' + s.grade,                                                            
+                s.studentPhone || '',                                                                
+                s.parentPhone || ''                                                
+            ]);                                        
+        });                                    
+        const wsStudents = XLSX.utils.aoa_to_sheet(studentsData);                                    
+        XLSX.utils.book_append_sheet(wb, wsStudents, 'Students');
+                                            
+        // Sheet 2: Payments                                    
+        const paymentsData = [                   
+            ['Date', 'Student ID', 'Student Name', 'Grade', 'Month', 'Amount', 'Status']                                   
+        ];                        
+        (appData.payments || []).forEach(p => {                                
+            paymentsData.push([                                        
+                p.date,                                        
+                p.studentId,                                        
+                p.studentName,                                       
+                p.class,                                       
+                p.month,                                       
+                p.amount,                                       
+                p.status                               
+            ]);                        
+        });                        
+        const wsPayments = XLSX.utils.aoa_to_sheet(paymentsData);                        
+        XLSX.utils.book_append_sheet(wb, wsPayments, 'Payments');                
+                
+        // Sheet 3: Timetable                        
+        const timetableData = [                                
+            ['Day', 'Time', 'Grade', 'Notes']                                    
+        ];                        
+        appData.timetable.forEach(t => {                                
+            timetableData.push([                        
+                t.day,                        
+                t.time,                        
+                'Grade ' + t.grade,                        
+                t.notes || ''                                
+            ]);                        
+        });                        
+        const wsTimetable = XLSX.utils.aoa_to_sheet(timetableData);                        
+        XLSX.utils.book_append_sheet(wb, wsTimetable, 'Timetable');
+                        
+        // Sheet 4: Attendance Summary                        
+        const attendanceData = [                    
+            ['Date', 'Grade', 'Total Students', 'Present', 'Absent', 'Rate']                        
+        ];
+                                
+        Object.keys(appData.attendance || {}).forEach(date => {                                
+            const dayData = appData.attendance[date];                                
+            const total = Object.keys(dayData).length;                                
+            const present = Object.values(dayData).filter(s => s === 'present').length;                                
+            const absent = total - present;                                
+            const rate = total > 0 ? Math.round((present / total) * 100) + '%' : '0%';
+                                            
+            // Get grade from first student                                
+            const firstStudentId = Object.keys(dayData)[0];                                
+            const student = appData.students.find(s => s.id === firstStudentId);                                
+            const grade = student ? 'Grade ' + student.grade : 'N/A';
+                                           
+            attendanceData.push([                                        
+                date,                                        
+                grade,                                       
+                total,                                        
+                present,                                       
+                absent,                                       
+                rate                                               
+            ]);                                   
+        });                    
+                
+        const wsAttendance = XLSX.utils.aoa_to_sheet(attendanceData);                                    
+        XLSX.utils.book_append_sheet(wb, wsAttendance, 'Attendance');                            
+                
+        // Download file                                    
+        const fileName = `ClassManager_Complete_Export_${new Date().toISOString().split('T')[0]}.xlsx`;                                   
+        XLSX.writeFile(wb, fileName);
+                                            
+        alert('✅ All data exported to Excel!\n\nFile: ' + fileName + '\n\nSheets:\n- Students\n- Payments\n- Timetable\n- Attendance');                        
+    } catch (error) {                                   
+        console.error('❌ Export error:', error);                                    
+        alert('⚠️ Error exporting data to Excel.');                                
+    }            
+}
+            
+// Clear all data            
+function clearAllData() {                        
+    if (!confirm('⚠️ DELETE ALL DATA?\n\nThis will permanently delete:\n- All students\n- All payments\n- All attendance records\n- All timetable entries\n\nThis CANNOT be undone!')) {                                    
+        return;                        
+    }
+                            
+    if (!confirm('⚠️ Are you ABSOLUTELY SURE?\n\nThis is your last chance to cancel!')) {                                    
+        return;                       
+    }
+                            
+    // Clear localStorage                        
+    localStorage.clear();                
+            
+    alert('✅ All data cleared!\n\nThe app will now reload.');                
+            
+    // Reload page                        
+    location.reload();            
+}
+            
 // ============================================
 // 1. SYNC NOW - Main Function
 // ============================================
@@ -420,6 +537,7 @@ window.downloadBackup = downloadBackup;
 window.uploadBackup = uploadBackup;
 
 console.log('✅ Missing functions added');
+
 
 
 
