@@ -1,6 +1,5 @@
 // ============================================
 // UPDATED saveData() FUNCTION
-// Replace your existing saveData() function with this
 // ============================================
 
 function saveData() {
@@ -24,8 +23,12 @@ function saveData() {
             .then(() => {
                 console.log('✅ Data saved to Firebase successfully');
                 
+                // Update user last activity
+                if (currentUserId) {
+                    updateUserLastActivity(currentUserId);
+                }
+                
                 // Optional: Keep temporary session cache for offline viewing
-                // This cache expires after 24 hours and is read-only
                 const cacheData = {
                     data: dataToSave,
                     cachedAt: new Date().toISOString(),
@@ -53,20 +56,13 @@ function saveData() {
         updateSyncStatus('error');
         return Promise.reject(error);
     }
-
-    .then(() => {
-        console.log('✅ Data saved');
     
-        // ⭐ ADD THIS
-        if (currentUserId) {
-            updateUserLastActivity(currentUserId);
-        }
-    });
+    // ❌ REMOVED THE STRAY .then() BLOCK THAT WAS HERE
+    // This was causing the syntax error at line 57
 }
 
 // ============================================
-// UPDATED loadData() FUNCTION
-// Replace your existing loadData() function with this
+// CORRECTED loadData() FUNCTION
 // ============================================
 
 function loadData() {
@@ -173,8 +169,7 @@ function loadData() {
 }
 
 // ============================================
-// UPDATED enableRealtimeSync() FUNCTION
-// Replace your existing enableRealtimeSync() function with this
+// enableRealtimeSync() FUNCTION
 // ============================================
 
 function enableRealtimeSync() {
@@ -249,136 +244,101 @@ function enableRealtimeSync() {
     });
 }
 
-        // Export all data to Excel
-        function exportAllDataToExcel() {    
-            try {        
-                const wb = XLSX.utils.book_new();
-                
-                // Sheet 1: Students        
-                const studentsData = [           
-                    ['Student ID', 'Name', 'Birthday', 'Gender', 'Class', 'Grade', 'Student Phone', 'Parent Phone']        
-                ];        
-                appData.students.forEach(s => {            
-                    studentsData.push([                
-                        s.id,                                    
-                        s.name,                                    
-                        s.birthday || '',                                    
-                        s.gender || '',                                    
-                        s.class || '',                                    
-                        'Grade ' + s.grade,                                    
-                        s.studentPhone || '',                                        
-                        s.parentPhone || ''                            
-                    ]);                        
-                });                    
-                const wsStudents = XLSX.utils.aoa_to_sheet(studentsData);                    
-                XLSX.utils.book_append_sheet(wb, wsStudents, 'Students');
-                            
-                // Sheet 2: Payments                    
-                const paymentsData = [
-                    ['Date', 'Student ID', 'Student Name', 'Grade', 'Month', 'Amount', 'Status']                   
-                ];        
-                (appData.payments || []).forEach(p => {            
-                    paymentsData.push([                
-                        p.date,                
-                        p.studentId,                
-                        p.studentName,                
-                        p.class,                
-                        p.month,                
-                        p.amount,                
-                        p.status            
-                    ]);        
-                });        
-                const wsPayments = XLSX.utils.aoa_to_sheet(paymentsData);        
-                XLSX.utils.book_append_sheet(wb, wsPayments, 'Payments');
-                
-                // Sheet 3: Timetable        
-                const timetableData = [            
-                    ['Day', 'Time', 'Grade', 'Notes']                    
-                ];        
-                appData.timetable.forEach(t => {            
-                    timetableData.push([
-                        t.day,
-                        t.time,
-                        'Grade ' + t.grade,
-                        t.notes || ''            
-                    ]);        
-                });        
-                const wsTimetable = XLSX.utils.aoa_to_sheet(timetableData);        
-                XLSX.utils.book_append_sheet(wb, wsTimetable, 'Timetable');
-        
-        
-                // Sheet 4: Attendance Summary        
-                const attendanceData = [
-                    ['Date', 'Grade', 'Total Students', 'Present', 'Absent', 'Rate']        
-                ];
-                
-                Object.keys(appData.attendance || {}).forEach(date => {            
-                    const dayData = appData.attendance[date];            
-                    const total = Object.keys(dayData).length;            
-                    const present = Object.values(dayData).filter(s => s === 'present').length;            
-                    const absent = total - present;            
-                    const rate = total > 0 ? Math.round((present / total) * 100) + '%' : '0%';
-                        
-                    // Get grade from first student            
-                    const firstStudentId = Object.keys(dayData)[0];            
-                    const student = appData.students.find(s => s.id === firstStudentId);            
-                    const grade = student ? 'Grade ' + student.grade : 'N/A';
-                        
-                    attendanceData.push([                
-                        date,                
-                        grade,                
-                        total,                
-                        present,                
-                        absent,                
-                        rate                            
-                    ]);                    
-                });                    
-                const wsAttendance = XLSX.utils.aoa_to_sheet(attendanceData);                    
-                XLSX.utils.book_append_sheet(wb, wsAttendance, 'Attendance');
-                            
-                // Download file                    
-                const fileName = `ClassManager_Complete_Export_${new Date().toISOString().split('T')[0]}.xlsx`;                   
-                XLSX.writeFile(wb, fileName);
-                            
-                alert('✅ All data exported to Excel!\n\nFile: ' + fileName + '\n\nSheets:\n- Students\n- Payments\n- Timetable\n- Attendance');            
-            } catch (error) {                   
-                console.error('❌ Export error:', error);                    
-                alert('⚠️ Error exporting data to Excel.');                    
-            }    
-        }
-    
-        // Clear all data    
-        function clearAllData() {            
-            if (!confirm('⚠️ DELETE ALL DATA?\n\nThis will permanently delete:\n- All students\n- All payments\n- All attendance records\n- All timetable entries\n\nThis CANNOT be undone!')) {                    
-                return;            
-            }
-                
-            if (!confirm('⚠️ Are you ABSOLUTELY SURE?\n\nThis is your last chance to cancel!')) {                    
-                return;            
-            }
-                
-            // Clear localStorage            
-            localStorage.clear();
-                
-            alert('✅ All data cleared!\n\nThe app will now reload.');
-                
-            // Reload page            
-            location.reload();    
-        }
-    
-        // Update data statistics in settings    
-        function updateDataStatistics() {            
-            const statsStudents = document.getElementById('statsStudents');            
-            const statsPayments = document.getElementById('statsPayments');            
-            const statsTimetable = document.getElementById('statsTimetable');            
-            const statsAttendance = document.getElementById('statsAttendance');        
-        
-            if (statsStudents) statsStudents.textContent = appData.students.length;            
-            if (statsPayments) statsPayments.textContent = (appData.payments || []).length;            
-            if (statsTimetable) statsTimetable.textContent = appData.timetable.length;            
-            if (statsAttendance) statsAttendance.textContent = Object.keys(appData.attendance || {}).length;   
+// ============================================
+// HELPER FUNCTIONS
+// ============================================
 
+// Update user last activity (if function exists)
+function updateUserLastActivity(userId) {
+    if (!userId) return;
+    
+    const now = new Date().toISOString();
+    
+    database.ref('users/' + userId + '/profile/lastActivity').set(now)
+        .then(() => {
+            console.log('✅ Last activity updated');
+        })
+        .catch((error) => {
+            console.error('❌ Error updating last activity:', error);
+        });
+}
+
+// ============================================
+// MAKE FUNCTIONS GLOBALLY AVAILABLE
+// ADD THIS AT THE VERY END OF Save.js
+// ============================================
+
+// Make functions globally available
+if (typeof saveData === 'function') {
+    window.saveData = saveData;
+    console.log('✅ saveData made globally available');
+} else {
+    console.error('❌ saveData function not found');
+}
+
+if (typeof loadData === 'function') {
+    window.loadData = loadData;
+    console.log('✅ loadData made globally available');
+} else {
+    console.error('❌ loadData function not found');
+}
+
+if (typeof enableRealtimeSync === 'function') {
+    window.enableRealtimeSync = enableRealtimeSync;
+    console.log('✅ enableRealtimeSync made globally available');
+}
+
+// Migration function
+window.migrateLocalStorageToFirebase = async function() {
+    if (!currentUserId) {
+        console.log('⚠️ Cannot migrate: No user authenticated');
+        return;
+    }
+    
+    console.log('🔄 Checking for local data migration...');
+    
+    try {
+        const oldLocalDataKey = 'classManagerData_' + currentUserId;
+        const oldLocalData = localStorage.getItem(oldLocalDataKey);
+        
+        if (oldLocalData) {
+            console.log('📦 Found old localStorage data');
+            const parsedData = JSON.parse(oldLocalData);
+            
+            const snapshot = await database.ref('users/' + currentUserId + '/data').once('value');
+            
+            if (!snapshot.exists()) {
+                console.log('📤 Migrating localStorage data to Firebase...');
+                
+                await database.ref('users/' + currentUserId + '/data').set({
+                    ...parsedData,
+                    lastSaved: new Date().toISOString(),
+                    migratedAt: new Date().toISOString()
+                });
+                
+                console.log('✅ Migration complete');
+                localStorage.removeItem(oldLocalDataKey);
+            } else {
+                console.log('ℹ️ Firebase data exists - removing old localStorage');
+                localStorage.removeItem(oldLocalDataKey);
+            }
+        } else {
+            console.log('✅ No old localStorage data found');
         }
+    } catch (error) {
+        console.error('❌ Migration error:', error);
+    }
+};
+
+console.log('✅ migrateLocalStorageToFirebase made globally available');
+
+// Final confirmation
+console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
+console.log('✅ Save.js loaded successfully');
+console.log('✅ All functions available globally');
+console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
+        
+
 
 // ============================================
 // SYNC BUTTON DIAGNOSTIC
@@ -553,3 +513,4 @@ console.log('━━━━━━━━━━━━━━━━━━━━━━�
 console.log('✅ Save.js loaded successfully');
 console.log('✅ All functions available globally');
 console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
+
