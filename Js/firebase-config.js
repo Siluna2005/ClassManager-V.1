@@ -149,6 +149,8 @@ const SUBSCRIPTION_PRICES = {
 let appData = {        
     students: [],
     grades: ['06', '07', '08', '09', '10', '11', '12'],
+    classes: ['A', 'B', 'C', 'D', 'E'],  // ⭐ NEW - Default classes
+    classesEnabled: false,  // ⭐ NEW - Feature toggle
     timetable: [],
     attendance: {},
     payments: [],
@@ -235,4 +237,4 @@ auth.onAuthStateChanged(async (user) => {
     }
 });
 
-console.log('✅ firebase-config.js loaded');
+console.log('✅ firebase-config.js loaded (with classes support)');
