@@ -31,6 +31,16 @@ function loadSettings() {
 
     // Update data statistics    
     updateDataStatistics();
+
+    // ⭐ NEW: Load class settings
+    if (typeof loadClassSettings === 'function') {
+        loadClassSettings();
+    }
+    
+    // ⭐ NEW: Check if class assignment popup needed
+    if (typeof checkClassAssignmentNeeded === 'function') {
+        checkClassAssignmentNeeded();
+    }
     
     // Only call if functions exist    
     if (typeof updateLastSyncTimeDisplay === 'function') {        
@@ -607,3 +617,4 @@ setTimeout(() => {
         updateSyncStats();
     }
 }, 100);
+
