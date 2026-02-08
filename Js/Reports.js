@@ -76,7 +76,3 @@ function generatePaymentReport(month, grade) {
     </div>`;
     return html;
 }
-
-function exportToExcel() {
-    alert('📥 Export to Excel\n\nIn a real app, this would download an Excel file.\n\nFor now, you can copy the table data above.');
-}
