@@ -1,5 +1,5 @@
 // ============================================
-// Core Application Functions
+// Core Application Functions - UPDATED WITH CLASS SUPPORT
 // ============================================
 
 // ============================================
@@ -143,7 +143,7 @@ function testLoadAdminUsers() {
 }
 
 // ============================================
-// NAVIGATION FUNCTIONS
+// NAVIGATION FUNCTIONS - UPDATED
 // ============================================
 
 function navigateTo(screenName) {
@@ -159,17 +159,40 @@ function navigateTo(screenName) {
 
     toggleSidebar();
 
-    // Call screen-specific functions
-    if (screenName === 'students') loadStudentsScreen();
-    if (screenName === 'timetable') loadTimetable();
+    // ⭐ UPDATED: Call screen-specific functions with initialization
+    if (screenName === 'students') {
+        loadStudentsScreen();
+    }
+    
+    if (screenName === 'timetable') {
+        // ⭐ NEW: Initialize timetable screen first
+        if (typeof initTimetableScreen === 'function') {
+            initTimetableScreen();
+        }
+        loadTimetable();
+    }
+    
     if (screenName === 'attendance') {
         const dateInput = document.getElementById('attendanceDateSelect');
         if (dateInput && !dateInput.value) {
             dateInput.value = new Date().toISOString().split('T')[0];
         }
+        // ⭐ NEW: Initialize attendance screen
+        if (typeof initAttendanceScreen === 'function') {
+            initAttendanceScreen();
+        }
     }
+    
     if (screenName === 'payments') loadPaymentHistory();
-    if (screenName === 'settings') loadSettings();
+    
+    if (screenName === 'settings') {
+        loadSettings();
+        // ⭐ NEW: Check for class assignment popup
+        if (typeof checkClassAssignmentNeeded === 'function') {
+            checkClassAssignmentNeeded();
+        }
+    }
+    
     if (screenName === 'subscription') updateSubscriptionDisplay();
 
     // AUTO-LOAD users when opening admin panel
@@ -260,12 +283,19 @@ function updateDashboard() {
     if (todayClasses.length === 0) {
         list.innerHTML = '<p style="color: #6B7280; font-size: 14px;">No classes today</p>';
     } else {
-        list.innerHTML = todayClasses.map(c => `
-            <div style="padding: 12px; background: #EFF6FF; border-radius: 8px; margin-bottom: 8px;">
-                <div style="font-weight: 600;">Grade ${c.grade}</div>
-                <div style="font-size: 14px; color: #6B7280;">${c.time}</div>
-            </div>
-        `).join('');
+        const classesEnabled = appData.classesEnabled || false; // ⭐ NEW
+        
+        list.innerHTML = todayClasses.map(c => {
+            // ⭐ NEW: Show class info if available
+            const classInfo = classesEnabled && c.class ? ` - Class ${c.class}` : '';
+            
+            return `
+                <div style="padding: 12px; background: #EFF6FF; border-radius: 8px; margin-bottom: 8px;">
+                    <div style="font-weight: 600;">Grade ${c.grade}${classInfo}</div>
+                    <div style="font-size: 14px; color: #6B7280;">${c.time}</div>
+                </div>
+            `;
+        }).join('');
     }
 }
 
@@ -293,4 +323,4 @@ function getTodayAttendanceRate() {
     return Math.round((present / total) * 100) + '%';
 }
 
-console.log('✅ core-functions.js loaded');
+console.log('✅ core-functions.js loaded (with class support)');
