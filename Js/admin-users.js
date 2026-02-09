@@ -1,5 +1,6 @@
 // ============================================
 // Admin Panel - User Management Functions
+// COMPLETE VERSION: deleteUser + exportUserData included
 // ============================================
 
 // ============================================
@@ -73,7 +74,8 @@ async function loadAllUsers() {
                         plan: 'free_trial',
                         status: 'active'
                     },                           
-                    lastSaved: userData.data?.lastSaved || null
+                    lastSaved: userData.data?.lastSaved || null,
+                    data: userData.data || {}  // Store full data for export
                 };
         
                 allUsersData.push(userInfo);
@@ -181,6 +183,7 @@ function displayUsersTable() {
             <td><span class="${statusClass}">${statusText}</span></td>
             <td>
                 <button class="btn-small btn-primary" onclick="viewUserDetails('${user.userId}')">👁️ View</button>
+                <button class="btn-small" style="background: #8b5cf6; color: white;" onclick="exportUserData('${user.userId}')">📥 Export</button>
                 ${adminPermissions.canManageSubscriptions ? `
                 <button class="btn-small btn-success" onclick="manageUserSubscription('${user.userId}')">💳 Manage</button>
                 ` : ''}
@@ -236,24 +239,20 @@ function showUserDetailsModal(userId, userData) {
                     <h3>Profile Information</h3>
                     <p><strong>Email:</strong> ${userData.profile?.email || 'N/A'}</p>
                     <p><strong>User ID:</strong> <code>${userId}</code></p>
-                    <p><strong>Created:</strong> ${userData.profile?.createdAt ? new Date(userData.profile.createdAt).toLocaleString() : 'N/A'}</p>
-            
-                    <h3>Subscription</h3>
+                    <p><strong>Created:</strong> ${userData.profile?.createdAt ? new Date(userData.profile.createdAt).toLocaleDateString() : 'N/A'}</p>
+                    
+                    <h3 style="margin-top: 20px;">Data Statistics</h3>
+                    <p><strong>Students:</strong> ${userData.data?.students?.length || 0}</p>
+                    <p><strong>Payments:</strong> ${userData.data?.payments?.length || 0}</p>
+                    <p><strong>Timetable Entries:</strong> ${userData.data?.timetable?.length || 0}</p>
+                    
+                    <h3 style="margin-top: 20px;">Subscription</h3>
                     <p><strong>Plan:</strong> ${userData.data?.subscription?.plan || 'free_trial'}</p>
                     <p><strong>Status:</strong> ${userData.data?.subscription?.status || 'active'}</p>
                     <p><strong>Max Students:</strong> ${userData.data?.subscription?.maxStudents || 10}</p>
-            
-                    <h3>Data Statistics</h3>
-                    <p><strong>Students:</strong> ${(userData.data?.students || []).length}</p>
-                    <p><strong>Timetable Entries:</strong> ${(userData.data?.timetable || []).length}</p>
-                    <p><strong>Payments:</strong> ${(userData.data?.payments || []).length}</p>
-                    <p><strong>Last Saved:</strong> ${userData.data?.lastSaved ? new Date(userData.data.lastSaved).toLocaleString() : 'Never'}</p>
-            
-                    ${adminPermissions.canEditAllUsers ? `
-                    <h3>Actions</h3>
-                    <button class="btn btn-primary" onclick="exportUserData('${userId}')">📥 Export Data</button>
-                    <button class="btn btn-success" onclick="grantUnlimitedAccess('${userId}')">⭐ Grant Unlimited</button>
-                    ` : ''}
+                </div>
+                <div class="modal-footer">
+                    <button class="btn btn-secondary" onclick="closeModal('userDetailsModal')">Close</button>
                 </div>
             </div>
         </div>
@@ -270,71 +269,173 @@ function closeModal(modalId) {
 }
 
 // ============================================
+// ⭐ NEW: EXPORT USER DATA
+// ============================================
+
+async function exportUserData(userId) {
+    console.log('📥 Exporting user data:', userId);
+    
+    if (!isAdmin || !adminPermissions.canViewAllUsers) {
+        alert('❌ Access Denied!\n\nYou do not have permission to export user data.');
+        return;
+    }
+    
+    try {
+        // Fetch user data from Firebase
+        const userSnapshot = await database.ref('users/' + userId).once('value');
+        const userData = userSnapshot.val();
+        
+        if (!userData) {
+            alert('❌ User not found!');
+            return;
+        }
+        
+        const userEmail = userData.profile?.email || 'unknown';
+        
+        console.log('📊 Preparing export for:', userEmail);
+        
+        // Create export data
+        const exportData = {
+            exportInfo: {
+                exportedAt: new Date().toISOString(),
+                exportedBy: currentUser.email,
+                userId: userId,
+                userEmail: userEmail
+            },
+            profile: userData.profile || {},
+            data: userData.data || {},
+            subscription: userData.data?.subscription || {}
+        };
+        
+        // Convert to JSON
+        const jsonString = JSON.stringify(exportData, null, 2);
+        
+        // Create blob
+        const blob = new Blob([jsonString], { type: 'application/json' });
+        
+        // Create download link
+        const url = URL.createObjectURL(blob);
+        const link = document.createElement('a');
+        link.href = url;
+        
+        // Generate filename
+        const date = new Date().toISOString().split('T')[0];
+        const sanitizedEmail = userEmail.replace(/[^a-zA-Z0-9]/g, '_');
+        link.download = `user_export_${sanitizedEmail}_${date}.json`;
+        
+        // Trigger download
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+        
+        // Clean up
+        URL.revokeObjectURL(url);
+        
+        // Log action
+        await logAdminAction('export_user_data', userId, {
+            exportedEmail: userEmail,
+            exportedBy: currentUserId
+        });
+        
+        console.log('✅ User data exported successfully');
+        alert(`✅ User Data Exported!\n\nUser: ${userEmail}\n\nFile downloaded successfully.`);
+        
+    } catch (error) {
+        console.error('❌ Error exporting user data:', error);
+        alert(`❌ Failed to export user data!\n\nError: ${error.message}`);
+    }
+}
+
+// ============================================
 // MANAGE USER SUBSCRIPTION
 // ============================================
 
 async function manageUserSubscription(userId) {
     if (!isAdmin || !adminPermissions.canManageSubscriptions) {
-        alert('Access denied!');
+        alert('Access denied: You do not have permission to manage subscriptions!');
         return;
     }
 
-    const user = allUsersData.find(u => u.userId === userId);
-    if (!user) return;
+    try {
+        const userSnapshot = await database.ref('users/' + userId).once('value');
+        const userData = userSnapshot.val();
 
-    const modal = `
-        <div class="modal-overlay" id="subscriptionModal" onclick="closeModal('subscriptionModal')">
-            <div class="modal-content" onclick="event.stopPropagation()">
-                <div class="modal-header">
-                    <h2>Manage Subscription</h2>
-                    <button class="modal-close" onclick="closeModal('subscriptionModal')">×</button>
-                </div>
-                <div class="modal-body">
-                    <p><strong>User:</strong> ${user.email}</p>
-                    <p><strong>Current Plan:</strong> ${user.subscription.plan}</p>
-            
-                    <div class="form-group">
-                        <label>New Plan:</label>
-                        <select id="newSubscriptionPlan">
-                            <option value="free_trial">Free Trial (10 students)</option>
-                            <option value="monthly">Monthly (Unlimited)</option>
-                            <option value="annual">Annual (Unlimited)</option>
-                            <option value="lifetime">Lifetime (Unlimited)</option>
-                        </select>
+        if (!userData) {
+            alert('User not found!');
+            return;
+        }
+
+        const currentSub = userData.data?.subscription || {};
+
+        const modal = `
+            <div class="modal-overlay" id="subscriptionModal" onclick="closeModal('subscriptionModal')">
+                <div class="modal-content" onclick="event.stopPropagation()">
+                    <div class="modal-header">
+                        <h2>Manage Subscription</h2>
+                        <button class="modal-close" onclick="closeModal('subscriptionModal')">×</button>
                     </div>
-            
-                    <div class="form-group">
-                        <label>Status:</label>
-                        <select id="newSubscriptionStatus">
-                            <option value="active">Active</option>
-                            <option value="expired">Expired</option>
-                            <option value="cancelled">Cancelled</option>
-                        </select>
+                    <div class="modal-body">
+                        <p><strong>User:</strong> ${userData.profile?.email || 'Unknown'}</p>
+                        <p><strong>Current Plan:</strong> ${currentSub.plan || 'free_trial'}</p>
+                
+                        <div class="form-group" style="margin-top: 20px;">
+                            <label>Select New Plan:</label>
+                            <select id="newPlanSelect" style="width: 100%; padding: 8px; border: 1px solid #d1d5db; border-radius: 6px;">
+                                <option value="free_trial">Free Trial (10 students)</option>
+                                <option value="monthly">Monthly Plan (Unlimited)</option>
+                                <option value="annual">Annual Plan (Unlimited)</option>
+                                <option value="unlimited">Unlimited (Lifetime)</option>
+                            </select>
+                        </div>
+                
+                        <div class="form-group" style="margin-top: 16px;">
+                            <label>Status:</label>
+                            <select id="statusSelect" style="width: 100%; padding: 8px; border: 1px solid #d1d5db; border-radius: 6px;">
+                                <option value="active">Active</option>
+                                <option value="expired">Expired</option>
+                                <option value="cancelled">Cancelled</option>
+                            </select>
+                        </div>
+                
+                        <button class="btn btn-primary" onclick="updateSubscription('${userId}')" style="margin-top: 20px; width: 100%;">💾 Update Subscription</button>
+                        <button class="btn btn-success" onclick="grantUnlimitedAccess('${userId}')" style="margin-top: 10px; width: 100%;">⭐ Grant Unlimited Access</button>
                     </div>
-            
-                    <button class="btn btn-primary" onclick="updateSubscription('${userId}')">💾 Update Subscription</button>
-                    <button class="btn btn-success" onclick="grantUnlimitedAccess('${userId}')">⭐ Grant Unlimited</button>
                 </div>
             </div>
-        </div>
-    `;
+        `;
 
-    document.body.insertAdjacentHTML('beforeend', modal);
+        document.body.insertAdjacentHTML('beforeend', modal);
+
+    } catch (error) {
+        console.error('Error loading subscription:', error);
+        alert('Failed to load subscription details');
+    }
 }
 
 // ============================================
 // UPDATE SUBSCRIPTION
 // ============================================
 
-function updateSubscription(userId, plan) {
-    console.log('💳 Updating subscription for user:', userId, 'Plan:', plan);
+async function updateSubscription(userId) {
+    console.log('💳 Updating subscription for user:', userId);
+
+    const planSelect = document.getElementById('newPlanSelect');
+    const statusSelect = document.getElementById('statusSelect');
+    
+    if (!planSelect || !statusSelect) {
+        alert('Error: Form elements not found');
+        return;
+    }
+
+    const plan = planSelect.value;
+    const status = statusSelect.value;
 
     let subscription;
 
-    if (plan === 'free') {
+    if (plan === 'free_trial') {
         subscription = {
-            plan: 'free',
-            status: 'active',
+            plan: 'free_trial',
+            status: status,
             maxStudents: 10,
             startDate: new Date().toISOString(),
             endDate: null,
@@ -347,15 +448,31 @@ function updateSubscription(userId, plan) {
                 priority: false
             }
         };
-    } else if (plan === 'pro') {
+    } else if (plan === 'monthly') {
         subscription = {
-            plan: 'pro',
-            status: 'active',
-            maxStudents: 50,
+            plan: 'monthly',
+            status: status,
+            maxStudents: 999999,
+            startDate: new Date().toISOString(),
+            endDate: new Date(Date.now() + 30*24*60*60*1000).toISOString(), // 30 days
+            features: {
+                unlimitedStudents: true,
+                unlimitedClasses: true,
+                unlimitedPayments: true,
+                analytics: true,
+                exportData: true,
+                priority: true
+            }
+        };
+    } else if (plan === 'annual') {
+        subscription = {
+            plan: 'annual',
+            status: status,
+            maxStudents: 999999,
             startDate: new Date().toISOString(),
             endDate: new Date(Date.now() + 365*24*60*60*1000).toISOString(), // 1 year
             features: {
-                unlimitedStudents: false,
+                unlimitedStudents: true,
                 unlimitedClasses: true,
                 unlimitedPayments: true,
                 analytics: true,
@@ -366,8 +483,8 @@ function updateSubscription(userId, plan) {
     } else if (plan === 'unlimited') {
         subscription = {
             plan: 'unlimited',
-            status: 'active',
-            maxStudents: 999999,  // ⭐ Changed from Infinity
+            status: status,
+            maxStudents: 999999,
             startDate: new Date().toISOString(),
             endDate: null,
             features: {
@@ -381,38 +498,45 @@ function updateSubscription(userId, plan) {
         };
     }
 
-    database.ref('users/' + userId + '/data/subscription').set(subscription)
-        .then(() => {
-            console.log('✅ Subscription updated successfully');
-            alert('✅ Subscription updated to ' + plan + '!');
-            
-            // Log admin action
-            logAdminAction('update_subscription', {
-                targetUser: userId,
-                newPlan: plan,
-                updatedBy: currentUserId
-            });
-    
-            // Reload users list
-            loadAllUsers();
-        })
-        .catch((error) => {
-            console.error('❌ Error updating subscription:', error);
-            alert('❌ Failed to update subscription: ' + error.message);
+    try {
+        await database.ref('users/' + userId + '/data/subscription').set(subscription);
+        console.log('✅ Subscription updated successfully');
+        alert(`✅ Subscription updated to ${plan}!`);
+        
+        // Log admin action
+        await logAdminAction('update_subscription', userId, {
+            newPlan: plan,
+            newStatus: status,
+            updatedBy: currentUserId
         });
+
+        // Close modal
+        closeModal('subscriptionModal');
+        
+        // Reload users list
+        loadAllUsers();
+        
+    } catch (error) {
+        console.error('❌ Error updating subscription:', error);
+        alert('❌ Failed to update subscription: ' + error.message);
+    }
 }
 
 // ============================================
 // GRANT UNLIMITED ACCESS
 // ============================================
 
-function grantUnlimitedAccess(userId) {
+async function grantUnlimitedAccess(userId) {
     console.log('🚀 Granting unlimited access to user:', userId);
+
+    if (!confirm('Grant unlimited lifetime access to this user?\n\nThis will:\n- Set plan to Unlimited\n- Remove student limit\n- Enable all features\n- Never expire\n\nContinue?')) {
+        return;
+    }
 
     const unlimitedSubscription = {
         plan: 'unlimited',
         status: 'active',
-        maxStudents: 999999,  // ⭐ Changed from Infinity
+        maxStudents: 999999,
         startDate: new Date().toISOString(),
         endDate: null,  // null = never expires
         features: {
@@ -427,24 +551,111 @@ function grantUnlimitedAccess(userId) {
         grantedAt: new Date().toISOString()
     };
 
-    database.ref('users/' + userId + '/data/subscription').set(unlimitedSubscription)
-        .then(() => {
-            console.log('✅ Unlimited access granted successfully');
-            alert('✅ Unlimited access granted!\n\nUser now has unlimited students and all features.');
-    
-            // Log admin action
-            logAdminAction('grant_unlimited_access', {
-                targetUser: userId,
-                grantedBy: currentUserId
-            });
-    
-            // Reload users list
-            loadAllUsers();
-        })
-        .catch((error) => {
-            console.error('❌ Error granting access:', error);
-            alert('❌ Failed to grant access: ' + error.message);
+    try {
+        await database.ref('users/' + userId + '/data/subscription').set(unlimitedSubscription);
+        console.log('✅ Unlimited access granted successfully');
+        alert('✅ Unlimited access granted!\n\nUser now has unlimited students and all features.');
+
+        // Log admin action
+        await logAdminAction('grant_unlimited_access', userId, {
+            grantedBy: currentUserId
         });
+
+        // Close modal
+        closeModal('subscriptionModal');
+        
+        // Reload users list
+        loadAllUsers();
+        
+    } catch (error) {
+        console.error('❌ Error granting access:', error);
+        alert('❌ Failed to grant access: ' + error.message);
+    }
+}
+
+// ============================================
+// DELETE USER FUNCTION
+// ============================================
+
+async function deleteUser(userId) {
+    console.log('🗑️ Delete user requested:', userId);
+    
+    // Check permissions
+    if (!isAdmin || !adminPermissions.canDeleteUsers) {
+        alert('❌ Access Denied!\n\nYou do not have permission to delete users.');
+        return;
+    }
+    
+    try {
+        // Get user data first
+        const userSnapshot = await database.ref('users/' + userId).once('value');
+        const userData = userSnapshot.val();
+        
+        if (!userData) {
+            alert('❌ User not found!');
+            return;
+        }
+        
+        const userEmail = userData.profile?.email || 'Unknown';
+        const studentsCount = userData.data?.students?.length || 0;
+        
+        // Confirm deletion
+        const confirm1 = confirm(
+            `⚠️ DELETE USER?\n\n` +
+            `Email: ${userEmail}\n` +
+            `User ID: ${userId.substring(0, 20)}...\n` +
+            `Students: ${studentsCount}\n\n` +
+            `This will permanently delete:\n` +
+            `- User account\n` +
+            `- All student data\n` +
+            `- All payment records\n` +
+            `- All attendance data\n` +
+            `- All timetable entries\n\n` +
+            `THIS CANNOT BE UNDONE!\n\n` +
+            `Continue?`
+        );
+        
+        if (!confirm1) {
+            console.log('User cancelled deletion');
+            return;
+        }
+        
+        // Second confirmation
+        const confirm2 = confirm(
+            `⚠️ FINAL CONFIRMATION\n\n` +
+            `Are you ABSOLUTELY SURE you want to delete this user?\n\n` +
+            `Email: ${userEmail}\n\n` +
+            `This is your last chance to cancel!`
+        );
+        
+        if (!confirm2) {
+            console.log('User cancelled deletion (final confirmation)');
+            return;
+        }
+        
+        console.log('🔥 Deleting user data...');
+        
+        // Delete user data from Firebase
+        await database.ref('users/' + userId).remove();
+        
+        console.log('✅ User deleted successfully');
+        
+        // Log admin action
+        await logAdminAction('delete_user', userId, {
+            deletedEmail: userEmail,
+            studentsCount: studentsCount,
+            deletedBy: currentUserId
+        });
+        
+        alert(`✅ User Deleted Successfully!\n\nUser: ${userEmail}\n\nAll data has been permanently removed.`);
+        
+        // Reload users list
+        loadAllUsers();
+        
+    } catch (error) {
+        console.error('❌ Error deleting user:', error);
+        alert(`❌ Failed to delete user!\n\nError: ${error.message}\n\nPlease try again or contact support.`);
+    }
 }
 
 // ============================================
@@ -542,4 +753,4 @@ function showAdminTab(tabName) {
     }        
 }
 
-console.log('✅ admin-users.js loaded');
+console.log('✅ admin-users.js loaded (COMPLETE: deleteUser + exportUserData)');
