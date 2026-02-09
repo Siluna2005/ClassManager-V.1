@@ -1,5 +1,5 @@
 // ============================================
-// STUDENT MANAGEMENT - UPDATED VERSION
+// STUDENT MANAGEMENT - UPDATED WITH CLASS SUPPORT
 // ============================================
 
 let currentSelectedGradeTab = 'all';
@@ -7,6 +7,7 @@ let selectedStudentForEdit = null;
 
 function loadStudentsScreen() {
     populateStudentGradeDropdown();
+    populateStudentClassDropdown(); // ⭐ NEW
     createGradeTabs();
     filterStudentsByTab();
 }
@@ -16,6 +17,29 @@ function populateStudentGradeDropdown() {
     if (gradeSelect) {
         gradeSelect.innerHTML = '<option value="">Select Grade</option>' + 
             appData.grades.map(g => `<option value="${g}">Grade ${g}</option>`).join('');
+    }
+}
+
+// ⭐ NEW: Populate class dropdown
+function populateStudentClassDropdown() {
+    const classesEnabled = appData.classesEnabled || false;
+    
+    if (!classesEnabled) {
+        // Hide class field if not enabled
+        const classRow = document.getElementById('studentClassRow');
+        if (classRow) classRow.style.display = 'none';
+        return;
+    }
+    
+    // Show class field
+    const classRow = document.getElementById('studentClassRow');
+    if (classRow) classRow.style.display = 'block';
+    
+    const classSelect = document.getElementById('studentClassInput');
+    if (classSelect) {
+        const classes = appData.classes || ['A', 'B', 'C', 'D', 'E'];
+        classSelect.innerHTML = '<option value="">Select Class</option>' + 
+            classes.map(c => `<option value="${c}">Class ${c}</option>`).join('');
     }
 }
 
@@ -67,31 +91,39 @@ function filterStudentsByTab() {
 
 function displayStudentList(students) {    
     const listContainer = document.getElementById('studentListByGrade');
+    const classesEnabled = appData.classesEnabled || false; // ⭐ NEW
         
     if (students.length === 0) {
         listContainer.innerHTML = '<p style="text-align: center; color: #6B7280; padding: 40px;">No students found</p>';        
         return;    
     }
         
-    listContainer.innerHTML = students.map(s => `                    
-        <div class="student-card ${selectedStudentForEdit?.id === s.id ? 'selected' : ''}"                             
-            onclick='selectStudentForEdit(${JSON.stringify(s).replace(/'/g, "&apos;")})'>                            
-            <div style="display: flex; justify-content: space-between; align-items: center;">                                    
-                <div style="flex: 1;">                                
-                    <div class="student-card-name">${s.name}</div>                                            
-                    <div class="student-card-details">                                            
-                        ID: ${s.id}<br>                                                    
-                        Grade ${s.grade} - Class ${s.class || 'N/A'} | ${s.gender || 'N/A'}<br>                                                    
-                        Parent: ${s.parentPhone || 'N/A'}   
-                    </div>                                
-                </div>                    
-                <button onclick='event.stopPropagation(); showQRCode(${JSON.stringify(s).replace(/'/g, "&apos;")})'                         
-                        style="background: #2563EB; color: white; padding: 8px 16px; border: none; border-radius: 6px; cursor: pointer; font-size: 14px; font-weight: 600;">                    
-                    📱 QR                                    
-                </button>            
-            </div>
-        </div>        
-    `).join(''); 
+    listContainer.innerHTML = students.map(s => {
+        // ⭐ NEW: Build class display
+        const classDisplay = classesEnabled && s.class ? 
+            `Class ${s.class}` : 
+            (s.class ? `Class ${s.class}` : 'N/A');
+        
+        return `                    
+            <div class="student-card ${selectedStudentForEdit?.id === s.id ? 'selected' : ''}"                             
+                onclick='selectStudentForEdit(${JSON.stringify(s).replace(/'/g, "&apos;")})'>                            
+                <div style="display: flex; justify-content: space-between; align-items: center;">                                    
+                    <div style="flex: 1;">                                
+                        <div class="student-card-name">${s.name}</div>                                            
+                        <div class="student-card-details">                                            
+                            ID: ${s.id}<br>                                                    
+                            Grade ${s.grade} - ${classDisplay} | ${s.gender || 'N/A'}<br>                                                    
+                            Parent: ${s.parentPhone || 'N/A'}   
+                        </div>                                
+                    </div>                    
+                    <button onclick='event.stopPropagation(); showQRCode(${JSON.stringify(s).replace(/'/g, "&apos;")})'                         
+                            style="background: #2563EB; color: white; padding: 8px 16px; border: none; border-radius: 6px; cursor: pointer; font-size: 14px; font-weight: 600;">                    
+                        📱 QR                                    
+                    </button>            
+                </div>
+            </div>        
+        `;
+    }).join(''); 
 }
 
 function selectStudentForEdit(student) {                               
@@ -139,42 +171,16 @@ function selectStudentForEdit(student) {
         studentIdDisplaySection.style.display = 'block';
     }
     
-    // ⭐ SHOW/HIDE BUTTONS - THIS IS THE FIX
+    // Show/hide buttons
     const addStudentBtn = document.getElementById('addStudentBtn');
     const updateStudentBtn = document.getElementById('updateStudentBtn');
     const deleteStudentBtn = document.getElementById('deleteStudentBtn');
     const clearStudentBtn = document.getElementById('clearStudentBtn');
-    
-    console.log('🔘 Button elements:', {
-        addBtn: addStudentBtn ? 'found' : 'NOT FOUND',
-        updateBtn: updateStudentBtn ? 'found' : 'NOT FOUND',
-        deleteBtn: deleteStudentBtn ? 'found' : 'NOT FOUND',
-        clearBtn: clearStudentBtn ? 'found' : 'NOT FOUND' 
-    });
        
-    // Hide Add button    
-    if (addStudentBtn) {                                                   
-        addStudentBtn.style.display = 'none';              
-        console.log('✅ Add button hidden');    
-    }
-       
-    // Show Update button   
-    if (updateStudentBtn) {    
-        updateStudentBtn.style.display = 'block';                    
-        console.log('✅ Update button shown');    
-    }
-        
-    // Show Delete button    
-    if (deleteStudentBtn) {        
-        deleteStudentBtn.style.display = 'block';      
-        console.log('✅ Delete button shown');    
-    }
-        
-    // Keep Clear button visible    
-    if (clearStudentBtn) {        
-        clearStudentBtn.style.display = 'block';        
-        console.log('✅ Clear button shown');    
-    }
+    if (addStudentBtn) addStudentBtn.style.display = 'none';
+    if (updateStudentBtn) updateStudentBtn.style.display = 'block';
+    if (deleteStudentBtn) deleteStudentBtn.style.display = 'block';
+    if (clearStudentBtn) clearStudentBtn.style.display = 'block';
        
     // Update selected styling in list    
     filterStudentsByTab();    
@@ -188,6 +194,8 @@ function addNewStudent() {
         return;    
     }
 
+    const classesEnabled = appData.classesEnabled || false; // ⭐ NEW
+
     // Get form values
     const name = document.getElementById('studentNameInput').value.trim();
     const birthday = document.getElementById('studentBirthdayInput').value;
@@ -196,65 +204,57 @@ function addNewStudent() {
     const grade = document.getElementById('studentGradeInput').value;
     const studentPhone = document.getElementById('studentPhoneInput').value.trim();
     const parentPhone = document.getElementById('parentPhoneInput').value.trim();
-            
+
     // Validation
     if (!name) {
-        alert('Please enter student name');
+        alert('⚠️ Please enter student name');
         return;
     }
-    if (!birthday) {
-        alert('Please select birthday');
-        return;
-    }
-    if (!gender) {
-        alert('Please select gender');
-        return;
-    }
-    if (!studentClass) {
-        alert('Please select class');
-        return;
-    }
+
     if (!grade) {
-        alert('Please select grade');
+        alert('⚠️ Please select grade');
         return;
     }
-    if (!parentPhone) {
-        alert('Please enter parent\'s phone number');
+
+    // ⭐ NEW: Validate class if enabled
+    if (classesEnabled && !studentClass) {
+        alert('⚠️ Please select a class');
+        document.getElementById('studentClassInput').focus();
         return;
     }
-            
-    // Generate student ID
-    const studentId = generateStudentId(grade);
-            
+
+    // Generate ID
+    const newId = generateStudentId(grade);
+
     // Create student object
     const newStudent = {
-        id: studentId,
+        id: newId,
         name: name,
         birthday: birthday,
         gender: gender,
-        class: studentClass,
+        class: studentClass, // ⭐ ALWAYS include class field
         grade: grade,
         studentPhone: studentPhone,
         parentPhone: parentPhone,
-        qrCode: studentId
+        createdAt: new Date().toISOString()
     };
-            
-    // Add to appData 
+
+    // Add to array
     appData.students.push(newStudent);
-    
-    // ⭐ Save to Firebase - User-specific path
-    saveData();  // This saves to /users/{currentUserId}/data
-                
+    saveData();
+
     // Refresh display
     filterStudentsByTab();
     clearStudentForm();
-            
-    alert('✅ Student added successfully!\n\nStudent ID: ' + studentId);
+
+    alert(`✅ Student added successfully!\n\nName: ${name}\nID: ${newId}\nGrade: ${grade}${classesEnabled ? `\nClass: ${studentClass}` : ''}`);
 }
 
 function updateExistingStudent() {
     if (!selectedStudentForEdit) return;
-            
+
+    const classesEnabled = appData.classesEnabled || false; // ⭐ NEW
+
     // Get form values
     const name = document.getElementById('studentNameInput').value.trim();
     const birthday = document.getElementById('studentBirthdayInput').value;
@@ -263,30 +263,41 @@ function updateExistingStudent() {
     const grade = document.getElementById('studentGradeInput').value;
     const studentPhone = document.getElementById('studentPhoneInput').value.trim();
     const parentPhone = document.getElementById('parentPhoneInput').value.trim();
-        
+
     // Validation
-    if (!name || !birthday || !gender || !studentClass || !grade || !parentPhone) {
-        alert('Please fill in all required fields');
+    if (!name) {
+        alert('⚠️ Please enter student name');
         return;
     }
+
+    if (!grade) {
+        alert('⚠️ Please select grade');
+        return;
+    }
+
+    // ⭐ NEW: Validate class if enabled
+    if (classesEnabled && !studentClass) {
+        alert('⚠️ Please select a class');
+        document.getElementById('studentClassInput').focus();
+        return;
+    }
+
+    // Find and update student
+    const studentIndex = appData.students.findIndex(s => s.id === selectedStudentForEdit.id);
             
-    // Update student
-    appData.students = appData.students.map(s => {
-        if (s.id === selectedStudentForEdit.id) {
-            return {
-                ...s,
-                name: name,
-                birthday: birthday,
-                gender: gender,
-                class: studentClass,
-                grade: grade,
-                studentPhone: studentPhone,
-                parentPhone: parentPhone
-            };
-        }
-        return s;
-    });
-        
+    if (studentIndex !== -1) {
+        appData.students[studentIndex] = {
+            ...appData.students[studentIndex],
+            name: name,
+            birthday: birthday,
+            gender: gender,
+            class: studentClass, // ⭐ ALWAYS update class field
+            grade: grade,
+            studentPhone: studentPhone,
+            parentPhone: parentPhone
+        };
+    }
+
     saveData();
     filterStudentsByTab();
     clearStudentForm();
@@ -344,37 +355,16 @@ function clearStudentForm() {
         studentIdDisplaySection.style.display = 'none';
     }
     
-    // ⭐ RESET BUTTONS - THIS IS THE FIX
+    // Reset buttons
     const addStudentBtn = document.getElementById('addStudentBtn');
     const updateStudentBtn = document.getElementById('updateStudentBtn');
     const deleteStudentBtn = document.getElementById('deleteStudentBtn');
     const clearStudentBtn = document.getElementById('clearStudentBtn');
     
-    console.log('🔘 Resetting button visibility...');
-    
-    // Show Add button
-    if (addStudentBtn) {
-        addStudentBtn.style.display = 'block';
-        console.log('✅ Add button shown');
-    }
-    
-    // Hide Update button
-    if (updateStudentBtn) {
-        updateStudentBtn.style.display = 'none';
-        console.log('✅ Update button hidden');
-    }
-    
-    // Hide Delete button
-    if (deleteStudentBtn) {
-        deleteStudentBtn.style.display = 'none';
-        console.log('✅ Delete button hidden');
-    }
-    
-    // Keep Clear button visible
-    if (clearStudentBtn) {
-        clearStudentBtn.style.display = 'block';
-        console.log('✅ Clear button shown');
-    }
+    if (addStudentBtn) addStudentBtn.style.display = 'block';
+    if (updateStudentBtn) updateStudentBtn.style.display = 'none';
+    if (deleteStudentBtn) deleteStudentBtn.style.display = 'none';
+    if (clearStudentBtn) clearStudentBtn.style.display = 'block';
     
     // Remove selection styling from list
     filterStudentsByTab();
@@ -401,87 +391,6 @@ function showQRCodeForCurrentStudent() {
     }
         
     showQRCode(selectedStudentForEdit);
-
 }
 
-// ============================================
-// DIAGNOSTIC SCRIPT - RUN IN BROWSER CONSOLE
-// This will help identify the button visibility issue
-// ============================================
-
-// Run this in your browser console to check button setup
-function diagnoseStudentButtons() {
-    console.log('🔍 DIAGNOSING STUDENT BUTTONS...');
-    console.log('================================');
-    
-    const addBtn = document.getElementById('addStudentBtn');
-    const updateBtn = document.getElementById('updateStudentBtn');
-    const deleteBtn = document.getElementById('deleteStudentBtn');
-    const clearBtn = document.getElementById('clearStudentBtn');
-    
-    console.log('\n📋 BUTTON ELEMENTS:');
-    console.log('Add button:', addBtn);
-    console.log('Update button:', updateBtn);
-    console.log('Delete button:', deleteBtn);
-    console.log('Clear button:', clearBtn);
-    
-    if (!addBtn) console.error('❌ Add button NOT FOUND - Check HTML id="addStudentBtn"');
-    if (!updateBtn) console.error('❌ Update button NOT FOUND - Check HTML id="updateStudentBtn"');
-    if (!deleteBtn) console.error('❌ Delete button NOT FOUND - Check HTML id="deleteStudentBtn"');
-    if (!clearBtn) console.error('❌ Clear button NOT FOUND - Check HTML id="clearStudentBtn"');
-    
-    console.log('\n🎨 CURRENT STYLES:');
-    if (addBtn) {
-        console.log('Add button display:', window.getComputedStyle(addBtn).display);
-        console.log('Add button visibility:', window.getComputedStyle(addBtn).visibility);
-    }
-    if (updateBtn) {
-        console.log('Update button display:', window.getComputedStyle(updateBtn).display);
-        console.log('Update button visibility:', window.getComputedStyle(updateBtn).visibility);
-    }
-    if (deleteBtn) {
-        console.log('Delete button display:', window.getComputedStyle(deleteBtn).display);
-        console.log('Delete button visibility:', window.getComputedStyle(deleteBtn).visibility);
-    }
-    
-    console.log('\n📝 EXPECTED BEHAVIOR:');
-    console.log('- Add mode: Add=visible, Update=hidden, Delete=hidden');
-    console.log('- Edit mode: Add=hidden, Update=visible, Delete=visible');
-    
-    console.log('\n🔧 TESTING BUTTON TOGGLE:');
-    
-    // Test hiding Add button
-    if (addBtn) {
-        console.log('Testing: Hide Add button...');
-        addBtn.style.display = 'none';
-        console.log('Result:', window.getComputedStyle(addBtn).display);
-    }
-    
-    // Test showing Update button
-    if (updateBtn) {
-        console.log('Testing: Show Update button...');
-        updateBtn.style.display = 'block';
-        console.log('Result:', window.getComputedStyle(updateBtn).display);
-    }
-    
-    // Test showing Delete button
-    if (deleteBtn) {
-        console.log('Testing: Show Delete button...');
-        deleteBtn.style.display = 'block';
-        console.log('Result:', window.getComputedStyle(deleteBtn).display);
-    }
-    
-    console.log('\n✅ DIAGNOSTIC COMPLETE');
-    console.log('================================');
-    
-    // Reset buttons after test
-    setTimeout(() => {
-        if (addBtn) addBtn.style.display = 'block';
-        if (updateBtn) updateBtn.style.display = 'none';
-        if (deleteBtn) deleteBtn.style.display = 'none';
-        console.log('🔄 Buttons reset to default state');
-    }, 2000);
-}
-
-// Run the diagnostic
-diagnoseStudentButtons();
+console.log('✅ Students.js loaded (with class support)');
