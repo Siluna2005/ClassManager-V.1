@@ -1,7 +1,6 @@
 // ============================================
-// CORRECTED SETTINGS.JS
-// All syntax errors fixed
-// Removed duplicate functions and trailing code
+// SETTINGS.JS - UPDATED WITH MATCHING DESIGN
+// Grades section now matches Classes section design
 // ============================================
 
 // SETTINGS
@@ -10,13 +9,15 @@ function loadSettings() {
     document.getElementById('subjectNameInput').value = appData.subjectName;    
     document.getElementById('subjectDisplay').textContent = 'Subject: ' + appData.subjectName;
 
-    // Load grades list    
+    // ⭐ UPDATED: Load grades list with new badge-style design
     const list = document.getElementById('gradesList');    
     list.innerHTML = appData.grades.map(g => `
-        <div style="display: flex; justify-content: space-between; align-items: center; padding: 12px; background: rgba(255,255,255,0.1); border-radius: 8px; margin-bottom: 8px;">
-            <span style="font-weight: 600; color: #fff;">Grade ${g}</span>
-            <button class="icon-btn icon-btn-red" onclick="deleteGrade('${g}')">🗑️ Remove</button>
-        </div>         
+        <div class="grade-badge">
+            <span>Grade ${g}</span>
+            <button class="btn-icon-small" onclick="deleteGrade('${g}')" title="Remove grade">
+                ×
+            </button>
+        </div>
     `).join('');
 
     // Update last saved time    
@@ -56,12 +57,12 @@ function addGrade() {
     const newGrade = document.getElementById('newGrade').value.trim();
     
     if (!newGrade) {
-        alert('Enter grade number');
+        alert('⚠️ Please enter a grade number');
         return;
     }
     
     if (appData.grades.includes(newGrade)) {
-        alert('Grade already exists');
+        alert('⚠️ Grade already exists');
         return;
     }
     
@@ -71,24 +72,32 @@ function addGrade() {
     populateGradeDropdowns();
     loadSettings();
     document.getElementById('newGrade').value = '';
-    alert('Grade added!');
+    alert('✅ Grade added successfully!');
 }
 
 function deleteGrade(grade) {
     const hasStudents = appData.students.some(s => s.grade === grade);
+    const hasTimetable = appData.timetable.some(t => t.grade === grade);
     
     if (hasStudents) {
-        alert('Cannot delete grade with students');
+        const count = appData.students.filter(s => s.grade === grade).length;
+        alert(`❌ Cannot Remove Grade ${grade}\n\n${count} student(s) are assigned to this grade.\n\nPlease reassign these students to another grade first.`);
         return;
     }
     
-    if (!confirm(`Delete Grade ${grade}?`)) return;
+    if (hasTimetable) {
+        const count = appData.timetable.filter(t => t.grade === grade).length;
+        alert(`❌ Cannot Remove Grade ${grade}\n\n${count} timetable entry(ies) are assigned to this grade.\n\nPlease remove or update these timetable entries first.`);
+        return;
+    }
+    
+    if (!confirm(`Remove Grade ${grade}?\n\nThis action cannot be undone.`)) return;
     
     appData.grades = appData.grades.filter(g => g !== grade);
     saveData();
     populateGradeDropdowns();
     loadSettings();
-    alert('Grade deleted!');
+    alert(`✅ Grade ${grade} removed successfully!`);
 }
 
 function saveSubject() {
@@ -231,69 +240,97 @@ function uploadBackup() {
         const file = e.target.files[0];
         
         if (!file) {
-            console.log('⚠️ No file selected');
+            console.log('No file selected');
             return;
         }
         
-        console.log('📄 Reading file:', file.name);
+        console.log('📄 File selected:', file.name);
         
         const reader = new FileReader();
         
         reader.onload = (event) => {
             try {
-                const importedData = JSON.parse(event.target.result);
+                console.log('📖 Reading file...');
+                const backupData = JSON.parse(event.target.result);
                 
-                console.log('📥 Data parsed successfully');
+                console.log('✅ Backup file parsed successfully');
+                console.log('Backup contains:', Object.keys(backupData));
                 
-                const confirmRestore = window.confirm(
-                    '⚠️ Restore Backup?\n\n' +
-                    'This will replace ALL your current data.\n\n' +
-                    'Students: ' + (importedData.students?.length || 0) + '\n' +
-                    'Classes: ' + (importedData.timetable?.length || 0) + '\n' +
-                    'Payments: ' + (importedData.payments?.length || 0) + '\n\n' +
+                // Validate backup data
+                if (!backupData.students || !Array.isArray(backupData.students)) {
+                    throw new Error('Invalid backup file - missing students array');
+                }
+                
+                // Confirm restoration
+                const confirm1 = confirm(
+                    '⚠️ RESTORE BACKUP?\n\n' +
+                    'This will REPLACE all current data with:\n\n' +
+                    `Students: ${backupData.students.length}\n` +
+                    `Payments: ${backupData.payments?.length || 0}\n` +
+                    `Classes: ${backupData.timetable?.length || 0}\n` +
+                    `Attendance records: ${Object.keys(backupData.attendance || {}).length}\n\n` +
+                    'Current data will be LOST!\n\n' +
                     'Continue?'
                 );
                 
-                if (!confirmRestore) {
-                    console.log('⚠️ Restore cancelled by user');
+                if (!confirm1) {
+                    console.log('User cancelled restore');
                     return;
                 }
                 
-                // Update appData
-                appData = {
-                    ...appData,
-                    students: importedData.students || [],
-                    timetable: importedData.timetable || [],
-                    payments: importedData.payments || [],
-                    attendance: importedData.attendance || {},
-                    grades: importedData.grades || appData.grades
-                };
+                const confirm2 = confirm(
+                    '⚠️ FINAL CONFIRMATION\n\n' +
+                    'Are you ABSOLUTELY SURE?\n\n' +
+                    'This cannot be undone!'
+                );
                 
-                // Call saveData properly
-                const savePromise = typeof window.saveData === 'function' 
-                    ? window.saveData() 
-                    : (typeof saveData === 'function' ? saveData() : Promise.reject('saveData not found'));
+                if (!confirm2) {
+                    console.log('User cancelled restore (final confirmation)');
+                    return;
+                }
                 
-                savePromise
-                    .then(() => {
-                        console.log('✅ Backup restored successfully');
-                        alert('✅ Backup restored!\n\nPage will reload.');
-                        location.reload();
-                    })
-                    .catch((error) => {
-                        console.error('❌ Error saving restored data:', error);
-                        alert('❌ Failed to save: ' + error.message);
-                    });
+                console.log('🔄 Restoring backup data...');
+                
+                // Restore data
+                appData.students = backupData.students || [];
+                appData.payments = backupData.payments || [];
+                appData.timetable = backupData.timetable || [];
+                appData.attendance = backupData.attendance || {};
+                appData.grades = backupData.grades || appData.grades;
+                appData.subjectName = backupData.subjectName || appData.subjectName;
+                
+                // Save to Firebase
+                saveData();
+                
+                // Update UI
+                if (typeof updateDashboard === 'function') {
+                    updateDashboard();
+                }
+                
+                loadSettings();
+                
+                console.log('✅ Backup restored successfully');
+                
+                alert(
+                    '✅ BACKUP RESTORED!\n\n' +
+                    'Your data has been restored from the backup.\n\n' +
+                    'The page will now reload.'
+                );
+                
+                // Reload page to ensure all UI is updated
+                setTimeout(() => {
+                    location.reload();
+                }, 1000);
                 
             } catch (error) {
-                console.error('❌ Error parsing backup file:', error);
-                alert('❌ Invalid backup file!');
+                console.error('❌ Error restoring backup:', error);
+                alert('❌ Failed to restore backup!\n\nError: ' + error.message + '\n\nPlease check the file and try again.');
             }
         };
         
         reader.onerror = (error) => {
             console.error('❌ Error reading file:', error);
-            alert('❌ Failed to read file!');
+            alert('❌ Failed to read backup file!');
         };
         
         reader.readAsText(file);
@@ -303,128 +340,121 @@ function uploadBackup() {
 }
 
 // ============================================
-// EXPORT ALL DATA TO EXCEL
+// EXPORT TO EXCEL
 // ============================================
 
-function exportAllDataToExcel() {                
-    try {                            
+function exportAllToExcel() {
+    console.log('📊 Exporting all data to Excel...');
+    
+    try {
+        // Check if SheetJS is loaded
+        if (typeof XLSX === 'undefined') {
+            alert('⚠️ Excel export library not loaded.\n\nPlease refresh the page and try again.');
+            return;
+        }
+        
+        // Create workbook
         const wb = XLSX.utils.book_new();
-                                
-        // Sheet 1: Students                        
-        const studentsData = [                               
-            ['Student ID', 'Name', 'Birthday', 'Gender', 'Class', 'Grade', 'Student Phone', 'Parent Phone']                        
-        ];                        
-        appData.students.forEach(s => {                                
-            studentsData.push([                                        
-                s.id,                                                            
-                s.name,                                                            
-                s.birthday || '',                                                            
-                s.gender || '',                                                            
-                s.class || '',                                                            
-                'Grade ' + s.grade,                                                            
-                s.studentPhone || '',                                                                
-                s.parentPhone || ''                                                
-            ]);                                        
-        });                                    
-        const wsStudents = XLSX.utils.aoa_to_sheet(studentsData);                                    
-        XLSX.utils.book_append_sheet(wb, wsStudents, 'Students');
-                                            
-        // Sheet 2: Payments                                    
-        const paymentsData = [                   
-            ['Date', 'Student ID', 'Student Name', 'Grade', 'Month', 'Amount', 'Status']                                   
-        ];                        
-        (appData.payments || []).forEach(p => {                                
-            paymentsData.push([                                        
-                p.date,                                        
-                p.studentId,                                        
-                p.studentName,                                       
-                p.class,                                       
-                p.month,                                       
-                p.amount,                                       
-                p.status                               
-            ]);                        
-        });                        
-        const wsPayments = XLSX.utils.aoa_to_sheet(paymentsData);                        
-        XLSX.utils.book_append_sheet(wb, wsPayments, 'Payments');                
-                
-        // Sheet 3: Timetable                        
-        const timetableData = [                                
-            ['Day', 'Time', 'Grade', 'Notes']                                    
-        ];                        
-        appData.timetable.forEach(t => {                                
-            timetableData.push([                        
-                t.day,                        
-                t.time,                        
-                'Grade ' + t.grade,                        
-                t.notes || ''                                
-            ]);                        
-        });                        
-        const wsTimetable = XLSX.utils.aoa_to_sheet(timetableData);                        
-        XLSX.utils.book_append_sheet(wb, wsTimetable, 'Timetable');
-                        
-        // Sheet 4: Attendance Summary                        
-        const attendanceData = [                    
-            ['Date', 'Grade', 'Total Students', 'Present', 'Absent', 'Rate']                        
+        
+        // 1. Students Sheet
+        const studentsData = [
+            ['ID', 'Name', 'Grade', 'Class', 'Gender', 'Birthday', 'Student Phone', 'Parent Phone'],
+            ...appData.students.map(s => [
+                s.id,
+                s.name,
+                s.grade,
+                s.class || 'N/A',
+                s.gender || 'N/A',
+                s.birthday || 'N/A',
+                s.studentPhone || 'N/A',
+                s.parentPhone || 'N/A'
+            ])
         ];
-                                
-        Object.keys(appData.attendance || {}).forEach(date => {                                
-            const dayData = appData.attendance[date];                                
-            const total = Object.keys(dayData).length;                                
-            const present = Object.values(dayData).filter(s => s === 'present').length;                                
-            const absent = total - present;                                
-            const rate = total > 0 ? Math.round((present / total) * 100) + '%' : '0%';
-                                            
-            // Get grade from first student                                
-            const firstStudentId = Object.keys(dayData)[0];                                
-            const student = appData.students.find(s => s.id === firstStudentId);                                
-            const grade = student ? 'Grade ' + student.grade : 'N/A';
-                                           
-            attendanceData.push([                                        
-                date,                                        
-                grade,                                       
-                total,                                        
-                present,                                       
-                absent,                                       
-                rate                                               
-            ]);                                   
-        });                    
-                
-        const wsAttendance = XLSX.utils.aoa_to_sheet(attendanceData);                                    
-        XLSX.utils.book_append_sheet(wb, wsAttendance, 'Attendance');                            
-                
-        // Download file                                    
-        const fileName = `ClassManager_Complete_Export_${new Date().toISOString().split('T')[0]}.xlsx`;                                   
+        
+        const wsStudents = XLSX.utils.aoa_to_sheet(studentsData);
+        XLSX.utils.book_append_sheet(wb, wsStudents, 'Students');
+        
+        // 2. Payments Sheet
+        const paymentsData = [
+            ['Date', 'Student ID', 'Student Name', 'Class', 'Month', 'Amount', 'Status'],
+            ...appData.payments.map(p => [
+                p.date,
+                p.studentId,
+                p.studentName,
+                p.class,
+                p.month,
+                p.amount,
+                p.status
+            ])
+        ];
+        
+        const wsPayments = XLSX.utils.aoa_to_sheet(paymentsData);
+        XLSX.utils.book_append_sheet(wb, wsPayments, 'Payments');
+        
+        // 3. Timetable Sheet
+        const timetableData = [
+            ['Day', 'Time', 'Grade', 'Class', 'Notes'],
+            ...appData.timetable.map(t => [
+                t.day,
+                t.time,
+                t.grade,
+                t.class || 'N/A',
+                t.notes || ''
+            ])
+        ];
+        
+        const wsTimetable = XLSX.utils.aoa_to_sheet(timetableData);
+        XLSX.utils.book_append_sheet(wb, wsTimetable, 'Timetable');
+        
+        // 4. Attendance Sheet
+        const attendanceData = [['Date', 'Student ID', 'Status']];
+        
+        Object.keys(appData.attendance).forEach(date => {
+            Object.keys(appData.attendance[date]).forEach(studentId => {
+                attendanceData.push([
+                    date,
+                    studentId,
+                    appData.attendance[date][studentId]
+                ]);
+            });
+        });
+        
+        const wsAttendance = XLSX.utils.aoa_to_sheet(attendanceData);
+        XLSX.utils.book_append_sheet(wb, wsAttendance, 'Attendance');
+        
+        // Download file
+        const fileName = `ClassManager_Complete_Export_${new Date().toISOString().split('T')[0]}.xlsx`;
         XLSX.writeFile(wb, fileName);
-                                            
-        alert('✅ All data exported to Excel!\n\nFile: ' + fileName + '\n\nSheets:\n- Students\n- Payments\n- Timetable\n- Attendance');                        
-    } catch (error) {                                   
-        console.error('❌ Export error:', error);                                    
-        alert('⚠️ Error exporting data to Excel.');                                
-    }            
+        
+        alert('✅ All data exported to Excel!\n\nFile: ' + fileName + '\n\nSheets:\n- Students\n- Payments\n- Timetable\n- Attendance');
+    } catch (error) {
+        console.error('❌ Export error:', error);
+        alert('⚠️ Error exporting data to Excel.');
+    }
 }
-            
+
 // ============================================
 // CLEAR ALL DATA
 // ============================================
 
-function clearAllData() {                        
-    if (!confirm('⚠️ DELETE ALL DATA?\n\nThis will permanently delete:\n- All students\n- All payments\n- All attendance records\n- All timetable entries\n\nThis CANNOT be undone!')) {                                    
-        return;                        
+function clearAllData() {
+    if (!confirm('⚠️ DELETE ALL DATA?\n\nThis will permanently delete:\n- All students\n- All payments\n- All attendance records\n- All timetable entries\n\nThis CANNOT be undone!')) {
+        return;
     }
-                            
-    if (!confirm('⚠️ Are you ABSOLUTELY SURE?\n\nThis is your last chance to cancel!')) {                                    
-        return;                       
+    
+    if (!confirm('⚠️ Are you ABSOLUTELY SURE?\n\nThis is your last chance to cancel!')) {
+        return;
     }
-                            
-    // Clear localStorage                        
-    localStorage.clear();                
-            
-    alert('✅ All data cleared!\n\nThe app will now reload.');                
-            
-    // Reload page                        
-    location.reload();            
+    
+    // Clear localStorage
+    localStorage.clear();
+    
+    alert('✅ All data cleared!\n\nThe app will now reload.');
+    
+    // Reload page
+    location.reload();
 }
-            
+
 // ============================================
 // SYNC NOW - Manual Sync
 // ============================================
@@ -606,7 +636,7 @@ window.updateLastSyncTimeDisplay = updateLastSyncTimeDisplay;
 // INITIALIZE
 // ============================================
 
-console.log('✅ Sync functions loaded in Settings.js');
+console.log('✅ Settings.js loaded (with matching grade/class design)');
 
 // Update sync time immediately if elements exist
 setTimeout(() => {
@@ -617,4 +647,3 @@ setTimeout(() => {
         updateSyncStats();
     }
 }, 100);
-
