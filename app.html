@@ -1083,12 +1083,22 @@
                 </div>
 
                 <!-- Grades Card -->   
-                <div class="card">
-                    <h3 class="card-title">Grades</h3>        
-                    <div id="gradesList"></div>       
-                    <div style="display: flex; gap: 12px; margin-top: 16px;">            
-                        <input type="text" id="newGrade" placeholder="e.g., 13" style="flex: 1;">            
-                        <button class="btn btn-primary" onclick="addGrade()">➕ Add</button>        
+                <div class="settings-section">    
+                    <h3>Grade Management</h3>       
+                    <h4>Manage Grades</h4>  
+                    <p class="setting-description" style="margin-left: 0; margin-bottom: 16px;">        
+                        Add or remove grades. You cannot remove a grade if students or timetable entries are assigned to it.    
+                    </p>
+        
+                    <div id="gradesList" class="grades-list">        
+                        <!-- Populated by JavaScript with badge-style layout -->    
+                    </div>    
+    
+                    <div class="add-grade-form">        
+                        <input type="text" id="newGrade" placeholder="Enter grade (e.g., 13)" maxlength="2">        
+                        <button class="btn btn-primary" onclick="addGrade()">            
+                            ➕ Add Grade        
+                        </button>    
                     </div>
                 </div>
 
@@ -1316,6 +1326,7 @@
     </script>
 </body>
 </html>
+
 
 
 
