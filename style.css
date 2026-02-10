@@ -1,1307 +1,838 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <meta name="theme-color" content="#2563EB">
-    <meta name="mobile-web-app-capable" content="yes">
-    <meta name="apple-mobile-web-app-capable" content="yes">
-    <meta http-equiv="Content-Security-Policy" content="default-src 'self' https: data: blob: 'unsafe-inline' 'unsafe-eval'; connect-src 'self' https: wss: data: blob:;">
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
-    <link rel="icon" type="image/x-icon" href="assets/favicon.ico">
-    <title>Class Manager</title>
-    <link rel="stylesheet" href="appStyle.css">
-    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
-</head>
-<body>
+/* ============================================
+   CLASS MANAGER — LOGIN PAGE
+   Theme: Deep Slate · Electric Teal · Amber
+   Font: Sora (display) + DM Sans (body)
+   ============================================ */
 
-    <div id="app" class="container">
-        <nav class="navbar">
-            <div class="navbar-content">
-                <div class="navbar-brand">
-                    <img src="assets/favicon.ico" alt="Logo" class="nav-logo">
-                    <span class="navbar-title">Class Manager</span>
-                </div>
-                <div style="display: flex; align-items: center; gap: 15px;">        
-                    <div id="syncStatus" style="font-size: 12px; color: rgba(255,255,255,0.8);">            
-                        <span id="syncIcon">☁️</span> <span id="syncText">Synced</span>        
-                    </div>       
-                    <button class="menu-btn" onclick="toggleSidebar()">☰</button>
-                </div>
-            </div>
-        </nav>
+@import url('https://fonts.googleapis.com/css2?family=Sora:wght@400;600;700;800&family=DM+Sans:ital,opsz,wght@0,9..40,400;0,9..40,500;0,9..40,600;1,9..40,400&display=swap');
 
-        <div class="sidebar-overlay" id="sidebarOverlay" onclick="toggleSidebar()"></div>
+/* ============================================
+   DESIGN TOKENS
+   ============================================ */
 
-        <div class="sidebar" id="sidebar">
-            <div class="sidebar-header">
-                <h3>Teacher Portal</h3>
-                <p>Welcome back!</p>
-            </div>
-            <div class="sidebar-menu">
-                <!-- Admin Panel (Only visible to admins) -->
-                <div class="menu-item" data-screen="admin-panel" onclick="navigateTo('admin-panel')" id="adminMenuItem" style="display: none;">    
-                    <span>👑</span><span>Admin Panel</span>
-                </div>
-                <div class="menu-item active" data-screen="dashboard" onclick="navigateTo('dashboard')">
-                    <span>📊</span><span>Dashboard</span>
-                </div>
-                <div class="menu-item" data-screen="students" onclick="navigateTo('students')">
-                    <span>👥</span><span>Students</span>
-                </div>
-                <div class="menu-item" data-screen="timetable" onclick="navigateTo('timetable')">
-                    <span>📅</span><span>Timetable</span>
-                </div>
-                <div class="menu-item" data-screen="attendance" onclick="navigateTo('attendance')">
-                    <span>✅</span><span>Attendance</span>
-                </div>
-                <div class="menu-item" data-screen="payments" onclick="navigateTo('payments')">
-                    <span>💰</span><span>Payments</span>
-                </div>
-                <div class="menu-item" data-screen="reports" onclick="navigateTo('reports')">
-                    <span>📄</span><span>Reports</span>
-                </div>
-                <div class="menu-item" data-screen="subscription" onclick="navigateTo('subscription')">        
-                    <span>⭐</span><span>Subscription</span>    
-                </div>
-                <div class="menu-item" data-screen="settings" onclick="navigateTo('settings')">
-                    <span>⚙️</span><span>Settings</span>
-                </div>
-                <div class="menu-item" onclick="logout()">
-                    <span>🚪</span><span>Logout</span>
-                </div>
-            </div>
-        </div>
+:root {
+    --teal-400:   #2dd4bf;
+    --teal-500:   #14b8a6;
+    --teal-600:   #0d9488;
+    --teal-700:   #0f766e;
+    --amber-400:  #fbbf24;
+    --amber-500:  #f59e0b;
 
-        <div class="content">
-          
-            <!-- Admin Panel Screen -->
-            <div id="admin-panel" class="screen">    
-                <div class="screen-header">       
-                    <h1 class="screen-title">👑 Admin Control Panel</h1>      
-                    <p class="screen-subtitle">System administration and user management</p>   
-                </div>
-   
-                <!-- Admin Stats Dashboard -->    
-                <div class="stats-grid">     
-                    <div class="stat-card">      
-                        <div class="stat-header">        
-                            <div class="stat-info">        
-                                <p>Total Users</p>           
-                                <h3 id="adminTotalUsers">0</h3>          
-                            </div>           
-                            <div class="stat-icon blue">👥</div>          
-                        </div>       
-                    </div>
-         
-                    <div class="stat-card">
-                        <div class="stat-header">
-                            <div class="stat-info">
-                                <p>Active Subscriptions</p>
-                                <h3 id="adminActiveSubscriptions">0</h3> 
-                            </div>  
-                            <div class="stat-icon green">💳</div> 
-                        </div> 
-                    </div>
-         
-                    <div class="stat-card">        
-                        <div class="stat-header">       
-                            <div class="stat-info">         
-                                <p>Total Students</p>          
-                                <h3 id="adminTotalStudents">0</h3>         
-                            </div>         
-                            <div class="stat-icon purple">🎓</div>         
-                        </div>       
-                    </div>
-                
-                    <div class="stat-card">      
-                        <div class="stat-header">
-                                  <div class="stat-info">        
-                                <p>Total Revenue</p>        
-                                <h3 id="adminTotalRevenue">LKR 0</h3>                
-                            </div>             
-                            <div class="stat-icon amber">💰</div>         
-                        </div>       
-                    </div>    
-                </div>
-   
-                <!-- Admin Tabs --> 
-                <div class="card" style="margin-top: 20px;">      
-                    <div class="admin-tabs" style="display: flex; gap: 10px; border-bottom: 2px solid #e5e7eb; padding-bottom: 10px; margin-bottom: 20px;">          
-                        <button class="admin-tab active" onclick="showAdminTab('users')" style="padding: 10px 20px; border: none; background: #2563EB; color: white; border-radius: 8px; cursor: pointer; font-weight: 600;">All Users</button>           
-                        <button class="admin-tab" onclick="showAdminTab('subscriptions')" style="padding: 10px 20px; border: none; background: #f3f4f6; color: #374151; border-radius: 8px; cursor: pointer; font-weight: 600;">Subscriptions</button>           
-                        <button class="admin-tab" onclick="showAdminTab('analytics')" style="padding: 10px 20px; border: none; background: #f3f4f6; color: #374151; border-radius: 8px; cursor: pointer; font-weight: 600;">Analytics</button>           
-                        <button class="admin-tab" onclick="showAdminTab('settings')" style="padding: 10px 20px; border: none; background: #f3f4f6; color: #374151; border-radius: 8px; cursor: pointer; font-weight: 600;">Admin Settings</button>    
-                    </div>
-        
-                    <!-- Users Tab -->      
-                    <div id="admin-users-tab" class="admin-tab-content active">         
-                        <h3 class="card-title">All Registered Users</h3>
-                     
-                        <div class="form-group" style="max-width: 400px;">            
-                            <input type="text" id="adminUserSearch" placeholder="🔍 Search users by email or ID..." onkeyup="filterAdminUsers()" style="padding: 10px; border: 1px solid #e5e7eb; border-radius: 8px; width: 100%;">           
-                        </div>
-                 
-                        <div style="overflow-x: auto; margin-top: 20px;">                
-                            <table class="data-table" style="width: 100%; border-collapse: collapse;">   
-                                <thead>    
-                                    <tr style="background: #f3f4f6; text-align: left;">     
-                                        <th style="padding: 12px; border-bottom: 2px solid #e5e7eb;">Email</th>     
-                                        <th style="padding: 12px; border-bottom: 2px solid #e5e7eb;">User ID</th>         
-                                        <th style="padding: 12px; border-bottom: 2px solid #e5e7eb;">Students</th>        
-                                        <th style="padding: 12px; border-bottom: 2px solid #e5e7eb;">Subscription</th>        
-                                        <th style="padding: 12px; border-bottom: 2px solid #e5e7eb;">Status</th>       
-                                        <th style="padding: 12px; border-bottom: 2px solid #e5e7eb;">Actions</th>       
-                                    </tr>        
-                                </thead>                   
-                                <tbody id="adminUsersTableBody">                      
-                                    <tr>                         
-                                        <td colspan="6" style="text-align: center; padding: 40px; color: #9ca3af;">                            
-                                            Click "All Users" tab to load data                          
-                                        </td>                       
-                                    </tr>                    
-                                </tbody>                        
-                            </table>         
-                        </div>    
-                    </div>
-       
-                    <!-- Subscriptions Tab -->      
-                    <div id="admin-subscriptions-tab" class="admin-tab-content" style="display: none;">        
-                        <h3 class="card-title">Subscription Overview</h3>         
-                        <div id="adminSubscriptionsList">         
-                            <p>Subscription management tools coming soon...</p>        
-                        </div>      
-                    </div>
- 
-                    <!-- Admin Analytics Tab -->
-                    <div id="admin-analytics-tab" class="admin-tab-content" style="display: none;">   
-                        <h2 style="color: #f1f5f9; margin-bottom: 24px; font-family: Sora, sans-serif;">📊 Analytics Overview</h2>    
-   
-                        <!-- Statistics Cards -->    
-                        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 16px; margin-bottom: 24px;">
-               
-                            <!-- Total Users Card -->        
-                            <div class="card" style="background: linear-gradient(135deg, rgba(139,92,246,0.2) 0%, rgba(139,92,246,0.05) 100%); border: 1px solid rgba(139,92,246,0.3);">            
-                                <p style="color: #f1f5f9; font-size: 12px; margin: 0 0 8px 0; text-transform: uppercase; letter-spacing: 1px; font-weight: 700; color: #a78bfa !important;">Total Users</p>            
-                                <h2 id="adminTotalUsers" style="color: #f1f5f9; font-size: 36px; font-weight: 800; margin: 0; letter-spacing: -1px;">0</h2>            
-                                <p style="color: #f1f5f9; font-size: 12px; margin: 8px 0 0 0; color: #94a3b8;">Registered accounts</p>        
-                            </div>
-               
-                            <!-- Active Users Card -->       
-                            <div class="card" style="background: linear-gradient(135deg, rgba(16,185,129,0.2) 0%, rgba(16,185,129,0.05) 100%); border: 1px solid rgba(16,185,129,0.3);">          
-                                <p style="color: #f1f5f9; font-size: 12px; margin: 0 0 8px 0; text-transform: uppercase; letter-spacing: 1px; font-weight: 700; color: #34d399 !important;">Active This Month</p>          
-                                <h2 id="adminActiveUsers" style="color: #f1f5f9; font-size: 36px; font-weight: 800; margin: 0; letter-spacing: -1px;">0</h2>          
-                                <p style="color: #f1f5f9; font-size: 12px; margin: 8px 0 0 0; color: #94a3b8;">Users with activity</p>      
-                            </div>
-             
-                            <!-- New Users Card -->      
-                            <div class="card" style="background: linear-gradient(135deg, rgba(59,130,246,0.2) 0%, rgba(59,130,246,0.05) 100%); border: 1px solid rgba(59,130,246,0.3);">         
-                                <p style="color: #f1f5f9; font-size: 12px; margin: 0 0 8px 0; text-transform: uppercase; letter-spacing: 1px; font-weight: 700; color: #60a5fa !important;">New This Month</p>          
-                                <h2 id="adminNewUsers" style="color: #f1f5f9; font-size: 36px; font-weight: 800; margin: 0; letter-spacing: -1px;">0</h2>        
-                                <p style="color: #f1f5f9; font-size: 12px; margin: 8px 0 0 0; color: #94a3b8;">Recent signups</p>       
-                            </div>  
-                        </div>
-        
-                        <!-- User Growth Chart -->   
-                        <div class="card">      
-                            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">         
-                                <h3 class="card-title" style="margin: 0; color: #f1f5f9;">📈 User Growth</h3>         
-                                <button class="btn btn-secondary" onclick="createAdminUserGrowthChart()" style="padding: 8px 16px; font-size: 13px;">          
-                                    🔄 Refresh          
-                                </button>       
-                            </div>
-            
-                            <!-- Chart Container -->       
-                            <div style="position: relative; height: 350px; background: rgba(255,255,255,0.04); border-radius: 12px; padding: 20px;">         
-                                <canvas id="adminUserGrowthChart"></canvas>       
-                            </div>
-               
-                            <!-- Chart Info -->        
-                            <div style="margin-top: 16px; padding: 12px; background: rgba(139,92,246,0.1); border-radius: 8px; border-left: 4px solid #8b5cf6;">            
-                                <p style="color: #f1f5f9; font-size: 13px; margin: 0; line-height: 1.6; color: #cbd5e1;">             
-                                    <strong>📊 User Growth Tracking:</strong> This chart shows the cumulative growth of registered users over time. Each point represents the total number of users who have signed up by that date.            
-                                </p>        
-                            </div>   
-                        </div>
-       
-                        <!-- Additional Analytics -->   
-                        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 16px; margin-top: 24px;">
-               
-                            <!-- User Activity Card -->        
-                            <div class="card">            
-                                <h3 class="card-title" style="color: #f1f5f9;">📊 User Activity</h3>            
-                                <div style="padding: 12px; background: rgba(255,255,255,0.04); border-radius: 8px; margin-bottom: 12px;">               
-                                    <div style="display: flex; justify-content: space-between; align-items: center;">                    
-                                        <span style="color: #f1f5f9; font-size: 13px; color: #94a3b8;">Daily Active Users</span>                    
-                                        <strong id="adminDAU" style="color: #f1f5f9; font-size: 16px;">0</strong>                
-                                    </div>           
-                                </div>            
-                                <div style="padding: 12px; background: rgba(255,255,255,0.04); border-radius: 8px; margin-bottom: 12px;">               
-                                    <div style="display: flex; justify-content: space-between; align-items: center;">                    
-                                        <span style="color: #f1f5f9; font-size: 13px; color: #94a3b8;">Weekly Active Users</span>                    
-                                        <strong id="adminWAU" style="color: #f1f5f9; font-size: 16px;">0</strong>                
-                                    </div>           
-                                </div>            
-                                <div style="padding: 12px; background: rgba(255,255,255,0.04); border-radius: 8px;">               
-                                    <div style="display: flex; justify-content: space-between; align-items: center;">                   
-                                        <span style="color: #f1f5f9; font-size: 13px; color: #94a3b8;">Monthly Active Users</span>                   
-                                        <strong id="adminMAU" style="color: #f1f5f9; font-size: 16px;">0</strong>               
-                                    </div>            
-                                </div>        
-                            </div>
-                
-                            <!-- User Retention Card -->        
-                            <div class="card">            
-                                <h3 class="card-title" style="color: #f1f5f9;">🎯 User Retention</h3>            
-                                <div style="padding: 12px; background: rgba(255,255,255,0.04); border-radius: 8px; margin-bottom: 12px;">                
-                                    <div style="display: flex; justify-content: space-between; align-items: center;">                   
-                                        <span style="color: #f1f5f9; font-size: 13px; color: #94a3b8;">7-Day Retention</span>                   
-                                        <strong id="admin7DayRetention" style="color: #10b981;">0%</strong>                
-                                    </div>            
-                                </div>           
-                                <div style="padding: 12px; background: rgba(255,255,255,0.04); border-radius: 8px; margin-bottom: 12px;">              
-                                    <div style="display: flex; justify-content: space-between; align-items: center;">              
-                                        <span style="color: #f1f5f9; font-size: 13px; color: #94a3b8;">30-Day Retention</span>              
-                                        <strong id="admin30DayRetention" style="color: #10b981;">0%</strong>             
-                                    </div>           
-                                </div>            
-                                <div style="padding: 12px; background: rgba(255,255,255,0.04); border-radius: 8px;">                
-                                    <div style="display: flex; justify-content: space-between; align-items: center;">                    
-                                        <span style="color: #f1f5f9; font-size: 13px; color: #94a3b8;">90-Day Retention</span>                    
-                                        <strong id="admin90DayRetention" style="color: #10b981;">0%</strong>                
-                                    </div>           
-                                </div>        
-                            </div>   
-                        </div>
-                    </div>
-     
-                    <!-- Admin Settings Tab -->    
-                    <div id="admin-settings-tab" class="admin-tab-content" style="display: none;">      
-                        <h3 class="card-title" style="color: #f1f5f9;">Admin Management</h3>            
-     
-                        <div class="card" style="background: #1e293b; padding: 24px; margin: 20px 0; border-radius: 14px; border: 1px solid rgba(255,255,255,0.08);">     
-                            <h4 style="margin-top: 0; color: #f1f5f9; font-family: Sora, sans-serif; font-size: 16px; font-weight: 700; margin-bottom: 20px;">Add New Admin</h4>
-                               
-                            <div class="form-group">              
-                                <label>Email Address</label>              
-                                <input type="email" id="newAdminEmail" placeholder="admin@example.com" style="padding: 11px 14px; background: #162032; border: 1.5px solid rgba(255,255,255,0.08); border-radius: 10px; width: 100%; max-width: 400px; color: #f1f5f9; font-size: 14px; font-family: DM Sans, sans-serif; transition: border-color 0.2s;" onfocus="this.style.borderColor='#14b8a6'" onblur="this.style.borderColor='rgba(255,255,255,0.08)'">           
-                            </div>
-                              
-                            <div class="form-group">                 
-                                <label>Admin Role</label>                 
-                                <select id="newAdminRole" style="padding: 11px 14px; background: #162032; border: 1.5px solid rgba(255,255,255,0.08); border-radius: 10px; width: 100%; max-width: 400px; color: #f1f5f9; font-size: 14px; font-family: DM Sans, sans-serif; cursor: pointer; color-scheme: dark;" onfocus="this.style.borderColor='#14b8a6'" onblur="this.style.borderColor='rgba(255,255,255,0.08)'">                   
-                                    <option value="super_admin">Super Admin (Full Access)</option>        
-                                    <option value="support_admin">Support Admin (User Management)</option>                     
-                                    <option value="analytics_admin">Analytics Admin (View Only)</option>                 
-                                </select>                  
-                                <p style="font-size: 12px; color: #94a3b8; margin-top: 8px;">                  
-                                    ⚠️ The user must have an account before being made an admin                
-                                </p>              
-                            </div>
-                               
-                            <button class="btn btn-primary" onclick="addNewAdmin()" style="margin-top: 10px;">             
-                                ➕ Add Admin             
-                            </button>
-                        </div>
-                      
-                        <div id="adminsList" style="margin-top: 30px;">            
-                            <h3 style="color: #f1f5f9; font-family: Sora, sans-serif; font-size: 18px; font-weight: 700; margin-bottom: 16px;">Current Admins</h3>            
-                            <p style="color: #64748b; font-size: 14px;">Loading...</p>          
-                        </div>      
-                    </div>   
-                </div>
-            </div>
-            
-            <!-- Dashboard Screen -->
-            <div id="dashboard" class="screen active">
-                <div class="screen-header">
-                    <h1 class="screen-title">Dashboard</h1>
-                    <p class="screen-subtitle">Welcome back! Here's your overview</p>
-                </div>
-                <div class="form-group" style="max-width: 300px;">
-                    <label>Filter by Grade</label>
-                    <select id="gradeFilter" onchange="updateDashboard()">
-                        <option value="all">All Grades</option>
-                    </select>
-                </div>
-                <div class="stats-grid">
-                    <div class="stat-card">
-                        <div class="stat-header">
-                            <div class="stat-info">
-                                <p>Total Students</p>
-                                <h3 id="totalStudents">0</h3>
-                            </div>
-                            <div class="stat-icon blue">👥</div>
-                        </div>
-                    </div>
-                    <div class="stat-card">
-                        <div class="stat-header">
-                            <div class="stat-info">
-                                <p>Today's Classes</p>
-                                <h3 id="todayClasses">0</h3>
-                            </div>
-                            <div class="stat-icon green">📅</div>
-                        </div>
-                    </div>
-                    <div class="stat-card">
-                        <div class="stat-header">
-                            <div class="stat-info">
-                                <p>Pending Payments</p>
-                                <h3 id="pendingPayments">0</h3>
-                            </div>
-                            <div class="stat-icon amber">⚠️</div>
-                        </div>
-                    </div>
-                    <div class="stat-card">
-                        <div class="stat-header">
-                            <div class="stat-info">
-                                <p>Attendance Rate</p>
-                                <h3 id="attendanceRate">0%</h3>
-                            </div>
-                            <div class="stat-icon purple">✅</div>
-                        </div>
-                    </div>
-                </div>
-                <div class="grid-2">
-                    <div class="card">
-                        <h3 class="card-title">Quick Actions</h3>
-                        <button class="btn btn-primary" onclick="navigateTo('attendance')" style="margin-bottom: 12px;">✅ Mark Attendance</button>
-                        <button class="btn btn-success" onclick="navigateTo('payments')" style="margin-bottom: 12px;">💰 Record Payment</button>
-                        <button class="btn btn-secondary" onclick="navigateTo('reports')">📄 Generate Report</button>
-                    </div>
-                    <div class="card">
-                        <h3 class="card-title">Today's Classes</h3>
-                        <div id="todayClassesList"></div>
-                    </div>
-                </div>
-            </div>
+    --slate-50:   #f8fafc;
+    --slate-100:  #f1f5f9;
+    --slate-200:  #e2e8f0;
+    --slate-300:  #cbd5e1;
+    --slate-400:  #94a3b8;
+    --slate-500:  #64748b;
+    --slate-600:  #475569;
+    --slate-700:  #334155;
+    --slate-800:  #1e293b;
+    --slate-900:  #0f172a;
+    --slate-950:  #020617;
 
-            <!-- Students Screen -->
-            <div id="students" class="screen">    
-                <div class="screen-header">        
-                    <h1 class="screen-title">Student Management</h1>        
-                    <p class="screen-subtitle">Manage all students</p>    
-                </div>
-    
-                <!-- SIMPLE EXPORT BUTTONS -->   
-                <div class="glass-card" style="margin-bottom: 20px; max-width: 700px; margin-left: auto; margin-right: auto;">        
-                    <h3 class="card-title">📥 Export Students</h3>       
-                    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 12px;">           
-                        <button class="btn btn-success" onclick="exportStudentsToExcel()">              
-                            📊 All Students Excel            
-                        </button>           
-                        <button class="btn btn-primary" onclick="exportStudentsByGrade()">               
-                            📑 By Grade Excel            
-                        </button>            
-                        <button class="btn btn-secondary" onclick="exportCurrentGradeStudents()">                
-                            📄 Current Tab Only            
-                        </button>        
-                    </div>   
-                </div>
-   
-                <div class="grid-2">
-                    <!-- Left Side - Student List by Grade Tabs -->
-                    <div class="card">
-                        <h3 class="card-title">Students by Grade</h3>
-                        
-                        <!-- Grade Tabs -->
-                        <div style="display: flex; gap: 8px; margin-bottom: 20px; flex-wrap: wrap;">
-                            <button class="grade-tab active" data-grade="all" onclick="switchGradeTab('all')">
-                                All
-                            </button>
-                            <div id="gradeTabs"></div>
-                        </div>
+    --success:    #10b981;
+    --danger:     #f43f5e;
 
-                        <!-- Search -->
-                        <div class="form-group">
-                            <input type="text" id="studentSearchBox" placeholder="Search by name, ID, or phone..." oninput="filterStudentsByTab()">
-                        </div>
+    --bg:         #0f172a;
+    --bg-card:    #1e293b;
+    --bg-input:   #162032;
+    --border:     rgba(255,255,255,0.08);
+    --text:       #f1f5f9;
+    --text-sub:   #94a3b8;
+    --text-muted: #64748b;
+}
 
-                        <!-- Student List -->
-                        <div id="studentListByGrade" style="max-height: 500px; overflow-y: auto;"></div>
-                    </div>
+/* ============================================
+   RESET
+   ============================================ */
 
-                    <!-- Right Side - Student Form -->
-                    <div class="card">
-                        <h3 class="card-title" id="studentFormTitle">Add New Student</h3>
-                        
-                        <div class="form-group">
-                            <label>Name *</label>
-                            <input type="text" id="studentNameInput" placeholder="Enter student name">
-                        </div>
+*, *::before, *::after {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
 
-                        <div class="form-group">
-                            <label>Birthday *</label>
-                            <input type="date" id="studentBirthdayInput">
-                        </div>
+/* ============================================
+   BODY — Animated Deep Background
+   ============================================ */
 
-                        <div class="form-group">
-                            <label>Gender *</label>
-                            <select id="studentGenderInput">
-                                <option value="">Select Gender</option>
-                                <option value="Male">Male</option>
-                                <option value="Female">Female</option>
-                                <option value="Other">Other</option>
-                            </select>
-                        </div>
+body {
+    font-family: 'DM Sans', -apple-system, sans-serif;
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background-color: var(--bg);
+    background-image:
+        radial-gradient(ellipse 100% 80% at 50% -20%, rgba(20,184,166,0.18) 0%, transparent 55%),
+        radial-gradient(ellipse 60% 50% at 90% 100%, rgba(245,158,11,0.08) 0%, transparent 50%),
+        radial-gradient(ellipse 50% 40% at 0% 60%,   rgba(56,189,248,0.06) 0%, transparent 50%);
+    background-attachment: fixed;
+    position: relative;
+    overflow: hidden;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+}
 
-                        <div class="form-group">
-                            <label>Class *</label>
-                            <select id="studentClassInput">
-                                <option value="">Select Class</option>
-                                <option value="A">A</option>
-                                <option value="B">B</option>
-                                <option value="C">C</option>
-                                <option value="D">D</option>
-                                <option value="E">E</option>
-                            </select>
-                        </div>
+/* Grid pattern overlay */
+body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background-image:
+        linear-gradient(rgba(255,255,255,0.02) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(255,255,255,0.02) 1px, transparent 1px);
+    background-size: 40px 40px;
+    pointer-events: none;
+    z-index: 0;
+}
 
-                        <div class="form-group">
-                            <label>Grade *</label>
-                            <select id="studentGradeInput"></select>
-                        </div>
+/* Floating glows */
+body::after {
+    content: '';
+    position: fixed;
+    width: 600px;
+    height: 600px;
+    border-radius: 50%;
+    background: radial-gradient(circle, rgba(20,184,166,0.08) 0%, transparent 70%);
+    top: -200px;
+    left: 50%;
+    transform: translateX(-50%);
+    pointer-events: none;
+    animation: glowDrift 12s ease-in-out infinite;
+    z-index: 0;
+}
 
-                        <div class="form-group">
-                            <label>Student's Phone Number</label>
-                            <input type="tel" id="studentPhoneInput" placeholder="e.g., 0771234567">
-                        </div>
+@keyframes glowDrift {
+    0%, 100% { transform: translateX(-50%) translateY(0); }
+    50%       { transform: translateX(-50%) translateY(30px); }
+}
 
-                        <div class="form-group">
-                            <label>Parent's Phone Number *</label>
-                            <input type="tel" id="parentPhoneInput" placeholder="e.g., 0771234567">
-                        </div>
+/* ============================================
+   LOADER
+   ============================================ */
 
-                        <div id="studentIdDisplaySection" style="display: none;">
-    
-                            <div class="form-group">        
-                                <label>Student ID</label>        
-                                <input type="text" id="studentIdDisplay" disabled style="background: #F3F4F6; font-weight: 600;">   
-                            </div>
-        
-                            <div style="text-align: center; padding: 20px; background: #F3F4F6; border-radius: 12px; border: 2px dashed #D1D5DB;">        
-                                <div style="font-size: 48px; margin-bottom: 12px;">📱</div>    
-                                <p style="font-weight: 600; color: #374151; margin-bottom: 8px;">QR Code Ready</p>
-                                <p style="font-size: 14px; color: #6B7280; margin-bottom: 16px;" id="qrCodeText"></p>        
-        
-                                <button type="button" class="btn btn-primary" onclick="showQRCodeForCurrentStudent()">            
-                                    🎫 View & Download QR Code        
-                                </button>    
-                            </div>
-                        </div>
+#loader {
+    position: fixed;
+    inset: 0;
+    background: var(--bg);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 9999;
+    transition: opacity 0.6s ease;
+}
 
-                        <!-- Action Buttons -->
-                        <div class="grid-2" style="gap: 12px; margin-top: 20px;">    
-                            <button class="btn btn-primary" id="addStudentBtn" onclick="addNewStudent()">        
-                                ➕ Add    
-                            </button>    
-                            <button class="btn btn-success" id="updateStudentBtn" style="display: none;" onclick="updateExistingStudent()">        
-                                💾 Update    
-                            </button>    
-                            <button class="btn btn-danger" id="deleteStudentBtn" style="display: none;" onclick="deleteExistingStudent()">       
-                                🗑️ Delete    
-                            </button>    
-                            <button class="btn btn-secondary" id="clearStudentBtn" onclick="clearStudentForm()">       
-                                ✖️ Clear    
-                            </button>
-                        </div>
-                    </div>
-                </div>
-            </div>
-            
-            <!-- Timetable Screen -->
-            <div id="timetable" class="screen">
-                <div class="screen-header">
-                    <h1 class="screen-title">Timetable</h1>
-                    <p class="screen-subtitle" id="subjectDisplay">Subject: Mathematics</p>
-                </div>
-                <button class="btn btn-primary" onclick="showAddTimetable()" style="margin-bottom: 20px;">➕ Add Class</button>
-                <div class="card">
-                    <div class="table-container">
-                        <table>
-                            <thead>
-                                <tr>
-                                    <th>Day</th>
-                                    <th>Time</th>
-                                    <th>Grade</th>
-                                    <th>Notes</th>
-                                    <th>Actions</th>
-                                </tr>
-                            </thead>
-                            <tbody id="timetableTableBody">
-                                <tr><td colspan="5" style="text-align: center; padding: 40px; color: #6B7280;">No classes scheduled</td></tr>
-                            </tbody>
-                        </table>
-                    </div>
-                </div>
-            </div>
+#loader.hide-loader {
+    opacity: 0;
+    pointer-events: none;
+}
 
-            <!-- Attendance Screen -->
-            <div id="attendance" class="screen">  
-                <div style="max-width: 1000px; margin: 0 auto; padding: 20px;">      
-                    <div class="screen-header">            
-                        <h1 class="screen-title">Mark Attendance</h1>         
-                        <p class="screen-subtitle">Track student attendance</p>     
-                    </div>
+.loader-content {
+    text-align: center;
+    position: relative;
+    z-index: 1;
+}
 
-                    <!-- Step 1 & 2: Select Class and Date -->     
-                    <div class="card">           
-                        <h3 class="card-title">Step 1 & 2: Select Class and Date</h3>           
-            
-                        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-bottom: 20px;">
-                            <div class="form-group">
-                                <label>Select Class *</label>                    
-                                <select id="attendanceClassSelect" style="width: 100%; padding: 12px; border: 1px solid #D1D5DB; border-radius: 8px; font-size: 16px;">                       
-                                    <option value="">Choose a class</option>        
-                                    <option value="06">Grade 06</option>                        
-                                    <option value="07">Grade 07</option>                        
-                                    <option value="08">Grade 08</option>                        
-                                    <option value="09">Grade 09</option>                        
-                                    <option value="10">Grade 10</option>                       
-                                    <option value="11">Grade 11</option>                       
-                                    <option value="12">Grade 12</option>
-                                </select>
-                            </div>
-                            <div class="form-group">
-                                <label>Select Date *</label>                 
-                                <input type="date" id="attendanceDateSelect" style="width: 100%; padding: 12px; border: 1px solid #D1D5DB; border-radius: 8px; font-size: 16px;">
-                            </div>
-                        </div>
-            
-                        <div style="display: flex; gap: 12px;">
-                            <button class="btn btn-primary" onclick="loadAttendanceStudents()" style="flex: 1;">
-                                📋 Load Students
-                            </button>
-                            <button class="btn btn-secondary" onclick="openQRScanner('attendance')">        
-                                📷 Scan QR    
-                            </button>    
-                            <button class="btn btn-secondary" onclick="manualQRInput('attendance')">        
-                                ⌨️ Manual Entry    
-                            </button>
-                        </div>        
-                    </div>
+.logo-img {
+    width: 72px;
+    height: 72px;
+    margin-bottom: 28px;
+    animation: float 3s ease-in-out infinite;
+    filter: drop-shadow(0 0 24px rgba(20,184,166,0.5));
+    border-radius: 16px;
+}
 
-                    <!-- Step 4: Mark Present/Absent -->
-                    <div class="card" id="attendanceStudentCard" style="display: none;">
-                        <h3 class="card-title">Step 4: Mark Attendance</h3>
-            
-                        <!-- Stats -->           
-                        <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 15px; margin-bottom: 25px;">                
-                            <div style="background: #F3F4F6; padding: 15px; border-radius: 10px; text-align: center;">                    
-                                <p style="font-size: 14px; color: #6B7280; margin-bottom: 5px;">Total Students</p>                    
-                                <h3 style="font-size: 28px; font-weight: bold; color: #1F2937;" id="attendanceTotalCount">0</h3>                
-                            </div>                
-                            <div style="background: #D1FAE5; padding: 15px; border-radius: 10px; text-align: center;">                    
-                                <p style="font-size: 14px; color: #065F46; margin-bottom: 5px;">Present</p>                    
-                                <h3 style="font-size: 28px; font-weight: bold; color: #065F46;" id="attendancePresentCount">0</h3>                
-                            </div>                
-                            <div style="background: #FEE2E2; padding: 15px; border-radius: 10px; text-align: center;">                    
-                                <p style="font-size: 14px; color: #991B1B; margin-bottom: 5px;">Absent</p>                    
-                                <h3 style="font-size: 28px; font-weight: bold; color: #991B1B;" id="attendanceAbsentCount">0</h3>                
-                            </div>            
-                        </div>
-            
-                        <!-- Student List -->
-                        <div id="attendanceStudentsList"></div>
+@keyframes float {
+    0%, 100% { transform: translateY(0); }
+    50%       { transform: translateY(-10px); }
+}
 
-                        <!-- Step 5: Save -->            
-                        <button class="btn btn-success" onclick="saveAttendanceData()" style="margin-top: 20px; width: 100%;">                
-                            💾 Step 5: Save Attendance
-                        </button>        
-                    </div>
-                </div>
-            </div>
+.dots {
+    display: flex;
+    gap: 10px;
+    justify-content: center;
+    margin-bottom: 16px;
+}
 
-            <!-- Payments Screen -->
-            <div id="payments" class="screen">
-                <div class="screen-header">
-                    <h1 class="screen-title">Payment Management</h1>
-                    <p class="screen-subtitle">Manage student fee payments</p>
-                </div>
+.dots span {
+    width: 10px;
+    height: 10px;
+    background: var(--teal-500);
+    border-radius: 50%;
+    animation: dotBounce 1.4s ease-in-out infinite;
+}
 
-                <div class="card">
-                    <h3 class="card-title">Record Payment</h3>
-                    
-                    <div style="display: flex; gap: 12px; margin-bottom: 20px;">    
-                        <button class="btn btn-primary" onclick="openQRScanner('payment')" style="flex: 1;">        
-                            📷 Scan QR Code    
-                        </button>    
-                        <button class="btn btn-secondary" onclick="manualQRInput('payment')">        
-                            ⌨️ Manual Entry
-                        </button>
-                    </div>
+.dots span:nth-child(1) { animation-delay: 0s;   background: var(--teal-400); }
+.dots span:nth-child(2) { animation-delay: 0.2s;  background: var(--teal-500); }
+.dots span:nth-child(3) { animation-delay: 0.4s;  background: var(--amber-400); }
 
-                    <div class="form-group">
-                        <label>Student ID *</label>
-                        <input type="text" id="paymentStudentId" placeholder="Enter student ID or scan QR">
-                    </div>
+@keyframes dotBounce {
+    0%, 80%, 100% { transform: scale(0.7); opacity: 0.4; }
+    40%           { transform: scale(1.3); opacity: 1; }
+}
 
-                    <div class="form-group">
-                        <label>Class (Auto-filled)</label>
-                        <input type="text" id="paymentClass" placeholder="Will auto-fill after entering ID" disabled>
-                    </div>
+.loader-content p {
+    color: var(--text-sub);
+    font-size: 14px;
+    font-weight: 600;
+    letter-spacing: 0.5px;
+}
 
-                    <div class="form-group">
-                        <label>Month *</label>
-                        <select id="paymentMonthDropdown">
-                            <option value="">Select Month</option>
-                            <option value="January">January</option>
-                            <option value="February">February</option>
-                            <option value="March">March</option>
-                            <option value="April">April</option>
-                            <option value="May">May</option>
-                            <option value="June">June</option>
-                            <option value="July">July</option>
-                            <option value="August">August</option>
-                            <option value="September">September</option>
-                            <option value="October">October</option>
-                            <option value="November">November</option>
-                            <option value="December">December</option>
-                        </select>
-                    </div>
+/* ============================================
+   AUTH CONTAINER
+   ============================================ */
 
-                    <div class="form-group">
-                        <label>Amount *</label>
-                        <input type="number" id="paymentAmountInput" placeholder="Enter amount">
-                    </div>
+.auth-container {
+    width: 100%;
+    max-width: 420px;
+    margin: 20px;
+    background: var(--bg-card);
+    border: 1px solid rgba(255,255,255,0.08);
+    border-radius: 24px;
+    padding: 44px 40px;
+    box-shadow:
+        0 0 0 1px rgba(255,255,255,0.04) inset,
+        0 24px 60px rgba(0,0,0,0.6),
+        0 0 80px rgba(20,184,166,0.06);
+    animation: authSlideUp 0.5s cubic-bezier(0.4, 0, 0.2, 1) both;
+    position: relative;
+    z-index: 1;
+    overflow: hidden;
+}
 
-                    <div class="form-group">
-                        <label>Payment Status *</label>
-                        <select id="paymentStatusDropdown">
-                            <option value="Paid">Paid</option>
-                            <option value="Unpaid">Unpaid</option>
-                            <option value="Free Card">Free Card</option>
-                        </select>
-                    </div>
+/* Top teal shine line */
+.auth-container::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 10%; right: 10%;
+    height: 1px;
+    background: linear-gradient(90deg, transparent, var(--teal-500), transparent);
+    opacity: 0.6;
+}
 
-                    <button class="btn btn-primary" onclick="recordPayment()">
-                        💾 Record Payment
-                    </button>
-                </div>
+@keyframes authSlideUp {
+    from {
+        opacity: 0;
+        transform: translateY(28px) scale(0.97);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+    }
+}
 
-                <div class="card">
-                    <h3 class="card-title">Payment History</h3>
-                    <div class="table-container">
-                        <table>
-                            <thead>
-                                <tr>
-                                    <th>Date</th>
-                                    <th>Student ID</th>
-                                    <th>Student Name</th>
-                                    <th>Class</th>
-                                    <th>Month</th>
-                                    <th>Amount</th>
-                                    <th>Status</th>
-                                </tr>
-                            </thead>
-                            <tbody id="paymentHistoryTable">
-                                <tr>
-                                    <td colspan="7" style="text-align: center; padding: 40px; color: #6B7280;">
-                                        No payment records yet
-                                    </td>
-                                </tr>
-                            </tbody>
-                        </table>
-                    </div>
-                </div>
-            </div>
+/* ============================================
+   AUTH HEADER
+   ============================================ */
 
-            <!-- Reports Screen -->
-            <div id="reports" class="screen">
-                <div class="screen-header">
-                    <h1 class="screen-title">Reports</h1>
-                </div>
-                <div class="card">
-                    <h3 class="card-title">Generate Report</h3>
-                    <div class="form-group">
-                        <label>Report Type</label>
-                        <select id="reportType">
-                            <option value="attendance">Monthly Attendance by Grade</option>
-                            <option value="payment">Payment Collection Summary</option>
-                        </select>
-                    </div>
-                    <div class="form-group">
-                        <label>Month</label>
-                        <input type="month" id="reportMonth">
-                    </div>
-                    <div class="form-group">
-                        <label>Grade</label>
-                        <select id="reportGrade">
-                            <option value="all">All Grades</option>
-                        </select>
-                    </div>
-                    <button class="btn btn-primary" onclick="generateReport()">📊 Generate</button>
-                    <button class="btn btn-success" onclick="exportToExcel()" style="margin-top: 12px;">📥 Export Excel</button>
-                </div>
-                <div class="card" id="reportPreview" style="display: none;">
-                    <h3 class="card-title">Preview</h3>
-                    <div id="reportContent"></div>
-                </div>
-            </div>
-       
-            <!-- QR Scanner Modal -->
-            <div class="modal" id="qrScannerModal">    
-                <div class="modal-content" style="max-width: 600px;">        
-                    <div class="modal-header">            
-                        <h3 class="modal-title">📷 Scan QR Code</h3>            
-                        <button class="close-btn" onclick="closeQRScanner()">✖</button>
-                    </div>        
-                    <div id="qr-reader" style="width: 100%;"></div>                
-                    <div style="margin-top: 20px; padding: 15px; background: #F3F4F6; border-radius: 8px;">            
-                        <p style="margin: 0; font-size: 14px; color: #6B7280;">                
-                            📱 Position the QR code in front of your camera            
-                        </p>
-                        <button class="btn btn-secondary" onclick="switchCamera()" style="margin-top: 15px;">            
-                            🔄 Switch Camera        
-                        </button>
-                    </div>
-               
-                    <div id="qr-result" style="margin-top: 15px; padding: 15px; background: #D1FAE5; border-radius: 8px; display: none;">            
-                        <p style="margin: 0; font-weight: 600; color: #065F46;">             
-                            ✅ Scanned: <span id="qr-scanned-id"></span>            
-                        </p>        
-                    </div>    
-                </div>
-            </div>
+.auth-header {
+    text-align: center;
+    margin-bottom: 32px;
+}
 
-            <!-- Subscription Screen -->
-            <div id="subscription" class="screen">    
-                <div class="screen-header">        
-                    <h1 class="screen-title">Subscription Plans</h1>       
-                    <p class="screen-subtitle">Choose the plan that fits your needs</p>    
-                </div>
-    
-                <!-- Current Subscription Status -->    
-                <div class="glass-card" style="margin-bottom: 30px; max-width: 800px; margin-left: auto; margin-right: auto;">       
-                    <h3 class="card-title">📋 Current Subscription</h3>
-             
-                    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px; margin-bottom: 20px;">           
-                        <div style="background: rgba(59,130,246,0.2); padding: 15px; border-radius: 12px;">                
-                            <p style="font-size: 13px; color: rgba(255,255,255,0.7); margin-bottom: 5px;">Current Plan</p>               
-                            <p style="font-size: 20px; font-weight: 700; color: #fff; margin: 0;" id="currentPlanName">Free Trial</p>            
-                        </div>            
-                        <div style="background: rgba(16,185,129,0.2); padding: 15px; border-radius: 12px;">                
-                            <p style="font-size: 13px; color: rgba(255,255,255,0.7); margin-bottom: 5px;">Status</p>                
-                            <p style="font-size: 20px; font-weight: 700; color: #fff; margin: 0;" id="subscriptionStatus">Active</p>            
-                        </div>            
-                        <div style="background: rgba(245,158,11,0.2); padding: 15px; border-radius: 12px;">                
-                            <p style="font-size: 13px; color: rgba(255,255,255,0.7); margin-bottom: 5px;">Students</p>                
-                            <p style="font-size: 20px; font-weight: 700; color: #fff; margin: 0;"><span id="currentStudents">0</span> / <span id="maxStudents">10</span></p>            
-                        </div>            
-                        <div style="background: rgba(139,92,246,0.2); padding: 15px; border-radius: 12px;">                
-                            <p style="font-size: 13px; color: rgba(255,255,255,0.7); margin-bottom: 5px;">Valid Until</p>                
-                            <p style="font-size: 20px; font-weight: 700; color: #fff; margin: 0;" id="subscriptionEndDate">-</p>            
-                        </div>   
-                    </div>        
-                    <div id="subscriptionWarning" style="display: none; background: rgba(239,68,68,0.2); padding: 15px; border-radius: 12px; border: 1px solid rgba(239,68,68,0.3);">            
-                        <p style="margin: 0; color: #FEE2E2; font-weight: 600;">⚠️ <span id="warningMessage"></span></p>        
-                    </div>    
-                </div>
-    
-                <!-- Pricing Plans -->    
-                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 20px; max-width: 1200px; margin: 0 auto;">
-               
-                    <!-- Free Trial Plan -->        
-                    <div class="glass-card" style="position: relative;">            
-                        <div style="background: rgba(107,114,128,0.3); padding: 8px 16px; border-radius: 20px; display: inline-block; margin-bottom: 15px;">                
-                            <span style="font-size: 12px; font-weight: 600; color: #fff;">FREE TRIAL</span>            
-                        </div>         
-            
-                        <h3 style="font-size: 32px; font-weight: 700; color: #fff; margin-bottom: 10px;">                
-                            Free            
-                        </h3>            
-                        <p style="color: rgba(255,255,255,0.7); margin-bottom: 20px;">Perfect for trying out</p>
-                        
-                        <div style="border-top: 1px solid rgba(255,255,255,0.2); padding-top: 20px; margin-bottom: 20px;">                
-                            <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 12px;">                    
-                                <span style="color: #10B981; font-size: 20px;">✓</span>                    
-                                <span style="color: rgba(255,255,255,0.9);">Up to 10 students</span>                
-                            </div>                
-                            <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 12px;">                    
-                                <span style="color: #10B981; font-size: 20px;">✓</span>                    
-                                <span style="color: rgba(255,255,255,0.9);">Attendance tracking</span>                
-                            </div>                
-                            <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 12px;">                    
-                                <span style="color: #10B981; font-size: 20px;">✓</span>                    
-                                <span style="color: rgba(255,255,255,0.9);">Payment records</span>                
-                            </div>                
-                            <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 12px;">                    
-                                <span style="color: #EF4444; font-size: 20px;">✗</span>                    
-                                <span style="color: rgba(255,255,255,0.5);">Advanced reports</span>                
-                            </div>                
-                            <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 12px;">                    
-                                <span style="color: #EF4444; font-size: 20px;">✗</span>                    
-                                <span style="color: rgba(255,255,255,0.5);">Unlimited students</span>                
-                            </div>            
-                        </div>            
-            
-                        <button class="btn btn-secondary" onclick="selectPlan('free_trial')" id="btnFreeTrial">                
-                            Current Plan            
-                        </button>        
-                    </div>
-        
-                    <!-- Monthly Plan -->       
-                    <div class="glass-card" style="position: relative; border: 2px solid #10B981;">            
-                        <div style="position: absolute; top: -12px; right: 20px; background: #10B981; padding: 4px 12px; border-radius: 12px;">                
-                            <span style="font-size: 11px; font-weight: 700; color: #fff;">POPULAR</span>           
-                        </div>
-                       
-                        <div style="background: rgba(16,185,129,0.3); padding: 8px 16px; border-radius: 20px; display: inline-block; margin-bottom: 15px;">              
-                            <span style="font-size: 12px; font-weight: 600; color: #D1FAE5;">MONTHLY</span>            
-                        </div>
-                        
-                        <h3 style="font-size: 32px; font-weight: 700; color: #fff; margin-bottom: 5px;">                
-                            LKR.1000.00<span style="font-size: 16px; font-weight: 400; color: rgba(255,255,255,0.7);">/month</span>          
-                        </h3>
-                        <p style="color: rgba(255,255,255,0.7); margin-bottom: 20px;">Best for small classes</p>
-                        
-                        <div style="border-top: 1px solid rgba(255,255,255,0.2); padding-top: 20px; margin-bottom: 20px;">                
-                            <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 12px;">                    
-                                <span style="color: #10B981; font-size: 20px;">✓</span>                    
-                                <span style="color: rgba(255,255,255,0.9);">Unlimited students</span>                
-                            </div>                
-                            <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 12px;">                    
-                                <span style="color: #10B981; font-size: 20px;">✓</span>                    
-                                <span style="color: rgba(255,255,255,0.9);">All attendance features</span>                
-                            </div>                
-                            <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 12px;">                    
-                                <span style="color: #10B981; font-size: 20px;">✓</span>                    
-                                <span style="color: rgba(255,255,255,0.9);">Advanced reports</span>                
-                            </div>                
-                            <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 12px;">                   
-                                <span style="color: #10B981; font-size: 20px;">✓</span>                    
-                                <span style="color: rgba(255,255,255,0.9);">Excel exports</span>                
-                            </div>                
-                            <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 12px;">                    
-                                <span style="color: #10B981; font-size: 20px;">✓</span>                    
-                                <span style="color: rgba(255,255,255,0.9);">Priority support</span>                
-                            </div>            
-                        </div>           
-                        <button class="btn btn-success" onclick="initiatePayment('monthly')" id="btnMonthly">                
-                            Subscribe Monthly            
-                        </button>        
-                    </div>
-    
-                    <!-- Annual Plan -->        
-                    <div class="glass-card" style="position: relative; border: 2px solid #3B82F6;">            
-                        <div style="position: absolute; top: -12px; right: 20px; background: #3B82F6; padding: 4px 12px; border-radius: 12px;">               
-                            <span style="font-size: 11px; font-weight: 700; color: #fff;">SAVE 20%</span>           
-                        </div>
-                       
-                        <div style="background: rgba(59,130,246,0.3); padding: 8px 16px; border-radius: 20px; display: inline-block; margin-bottom: 15px;">                
-                            <span style="font-size: 12px; font-weight: 600; color: #DBEAFE;">ANNUAL</span>           
-                        </div>
-                       
-                        <h3 style="font-size: 32px; font-weight: 700; color: #fff; margin-bottom: 5px;">                
-                            LKR.9600.00<span style="font-size: 16px; font-weight: 400; color: rgba(255,255,255,0.7);">/year</span>            
-                        </h3>
-                        
-                        <p style="color: rgba(255,255,255,0.7); margin-bottom: 20px;">Save LKR.2400.00/year</p>
-                        
-                        <div style="border-top: 1px solid rgba(255,255,255,0.2); padding-top: 20px; margin-bottom: 20px;">               
-                            <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 12px;">                    
-                                <span style="color: #10B981; font-size: 20px;">✓</span>                   
-                                <span style="color: rgba(255,255,255,0.9);">Everything in Monthly</span>                
-                            </div>                
-                            <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 12px;">                    
-                                <span style="color: #10B981; font-size: 20px;">✓</span>                    
-                                <span style="color: rgba(255,255,255,0.9);">20% discount</span>                
-                            </div>                
-                            <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 12px;">                    
-                                <span style="color: #10B981; font-size: 20px;">✓</span>                    
-                                <span style="color: rgba(255,255,255,0.9);">Priority updates</span>                
-                            </div>                
-                            <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 12px;">                    
-                                <span style="color: #10B981; font-size: 20px;">✓</span>                    
-                                <span style="color: rgba(255,255,255,0.9);">Dedicated support</span>                
-                            </div>                
-                            <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 12px;">                    
-                                <span style="color: #10B981; font-size: 20px;">✓</span>                    
-                                <span style="color: rgba(255,255,255,0.9);">No ads (coming soon)</span>                
-                            </div>            
-                        </div>
-                        
-                        <button class="btn btn-primary" onclick="initiatePayment('annual')" id="btnAnnual">                
-                            Subscribe Annual            
-                        </button>        
-                    </div>    
-                </div>
+.auth-logo-wrap {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 60px;
+    height: 60px;
+    border-radius: 16px;
+    background: linear-gradient(135deg, rgba(20,184,166,0.2), rgba(13,148,136,0.1));
+    border: 1px solid rgba(45,212,191,0.2);
+    margin-bottom: 18px;
+    font-size: 28px;
+    box-shadow: 0 0 24px rgba(20,184,166,0.15);
+}
 
-                <!-- Payment History -->
-                <div class="glass-card" style="margin-top: 40px; max-width: 1000px; margin-left: auto; margin-right: auto;">  
-                    <h3 class="card-title">💳 Payment History</h3>
-       
-                    <div class="table-container">        
-                        <table>            
-                            <thead>                
-                                <tr>                    
-                                    <th>Date</th>                    
-                                    <th>Order ID</th>                    
-                                    <th>Plan</th>                    
-                                    <th>Amount</th>                   
-                                    <th>Status</th>                
-                                </tr>            
-                            </thead>           
-                            <tbody id="paymentHistoryTableBody">                
-                                <tr>                    
-                                    <td colspan="5" style="text-align: center; padding: 40px; color: rgba(255,255,255,0.7);">                        
-                                        No payment history yet                   
-                                    </td>                
-                                </tr>            
-                            </tbody>        
-                        </table>    
-                    </div>
-                </div>
-    
-                <!-- FAQs -->    
-                <div class="glass-card" style="margin-top: 40px; max-width: 800px; margin-left: auto; margin-right: auto;">        
-                    <h3 class="card-title">❓ Frequently Asked Questions</h3>        
-        
-                    <div style="margin-bottom: 20px;">           
-                        <h4 style="color: #fff; font-size: 16px; margin-bottom: 8px;">Can I cancel anytime?</h4>            
-                        <p style="color: rgba(255,255,255,0.7); font-size: 14px;">Yes! You can cancel your subscription at any time. You'll continue to have access until the end of your billing period.</p>        
-                    </div>
-                
-                    <div style="margin-bottom: 20px;">            
-                        <h4 style="color: #fff; font-size: 16px; margin-bottom: 8px;">What happens to my data if I cancel?</h4>            
-                        <p style="color: rgba(255,255,255,0.7); font-size: 14px;">Your data is always yours. You can export all your data before canceling. We keep your data for 30 days after cancellation.</p>      
-                    </div>
-        
-                    <div style="margin-bottom: 20px;">                  
-                        <h4 style="color: #fff; font-size: 16px; margin-bottom: 8px;">Can I upgrade or downgrade my plan?</h4>            
-                        <p style="color: rgba(255,255,255,0.7); font-size: 14px;">Yes! You can change your plan at any time. Upgrades are immediate, and downgrades take effect at the end of your billing period.</p>        
-                    </div>    
-                </div>
-            </div>
+.auth-header h1 {
+    font-family: 'Sora', sans-serif;
+    font-size: 26px;
+    font-weight: 800;
+    color: var(--text);
+    letter-spacing: -0.5px;
+    margin-bottom: 6px;
+}
 
-            <!-- Settings Screen -->
-            <div id="settings" class="screen">    
-                <div class="screen-header">        
-                    <h1 class="screen-title">Settings</h1>   
-                </div>
+.auth-header h1 span { color: var(--teal-400); }
 
-                <!-- Data Synchronization Card - NEW -->
-                <div class="card">
-                    <h3 class="card-title">💾 Data Synchronization</h3>
-        
-                    <!-- Sync Status Row -->
-                    <div style="display: flex; align-items: center; justify-content: space-between; gap: 20px; margin-bottom: 20px; padding: 16px; background: rgba(255,255,255,0.1); border-radius: 10px;">
-                        <div style="flex: 1;">
-                            <p style="margin: 0 0 4px 0; font-weight: 600; font-size: 14px; color: rgba(255,255,255,0.9);">Last Synced</p>
-                            <p id="lastSyncTime" style="margin: 0; color: rgba(255,255,255,0.7); font-size: 14px;">Never</p>
-                        </div>
-            
-                        <div style="display: flex; align-items: center; gap: 12px;">
-                            <!-- Sync Indicator -->
-                            <div id="syncIndicator" style="width: 10px; height: 10px; background: #10b981; border-radius: 50%; box-shadow: 0 0 10px rgba(16,185,129,0.5);"></div>
-                
-                            <!-- Sync Button -->
-                            <button class="btn btn-primary" onclick="syncNowManual()" id="syncNowBtn">
-                                <span id="syncNowBtnText">🔄 Sync Now</span>
-                            </button>
-                        </div>
-                    </div>
-        
-                    <!-- Sync Status Message -->
-                    <div id="syncStatusMessage" style="display: none; padding: 12px 16px; border-radius: 8px; margin-bottom: 16px;">
-                        <p id="syncStatusText" style="margin: 0; font-size: 14px; font-weight: 500;"></p>
-                    </div>
-        
-                    <!-- Sync Statistics -->
-                    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 12px; margin-bottom: 20px;">
-                        <div style="padding: 12px; background: rgba(59,130,246,0.2); border-radius: 8px; text-align: center; border: 1px solid rgba(59,130,246,0.3);">
-                            <p style="margin: 0 0 4px 0; font-size: 12px; color: rgba(255,255,255,0.7); text-transform: uppercase; letter-spacing: 0.5px;">Students</p>
-                            <p id="syncStudentsCount" style="margin: 0; font-size: 20px; font-weight: 700; color: #fff;">0</p>
-                        </div>
-            
-                        <div style="padding: 12px; background: rgba(16,185,129,0.2); border-radius: 8px; text-align: center; border: 1px solid rgba(16,185,129,0.3);">
-                            <p style="margin: 0 0 4px 0; font-size: 12px; color: rgba(255,255,255,0.7); text-transform: uppercase; letter-spacing: 0.5px;">Classes</p>
-                            <p id="syncClassesCount" style="margin: 0; font-size: 20px; font-weight: 700; color: #fff;">0</p>
-                        </div>
-            
-                        <div style="padding: 12px; background: rgba(245,158,11,0.2); border-radius: 8px; text-align: center; border: 1px solid rgba(245,158,11,0.3);">
-                            <p style="margin: 0 0 4px 0; font-size: 12px; color: rgba(255,255,255,0.7); text-transform: uppercase; letter-spacing: 0.5px;">Payments</p>
-                            <p id="syncPaymentsCount" style="margin: 0; font-size: 20px; font-weight: 700; color: #fff;">0</p>
-                        </div>
-                    </div>
-        
-                    <!-- Info Text -->
-                    <p style="color: rgba(255,255,255,0.7); font-size: 13px; margin: 0; line-height: 1.5;">
-                        ℹ️ Your data is automatically synced with the cloud in real-time. Use the "Sync Now" button to manually force synchronization or check for updates.
-                    </p>
-                </div>
+.auth-header p {
+    color: var(--text-muted);
+    font-size: 14px;
+    font-weight: 500;
+}
 
-                <!-- Account Card -->
-                <div class="card">                    
-                    <h3 class="card-title">👤 Account</h3>
-            
-                    <div style="background: rgba(59,130,246,0.2); padding: 15px; border-radius: 12px; margin-bottom: 15px;">                            
-                        <p style="font-size: 13px; color: rgba(255,255,255,0.7); margin-bottom: 5px;">Your Teacher ID:</p>                      
-                        <p style="font-size: 16px; font-weight: 600; color: #fff; font-family: monospace;" id="teacherIdDisplay"></p>                       
-                        <button class="btn btn-secondary" onclick="copyTeacherId()" style="margin-top: 10px; width: auto;">                
-                            📋 Copy ID                      
-                        </button>                   
-                    </div>
-            
-                    <p style="font-size: 13px; color: rgba(255,255,255,0.7); margin-bottom: 15px;">                            
-                        💡 Save this ID to access your data from any device                    
-                    </p>    
-                </div>
+/* ============================================
+   TAB SWITCHER
+   ============================================ */
 
-                <!-- Cloud Sync Status - NEW SECTION -->
-                <div class="card">
-                    <h3 class="card-title">☁️ Cloud Synchronization</h3>
-        
-                    <div style="background: rgba(16,185,129,0.2); padding: 15px; border-radius: 12px; margin-bottom: 20px; border: 1px solid rgba(16,185,129,0.3);">
-                        <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 8px;">
-                            <span style="font-size: 20px;">✅</span>
-                            <span style="font-weight: 600; color: #D1FAE5;">Cloud Sync Active</span>
-                        </div>
-                        <p style="font-size: 13px; color: rgba(255,255,255,0.7); margin: 0;">
-                            Your data is automatically saved to the cloud in real-time
-                        </p>
-                    </div>
-        
-                    <!-- Last Saved Info -->
-                    <div style="background: rgba(255,255,255,0.1); padding: 12px; border-radius: 8px; margin-bottom: 20px;">
-                        <p style="font-size: 14px; color: rgba(255,255,255,0.8); margin: 0;">
-                            📅 Last Saved: <span id="lastSavedTime" style="font-weight: 600; color: #fff;">Never</span>
-                        </p>
-                    </div>
-        
-                    <p style="color: rgba(255,255,255,0.7); font-size: 13px; margin: 0 0 8px 0; line-height: 1.6;">
-                        ✓ Works on all your devices<br>
-                        ✓ Always up-to-date<br>
-                        ✓ Protected by Firebase security<br>
-                        ✓ No manual saving required
-                    </p>
-                </div>
+.tab-switcher {
+    display: flex;
+    gap: 4px;
+    margin-bottom: 28px;
+    background: rgba(255,255,255,0.03);
+    border: 1px solid var(--border);
+    padding: 4px;
+    border-radius: 12px;
+}
 
-                <!-- Grades Card -->   
-                <div class="card">
-                    <h3 class="card-title">Grades</h3>        
-                    <div id="gradesList"></div>       
-                    <div style="display: flex; gap: 12px; margin-top: 16px;">            
-                        <input type="text" id="newGrade" placeholder="e.g., 13" style="flex: 1;">            
-                        <button class="btn btn-primary" onclick="addGrade()">➕ Add</button>        
-                    </div>
-                    <h3 class="card-title">Classes</h3>
-                    <div id="classSettingsContainer" style="margin-top: 24px; padding-top: 24px; border-top: 2px solid #e5e7eb;">                 
-                    </div>
-                </div>
+.tab-btn {
+    flex: 1;
+    padding: 10px 16px;
+    border: 1px solid transparent;
+    background: transparent;
+    color: var(--text-muted);
+    font-family: 'DM Sans', sans-serif;
+    font-weight: 600;
+    font-size: 14px;
+    border-radius: 9px;
+    cursor: pointer;
+    transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+}
 
-                <!-- Subject Card -->    
-                <div class="card">        
-                    <h3 class="card-title">Subject</h3>        
-                    <div class="form-group">            
-                        <label>Subject Name</label>            
-                        <input type="text" id="subjectNameInput" value="Mathematics">        
-                    </div>        
-                    <button class="btn btn-primary" onclick="saveSubject()">💾 Save</button>    
-                </div>
+.tab-btn:hover { color: var(--text-sub); background: rgba(255,255,255,0.03); }
 
-                <!-- Manual Device Backup (Optional) - UPDATED -->
-                <div class="card">
-                    <h3 class="card-title">💾 Manual Device Backup (Optional)</h3>
-        
-                    <p style="color: rgba(255,255,255,0.7); font-size: 14px; margin-bottom: 16px; line-height: 1.6;">
-                        Download a backup file to your device for safekeeping. This is <strong>optional</strong> since your data is already safely stored in the cloud.
-                    </p>
-        
-                    <button class="btn btn-primary" onclick="downloadBackup()" style="margin-bottom: 12px;">
-                        💾 Download Backup File
-                    </button>
-        
-                    <button class="btn btn-secondary" onclick="uploadBackup()" style="margin-bottom: 20px;">
-                        📂 Restore from Backup File
-                    </button>
-        
-                    <div style="background: rgba(255,255,255,0.1); padding: 12px; border-radius: 8px;">
-                        <p style="font-size: 14px; color: rgba(255,255,255,0.8); margin: 0;">
-                            📦 Last Manual Backup: <span id="lastBackupTime" style="font-weight: 600; color: #fff;">Never</span>
-                        </p>
-                    </div>
-                </div>
+.tab-btn.active {
+    background: linear-gradient(135deg, rgba(20,184,166,0.2), rgba(13,148,136,0.1));
+    color: var(--teal-400);
+    border-color: rgba(45,212,191,0.2);
+    box-shadow: 0 2px 12px rgba(20,184,166,0.1);
+}
 
-                <!-- Data Statistics -->
-                <div class="card">
-                    <h3 class="card-title">📊 Data Statistics</h3>
-        
-                    <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px; margin-bottom: 20px;">
-                        <div style="background: rgba(59,130,246,0.2); padding: 12px; border-radius: 8px; text-align: center;">
-                            <p style="font-size: 12px; color: rgba(255,255,255,0.7); margin-bottom: 4px;">Students</p>
-                            <p style="font-size: 24px; font-weight: 700; color: #fff; margin: 0;" id="statsStudents">0</p>
-                        </div>
-                        <div style="background: rgba(16,185,129,0.2); padding: 12px; border-radius: 8px; text-align: center;">
-                            <p style="font-size: 12px; color: rgba(255,255,255,0.7); margin-bottom: 4px;">Payments</p>
-                            <p style="font-size: 24px; font-weight: 700; color: #fff; margin: 0;" id="statsPayments">0</p>
-                        </div>
-                        <div style="background: rgba(245,158,11,0.2); padding: 12px; border-radius: 8px; text-align: center;">
-                            <p style="font-size: 12px; color: rgba(255,255,255,0.7); margin-bottom: 4px;">Classes</p>
-                            <p style="font-size: 24px; font-weight: 700; color: #fff; margin: 0;" id="statsTimetable">0</p>
-                        </div>
-                        <div style="background: rgba(139,92,246,0.2); padding: 12px; border-radius: 8px; text-align: center;">
-                            <p style="font-size: 12px; color: rgba(255,255,255,0.7); margin-bottom: 4px;">Attendance Records</p>
-                            <p style="font-size: 24px; font-weight: 700; color: #fff; margin: 0;" id="statsAttendance">0</p>
-                        </div>
-                    </div>
-        
-                    <!-- Export Data -->
-                    <h4 style="color: #fff; font-size: 16px; margin-bottom: 12px;">Export Data</h4>
-                    <button class="btn btn-success" onclick="exportAllDataToExcel()" style="margin-bottom: 20px;">
-                        📊 Export All Data to Excel
-                    </button>
-                </div>
+/* ============================================
+   ALERT MESSAGES
+   ============================================ */
 
-                <!-- Danger Zone -->
-                <div class="card">
-                    <div style="background: rgba(239,68,68,0.2); padding: 15px; border-radius: 12px; border: 1px solid rgba(239,68,68,0.3);">
-                        <h4 style="color: #FEE2E2; font-size: 16px; margin-bottom: 8px;">⚠️ Danger Zone</h4>
-                        <p style="font-size: 13px; color: rgba(255,255,255,0.7); margin-bottom: 12px;">
-                            This action cannot be undone. All data will be permanently deleted from the cloud.
-                        </p>
-                        <button class="btn btn-danger" onclick="clearAllData()">
-                            🗑️ Clear All Data
-                        </button>
-                    </div>
-                </div>
-            </div>
-            
-            <!-- QR Code Display Modal -->
-            <div class="modal" id="qrCodeDisplayModal">    
-                <div class="modal-content" style="max-width: 500px;">        
-                    <div class="modal-header">            
-                        <h3 class="modal-title">Student QR Code</h3>            
-                        <button class="close-btn" onclick="closeQRCodeDisplay()">✖</button>        
-                    </div>
-        
-                    <div style="text-align: center;">            
-                        <div style="background: #F3F4F6; padding: 20px; border-radius: 12px; margin-bottom: 20px;">                
-                            <p style="font-size: 18px; font-weight: 600; color: #1F2937; margin-bottom: 5px;" id="qrStudentName"></p>                
-                            <p style="font-size: 14px; color: #6B7280; margin-bottom: 15px;" id="qrStudentDetails"></p>
-                            
-                            <!-- QR Code will be generated here -->                                
-                            <div id="qrcode-container" style="display: flex; justify-content: center; margin: 20px 0;"></div>                                
-                            
-                            <p style="font-size: 16px; font-weight: 600; color: #2563EB;" id="qrStudentId"></p>            
-                        </div>
-                        
-                        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px;">                
-                            <button class="btn btn-primary" onclick="downloadQRCode()">        
-                                💾 Download QR Code            
-                            </button>                
-                            <button class="btn btn-success" onclick="downloadStudentCard()">                    
-                                🎫 Download ID Card        
-                            </button>            
-                        </div>        
-                    </div>    
-                </div>
-            </div>
-    
-            <!-- Timetable Modal -->   
-            <div class="modal" id="timetableModal">       
-                <div class="modal-content">           
-                    <div class="modal-header">                
-                        <h3 class="modal-title" id="timetableModalTitle">Add Class</h3>                
-                        <button class="close-btn" onclick="closeTimetableModal()">✖</button>            
-                    </div>           
-                    <div class="form-group">                
-                        <label>Day</label>                
-                        <select id="timetableDay">                    
-                            <option>Monday</option>                   
-                            <option>Tuesday</option>                    
-                            <option>Wednesday</option>                    
-                            <option>Thursday</option>                    
-                            <option>Friday</option>                   
-                            <option>Saturday</option>                    
-                            <option>Sunday</option>               
-                        </select>            
-                    </div>            
-                    <div class="form-group">                
-                        <label>Time</label>                
-                        <input type="time" id="timetableTime">           
-                    </div>            
-                    <div class="form-group">                
-                        <label>Grade</label>                
-                        <select id="timetableGrade"></select>            
-                    </div>           
-                    <div class="form-group">                
-                        <label>Notes</label>               
-                        <input type="text" id="timetableNotes" placeholder="e.g., Room 101">           
-                    </div>            
-                    <button class="btn btn-primary" onclick="saveTimetableEntry()">💾 Save</button>        
-                </div>    
-            </div>
-    
-            <!-- Payment Modal -->
-            <div class="modal" id="paymentModal">        
-                <div class="modal-content">            
-                    <div class="modal-header">                
-                        <h3 class="modal-title">Record Payment</h3>                
-                        <button class="close-btn" onclick="closePaymentModal()">✖</button>            
-                    </div>            
-                    <div class="form-group">                
-                        <label>Amount</label>                
-                        <input type="number" id="paymentAmount" placeholder="Enter amount">            
-                    </div>            
-                    <div class="form-group">                
-                        <label>Date</label>                
-                        <input type="date" id="paymentDate">            
-                    </div>            
-                    <div class="form-group">                
-                        <label>Month</label>                
-                        <input type="month" id="paymentMonth">            
-                    </div>            
-                    <div class="form-group">                
-                        <label>Method</label>                
-                        <select id="paymentMethod">                    
-                            <option>Cash</option>                    
-                            <option>Bank Transfer</option>                    
-                            <option>Mobile Payment</option>              
-                        </select>            
-                    </div>         
-                    <button class="btn btn-primary" onclick="savePayment()">💾 Record</button>        
-                </div>    
-            </div>
-        </div>
-    </div>
-    <footer class="app-footer">  
-        © <span id="year"></span> Class Manager WebApp. All rights reserved.
-    </footer>
-    <script type="text/javascript" src="https://www.payhere.lk/lib/payhere.js"></script>
-    <script src="https://unpkg.com/html5-qrcode@2.3.8/html5-qrcode.min.js"></script>
-    <script src="https://cdn.sheetjs.com/xlsx-0.20.1/package/dist/xlsx.full.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>  
-    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-database-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-auth-compat.js"></script>
-    <script src="Js/firebase-config.js"></script>
-    <script src="Js/core-functions.js"></script>
-    <script src="Js/admin-users.js"></script>
-    <script src="Js/admin-analytics.js"></script>
-    <script src="Js/admin-management.js"></script>
-    <script src="Js/subscription-helpers.js"></script>
-    <script src="Js/Save.js"></script>
-    <script src="Js/Settings.js"></script>
-    <script src="Js/Students.js"></script>
-    <script src="Js/Subscription.js"></script>
-    <script src="Js/Attendance.js"></script>
-    <script src="Js/Excel Export.js"></script>
-    <script src="Js/Payhere.js"></script>
-    <script src="Js/Payments.js"></script>
-    <script src="Js/Reports.js"></script>
-    <script src="Js/Timetable.js"></script>
-    <script src="Js/QR Codes.js"></script>
-    <script src="Js/"></script>
-    
-    <script type="module">     
-        import { initializeApp } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-app.js";
-    </script>
-    <script>  
-        document.getElementById("year").textContent = new Date().getFullYear();
-    </script>
-</body>
-</html>
+.alert {
+    padding: 12px 16px;
+    border-radius: 10px;
+    margin-bottom: 18px;
+    font-size: 13px;
+    font-weight: 600;
+    display: none;
+    animation: alertIn 0.3s ease both;
+}
+
+.alert.show { display: flex; align-items: center; gap: 8px; }
+
+@keyframes alertIn {
+    from { opacity: 0; transform: translateY(-8px); }
+    to   { opacity: 1; transform: translateY(0); }
+}
+
+.alert-error {
+    background: rgba(244,63,94,0.1);
+    color: #fda4af;
+    border: 1px solid rgba(244,63,94,0.2);
+}
+
+.alert-success {
+    background: rgba(16,185,129,0.1);
+    color: #6ee7b7;
+    border: 1px solid rgba(16,185,129,0.2);
+}
+
+/* ============================================
+   AUTH FORMS
+   ============================================ */
+
+.auth-form { display: none; }
+.auth-form.active {
+    display: block;
+    animation: fadeIn 0.35s ease both;
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; }
+    to   { opacity: 1; }
+}
+
+/* Input groups */
+.input-group {
+    margin-bottom: 20px;
+    position: relative;
+}
+
+.input-group label {
+    display: block;
+    margin-bottom: 7px;
+    font-size: 12px;
+    font-weight: 700;
+    color: var(--text-sub);
+    letter-spacing: 0.6px;
+    text-transform: uppercase;
+}
+
+.input-group input {
+    width: 100%;
+    padding: 12px 16px;
+    background: var(--bg-input);
+    border: 1.5px solid var(--border);
+    border-radius: 10px;
+    font-size: 14px;
+    font-family: 'DM Sans', sans-serif;
+    color: var(--text);
+    transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+    color-scheme: dark;
+}
+
+.input-group input::placeholder { color: var(--text-muted); }
+
+.input-group input:focus {
+    outline: none;
+    border-color: var(--teal-500);
+    background: rgba(20,184,166,0.04);
+    box-shadow: 0 0 0 3px rgba(20,184,166,0.12);
+}
+
+/* Password toggle */
+.password-toggle {
+    position: absolute;
+    right: 14px;
+    top: 40px;
+    cursor: pointer;
+    font-size: 18px;
+    user-select: none;
+    color: var(--text-muted);
+    transition: color 0.2s;
+}
+
+.password-toggle:hover { color: var(--text-sub); }
+
+/* Forgot password */
+.forgot-password {
+    text-align: right;
+    margin-top: -14px;
+    margin-bottom: 22px;
+}
+
+.forgot-password a {
+    color: var(--teal-400);
+    text-decoration: none;
+    font-size: 13px;
+    font-weight: 600;
+    transition: color 0.2s;
+}
+
+.forgot-password a:hover { color: var(--teal-300); text-decoration: underline; }
+
+/* ============================================
+   PRIMARY CTA BUTTON
+   ============================================ */
+
+.btn {
+    width: 100%;
+    padding: 13px 24px;
+    border: none;
+    border-radius: 10px;
+    font-size: 14px;
+    font-weight: 700;
+    font-family: 'DM Sans', sans-serif;
+    cursor: pointer;
+    transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    letter-spacing: 0.1px;
+    position: relative;
+    overflow: hidden;
+}
+
+.btn-primary {
+    background: linear-gradient(135deg, var(--teal-500), var(--teal-700));
+    color: white;
+    box-shadow: 0 4px 20px rgba(20,184,166,0.3);
+}
+
+.btn-primary:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 6px 28px rgba(20,184,166,0.45);
+}
+
+.btn-primary:active { transform: scale(0.98); }
+
+.btn-primary::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(135deg, rgba(255,255,255,0.1), transparent);
+    pointer-events: none;
+}
+
+/* Loading state */
+.btn:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+    transform: none !important;
+}
+
+/* Google button */
+.btn-google {
+    background: rgba(255,255,255,0.04);
+    border: 1.5px solid var(--border);
+    color: var(--text-sub);
+    margin-top: 12px;
+    width: 100%;
+    padding: 11px 24px;
+    border-radius: 10px;
+    font-size: 14px;
+    font-weight: 600;
+    font-family: 'DM Sans', sans-serif;
+    cursor: pointer;
+    transition: all 0.2s;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    min-height: 48px;
+    overflow: hidden;
+}
+
+.btn-google:hover {
+    background: rgba(255,255,255,0.07);
+    border-color: rgba(255,255,255,0.15);
+    color: var(--text);
+}
+
+/* Hide any broken image inside Google button or sign-in container */
+.btn-google img,
+.google-btn img,
+#googleSignInDiv img,
+#google-signin-btn img { display: none; }
+
+/* Google sign-in rendered container override */
+#googleSignInDiv,
+#google-signin-btn {
+    width: 100%;
+    margin-top: 12px;
+}
+#googleSignInDiv > div,
+#google-signin-btn > div {
+    background: rgba(255,255,255,0.04) !important;
+    border: 1.5px solid rgba(255,255,255,0.08) !important;
+    border-radius: 10px !important;
+    color: var(--text-sub) !important;
+    min-height: 48px !important;
+    overflow: hidden !important;
+    width: 100% !important;
+}
+
+/* Divider */
+.divider {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin: 18px 0;
+}
+
+.divider::before,
+.divider::after {
+    content: '';
+    flex: 1;
+    height: 1px;
+    background: var(--border);
+}
+
+.divider span {
+    font-size: 12px;
+    color: var(--text-muted);
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    white-space: nowrap;
+}
+
+/* ============================================
+   TEACHER ID INPUT (if applicable)
+   ============================================ */
+
+.id-input-wrap {
+    display: flex;
+    gap: 8px;
+}
+
+.id-input-wrap input { border-radius: 10px 0 0 10px; flex: 1; }
+.id-input-wrap button {
+    background: linear-gradient(135deg, var(--teal-500), var(--teal-700));
+    color: white;
+    border: none;
+    padding: 0 16px;
+    border-radius: 0 10px 10px 0;
+    font-size: 14px;
+    font-weight: 700;
+    font-family: 'DM Sans', sans-serif;
+    cursor: pointer;
+    white-space: nowrap;
+    transition: all 0.2s;
+}
+.id-input-wrap button:hover { background: linear-gradient(135deg, var(--teal-600), var(--teal-700)); }
+
+/* ============================================
+   TERMS & LINKS
+   ============================================ */
+
+.auth-footer-text {
+    text-align: center;
+    margin-top: 20px;
+    font-size: 13px;
+    color: var(--text-muted);
+}
+
+.auth-footer-text a {
+    color: var(--teal-400);
+    font-weight: 600;
+    text-decoration: none;
+    transition: color 0.2s;
+}
+
+.auth-footer-text a:hover { color: var(--teal-300); }
+
+/* Terms checkbox */
+.terms-check {
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+    margin-bottom: 20px;
+}
+
+.terms-check input[type="checkbox"] {
+    width: 16px;
+    height: 16px;
+    margin-top: 2px;
+    accent-color: var(--teal-500);
+    cursor: pointer;
+    flex-shrink: 0;
+}
+
+.terms-check label {
+    font-size: 13px;
+    color: var(--text-muted);
+    cursor: pointer;
+    line-height: 1.5;
+}
+
+.terms-check label a {
+    color: var(--teal-400);
+    text-decoration: none;
+    font-weight: 600;
+}
+
+/* ============================================
+   FEATURE HIGHLIGHTS (if any below form)
+   ============================================ */
+
+.feature-pills {
+    display: flex;
+    justify-content: center;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin-top: 24px;
+}
+
+.feature-pill {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    padding: 5px 12px;
+    background: rgba(255,255,255,0.03);
+    border: 1px solid var(--border);
+    border-radius: 99px;
+    font-size: 11px;
+    font-weight: 600;
+    color: var(--text-muted);
+    letter-spacing: 0.2px;
+}
+
+/* ============================================
+   SCROLLBAR
+   ============================================ */
+
+::-webkit-scrollbar { width: 6px; height: 6px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: var(--slate-700); border-radius: 99px; }
+::-webkit-scrollbar-thumb:hover { background: var(--teal-600); }
+
+/* ============================================
+   SIDEBAR & MAIN APP HELPERS
+   (in case style.css is loaded alongside appStyle.css)
+   ============================================ */
+
+/* Hamburger toggle */
+.menu-toggle {
+    position: fixed;
+    top: 14px;
+    left: 14px;
+    width: 44px;
+    height: 44px;
+    background: linear-gradient(135deg, var(--teal-600), var(--teal-700));
+    border: none;
+    border-radius: 12px;
+    cursor: pointer;
+    z-index: 1001;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 5px;
+    box-shadow: 0 4px 14px rgba(20,184,166,0.35);
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.menu-toggle:hover {
+    transform: scale(1.06);
+    box-shadow: 0 6px 20px rgba(20,184,166,0.5);
+}
+
+.menu-toggle span {
+    width: 22px;
+    height: 2.5px;
+    background: white;
+    border-radius: 2px;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    display: block;
+}
+
+.menu-toggle.active span:nth-child(1) { transform: rotate(45deg) translate(6px, 6px); }
+.menu-toggle.active span:nth-child(2) { opacity: 0; transform: translateX(-16px); }
+.menu-toggle.active span:nth-child(3) { transform: rotate(-45deg) translate(6px, -6px); }
+
+/* Sidebar base */
+.sidebar {
+    position: fixed;
+    transform: translateX(-100%);
+    transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.sidebar.open { transform: translateX(0); }
+
+/* Overlay */
+.sidebar-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.6);
+    backdrop-filter: blur(6px);
+    z-index: 99;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.3s;
+}
+
+.sidebar-overlay.active { opacity: 1; pointer-events: all; }
+
+/* Main content */
+.main-content {
+    margin-left: 0;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+@media (min-width: 1025px) {
+    .sidebar.open ~ .main-content { margin-left: 272px; }
+}
+
+/* ============================================
+   RESPONSIVE
+   ============================================ */
+
+@media (max-width: 480px) {
+    .auth-container {
+        margin: 12px;
+        padding: 32px 24px;
+        border-radius: 18px;
+    }
+
+    .auth-header h1 { font-size: 22px; }
+    .tab-btn { font-size: 13px; padding: 9px 12px; }
+    .btn { padding: 12px 20px; font-size: 13px; }
+}
+
+/* ============================================
+   ACCESSIBILITY
+   ============================================ */
+
+*:focus-visible {
+    outline: 2px solid var(--teal-500);
+    outline-offset: 3px;
+    border-radius: 6px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+    *, *::before, *::after {
+        animation-duration: 0.01ms !important;
+        transition-duration: 0.01ms !important;
+    }
+}
+
+
+/* ============================================
+   GLOBAL DARK THEME FIXES (Login Page)
+   ============================================ */
+
+/* Force all inputs in auth area dark */
+.auth-container input,
+.auth-form input {
+    background: var(--bg-input) !important;
+    background-color: var(--bg-input) !important;
+    color: var(--text) !important;
+    border: 1.5px solid var(--border) !important;
+    color-scheme: dark;
+}
+.auth-container input::placeholder,
+.auth-form input::placeholder { color: var(--text-muted) !important; }
+.auth-container input:focus,
+.auth-form input:focus {
+    border-color: var(--teal-500) !important;
+    background-color: rgba(20,184,166,0.04) !important;
+    box-shadow: 0 0 0 3px rgba(20,184,166,0.12) !important;
+}
+
+/* All selects dark */
+select,
+.auth-container select {
+    background: var(--bg-input) !important;
+    color: var(--text) !important;
+    border-color: var(--border) !important;
+    color-scheme: dark;
+}
+select option {
+    background-color: #1e293b !important;
+    color: #f1f5f9 !important;
+}
+select option:checked,
+select option:hover {
+    background-color: #14b8a6 !important;
+    color: #fff !important;
+}
+
+/* White/light inline backgrounds → dark */
+[style*="background: white"],
+[style*="background: #fff"],
+[style*="background: #ffffff"],
+[style*="background-color: white"],
+[style*="background-color: #fff"] {
+    background: var(--bg-card, #1e293b) !important;
+    background-color: var(--bg-card, #1e293b) !important;
+    color: var(--text, #f1f5f9) !important;
+}
+[style*="background: #f9fafb"],
+[style*="background: #f3f4f6"],
+[style*="background: #f1f5f9"],
+[style*="background-color: #f9fafb"],
+[style*="background-color: #f3f4f6"] {
+    background: rgba(255,255,255,0.04) !important;
+    background-color: rgba(255,255,255,0.04) !important;
+}
+
+/* Dark text → light text */
+[style*="color: #000"],
+[style*="color: #111827"],
+[style*="color: #1f2937"] { color: #f1f5f9 !important; }
+[style*="color: #374151"],
+[style*="color: #4b5563"] { color: #94a3b8 !important; }
+[style*="color: #6b7280"],
+[style*="color: #9ca3af"] { color: #64748b !important; }
+
+/* Light borders → dark */
+[style*="border: 1px solid #e5e7eb"],
+[style*="border: 2px solid #e5e7eb"],
+[style*="border: 1px solid #d1d5db"] { border-color: rgba(255,255,255,0.08) !important; }
