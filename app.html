@@ -13,7 +13,6 @@
     <link rel="icon" type="image/x-icon" href="assets/favicon.ico">
     <title>Class Manager</title>
     <link rel="stylesheet" href="appStyle.css">
-    <link rel="stylesheet" href="fixes.css">
     <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
 </head>
 <body>
@@ -178,50 +177,50 @@
  
                     <!-- Admin Analytics Tab -->
                     <div id="admin-analytics-tab" class="admin-tab-content" style="display: none;">   
-                        <h2 style="color: #000; margin-bottom: 24px;">📊 Analytics Overview</h2>    
+                        <h2 style="color: #f1f5f9; margin-bottom: 24px; font-family: Sora, sans-serif;">📊 Analytics Overview</h2>    
    
                         <!-- Statistics Cards -->    
                         <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 16px; margin-bottom: 24px;">
                
                             <!-- Total Users Card -->        
                             <div class="card" style="background: linear-gradient(135deg, rgba(139,92,246,0.2) 0%, rgba(139,92,246,0.05) 100%); border: 1px solid rgba(139,92,246,0.3);">            
-                                <p style="color: #000; font-size: 12px; margin: 0 0 8px 0; text-transform: uppercase; letter-spacing: 0.5px; opacity: 0.7;">Total Users</p>            
-                                <h2 id="adminTotalUsers" style="color: #000; font-size: 32px; font-weight: 700; margin: 0;">0</h2>            
-                                <p style="color: #000; font-size: 12px; margin: 8px 0 0 0; opacity: 0.6;">Registered accounts</p>        
+                                <p style="color: #a78bfa; font-size: 11px; margin: 0 0 8px 0; text-transform: uppercase; letter-spacing: 1px; font-weight: 700;">Total Users</p>            
+                                <h2 id="adminTotalUsers" style="color: #f1f5f9; font-size: 36px; font-weight: 800; margin: 0; letter-spacing: -1px;">0</h2>            
+                                <p style="color: #94a3b8; font-size: 12px; margin: 8px 0 0 0;">Registered accounts</p>        
                             </div>
                
                             <!-- Active Users Card -->       
                             <div class="card" style="background: linear-gradient(135deg, rgba(16,185,129,0.2) 0%, rgba(16,185,129,0.05) 100%); border: 1px solid rgba(16,185,129,0.3);">          
-                                <p style="color: #000; font-size: 12px; margin: 0 0 8px 0; text-transform: uppercase; letter-spacing: 0.5px; opacity: 0.7;">Active This Month</p>          
-                                <h2 id="adminActiveUsers" style="color: #000; font-size: 32px; font-weight: 700; margin: 0;">0</h2>          
-                                <p style="color: #000; font-size: 12px; margin: 8px 0 0 0; opacity: 0.6;">Users with activity</p>      
+                                <p style="color: #34d399; font-size: 11px; margin: 0 0 8px 0; text-transform: uppercase; letter-spacing: 1px; font-weight: 700;">Active This Month</p>          
+                                <h2 id="adminActiveUsers" style="color: #f1f5f9; font-size: 36px; font-weight: 800; margin: 0; letter-spacing: -1px;">0</h2>          
+                                <p style="color: #94a3b8; font-size: 12px; margin: 8px 0 0 0;">Users with activity</p>      
                             </div>
              
                             <!-- New Users Card -->      
                             <div class="card" style="background: linear-gradient(135deg, rgba(59,130,246,0.2) 0%, rgba(59,130,246,0.05) 100%); border: 1px solid rgba(59,130,246,0.3);">         
-                                <p style="color: #000; font-size: 12px; margin: 0 0 8px 0; text-transform: uppercase; letter-spacing: 0.5px; opacity: 0.7;">New This Month</p>          
-                                <h2 id="adminNewUsers" style="color: #000; font-size: 32px; font-weight: 700; margin: 0;">0</h2>        
-                                <p style="color: #000; font-size: 12px; margin: 8px 0 0 0; opacity: 0.6;">Recent signups</p>       
+                                <p style="color: #60a5fa; font-size: 11px; margin: 0 0 8px 0; text-transform: uppercase; letter-spacing: 1px; font-weight: 700;">New This Month</p>          
+                                <h2 id="adminNewUsers" style="color: #f1f5f9; font-size: 36px; font-weight: 800; margin: 0; letter-spacing: -1px;">0</h2>        
+                                <p style="color: #94a3b8; font-size: 12px; margin: 8px 0 0 0;">Recent signups</p>       
                             </div>  
                         </div>
         
                         <!-- User Growth Chart -->   
                         <div class="card">      
                             <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">         
-                                <h3 class="card-title" style="margin: 0; color: #000;">📈 User Growth</h3>         
+                                <h3 class="card-title" style="margin: 0; color: #f1f5f9;">📈 User Growth</h3>         
                                 <button class="btn btn-secondary" onclick="createAdminUserGrowthChart()" style="padding: 8px 16px; font-size: 13px;">          
                                     🔄 Refresh          
                                 </button>       
                             </div>
             
                             <!-- Chart Container -->       
-                            <div style="position: relative; height: 350px; background: rgba(0,0,0,0.05); border-radius: 12px; padding: 20px;">         
+                            <div style="position: relative; height: 350px; background: rgba(255,255,255,0.04); border-radius: 12px; padding: 20px;">         
                                 <canvas id="adminUserGrowthChart"></canvas>       
                             </div>
                
                             <!-- Chart Info -->        
                             <div style="margin-top: 16px; padding: 12px; background: rgba(139,92,246,0.1); border-radius: 8px; border-left: 4px solid #8b5cf6;">            
-                                <p style="color: #000; font-size: 13px; margin: 0; line-height: 1.6;">             
+                                <p style="color: #cbd5e1; font-size: 13px; margin: 0; line-height: 1.6;">             
                                     <strong>📊 User Growth Tracking:</strong> This chart shows the cumulative growth of registered users over time. Each point represents the total number of users who have signed up by that date.            
                                 </p>        
                             </div>   
@@ -232,45 +231,45 @@
                
                             <!-- User Activity Card -->        
                             <div class="card">            
-                                <h3 class="card-title" style="color: #000;">📊 User Activity</h3>            
-                                <div style="padding: 12px; background: rgba(0,0,0,0.05); border-radius: 8px; margin-bottom: 12px;">               
+                                <h3 class="card-title" style="color: #f1f5f9;">📊 User Activity</h3>            
+                                <div style="padding: 12px; background: rgba(255,255,255,0.04); border-radius: 8px; margin-bottom: 12px;">               
                                     <div style="display: flex; justify-content: space-between; align-items: center;">                    
-                                        <span style="color: #000; font-size: 13px; opacity: 0.7;">Daily Active Users</span>                    
-                                        <strong id="adminDAU" style="color: #000;">0</strong>                
+                                        <span style="color: #94a3b8; font-size: 13px;">Daily Active Users</span>                    
+                                        <strong id="adminDAU" style="color: #f1f5f9; font-size: 16px;">0</strong>                
                                     </div>           
                                 </div>            
-                                <div style="padding: 12px; background: rgba(0,0,0,0.05); border-radius: 8px; margin-bottom: 12px;">               
+                                <div style="padding: 12px; background: rgba(255,255,255,0.04); border-radius: 8px; margin-bottom: 12px;">               
                                     <div style="display: flex; justify-content: space-between; align-items: center;">                    
-                                        <span style="color: #000; font-size: 13px; opacity: 0.7;">Weekly Active Users</span>                    
-                                        <strong id="adminWAU" style="color: #000;">0</strong>                
+                                        <span style="color: #94a3b8; font-size: 13px;">Weekly Active Users</span>                    
+                                        <strong id="adminWAU" style="color: #f1f5f9; font-size: 16px;">0</strong>                
                                     </div>           
                                 </div>            
-                                <div style="padding: 12px; background: rgba(0,0,0,0.05); border-radius: 8px;">               
+                                <div style="padding: 12px; background: rgba(255,255,255,0.04); border-radius: 8px;">               
                                     <div style="display: flex; justify-content: space-between; align-items: center;">                   
-                                        <span style="color: #000; font-size: 13px; opacity: 0.7;">Monthly Active Users</span>                   
-                                        <strong id="adminMAU" style="color: #000;">0</strong>               
+                                        <span style="color: #94a3b8; font-size: 13px;">Monthly Active Users</span>                   
+                                        <strong id="adminMAU" style="color: #f1f5f9; font-size: 16px;">0</strong>               
                                     </div>            
                                 </div>        
                             </div>
                 
                             <!-- User Retention Card -->        
                             <div class="card">            
-                                <h3 class="card-title" style="color: #000;">🎯 User Retention</h3>            
-                                <div style="padding: 12px; background: rgba(0,0,0,0.05); border-radius: 8px; margin-bottom: 12px;">                
+                                <h3 class="card-title" style="color: #f1f5f9;">🎯 User Retention</h3>            
+                                <div style="padding: 12px; background: rgba(255,255,255,0.04); border-radius: 8px; margin-bottom: 12px;">                
                                     <div style="display: flex; justify-content: space-between; align-items: center;">                   
-                                        <span style="color: #000; font-size: 13px; opacity: 0.7;">7-Day Retention</span>                   
+                                        <span style="color: #94a3b8; font-size: 13px;">7-Day Retention</span>                   
                                         <strong id="admin7DayRetention" style="color: #10b981;">0%</strong>                
                                     </div>            
                                 </div>           
-                                <div style="padding: 12px; background: rgba(0,0,0,0.05); border-radius: 8px; margin-bottom: 12px;">              
+                                <div style="padding: 12px; background: rgba(255,255,255,0.04); border-radius: 8px; margin-bottom: 12px;">              
                                     <div style="display: flex; justify-content: space-between; align-items: center;">              
-                                        <span style="color: #000; font-size: 13px; opacity: 0.7;">30-Day Retention</span>              
+                                        <span style="color: #94a3b8; font-size: 13px;">30-Day Retention</span>              
                                         <strong id="admin30DayRetention" style="color: #10b981;">0%</strong>             
                                     </div>           
                                 </div>            
-                                <div style="padding: 12px; background: rgba(0,0,0,0.05); border-radius: 8px;">                
+                                <div style="padding: 12px; background: rgba(255,255,255,0.04); border-radius: 8px;">                
                                     <div style="display: flex; justify-content: space-between; align-items: center;">                    
-                                        <span style="color: #000; font-size: 13px; opacity: 0.7;">90-Day Retention</span>                    
+                                        <span style="color: #94a3b8; font-size: 13px;">90-Day Retention</span>                    
                                         <strong id="admin90DayRetention" style="color: #10b981;">0%</strong>                
                                     </div>           
                                 </div>        
@@ -449,16 +448,20 @@
                         </div>
 
                         <div class="form-group">
-                            <label>Grade *</label>
-                            <select id="studentGradeInput"></select>
+                            <label>Class *</label>
+                            <select id="studentClassInput">
+                                <option value="">Select Class</option>
+                                <option value="A">A</option>
+                                <option value="B">B</option>
+                                <option value="C">C</option>
+                                <option value="D">D</option>
+                                <option value="E">E</option>
+                            </select>
                         </div>
 
-                        <div class="form-group" id="studentClassRow" style="display: none;">    
-                            <label>Class</label>    
-                            <select id="studentClassInput">        
-                                <option value="">Select Class</option>        
-                                <!-- Populated by JavaScript -->    
-                            </select>
+                        <div class="form-group">
+                            <label>Grade *</label>
+                            <select id="studentGradeInput"></select>
                         </div>
 
                         <div class="form-group">
@@ -549,9 +552,9 @@
             
                         <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-bottom: 20px;">
                             <div class="form-group">
-                                <label>Select Grade *</label>                    
+                                <label>Select Class *</label>                    
                                 <select id="attendanceClassSelect" style="width: 100%; padding: 12px; border: 1px solid #D1D5DB; border-radius: 8px; font-size: 16px;">                       
-                                    <option value="">Choose a grade</option>        
+                                    <option value="">Choose a class</option>        
                                     <option value="06">Grade 06</option>                        
                                     <option value="07">Grade 07</option>                        
                                     <option value="08">Grade 08</option>                        
@@ -559,13 +562,6 @@
                                     <option value="10">Grade 10</option>                       
                                     <option value="11">Grade 11</option>                       
                                     <option value="12">Grade 12</option>
-                                </select>
-                            </div>
-                            <div class="form-group" id="attendanceClassRow" style="display: none;">    
-                                <label>Select Class</label>    
-                                <select id="attendanceClass">        
-                                    <option value="">Select Class</option>        
-                                    <!-- Populated by JavaScript -->    
                                 </select>
                             </div>
                             <div class="form-group">
@@ -643,7 +639,7 @@
                     </div>
 
                     <div class="form-group">
-                        <label>Grade (Auto-filled)</label>
+                        <label>Class (Auto-filled)</label>
                         <input type="text" id="paymentClass" placeholder="Will auto-fill after entering ID" disabled>
                     </div>
 
@@ -1084,28 +1080,18 @@
                 </div>
 
                 <!-- Grades Card -->   
-                <div class="settings-section">    
-                    <h3>Grade Management</h3>       
-                    <h4>Manage Grades</h4>  
-                    <p class="setting-description" style="margin-left: 0; margin-bottom: 16px;">        
-                        Add or remove grades. You cannot remove a grade if students or timetable entries are assigned to it.    
-                    </p>
-        
-                    <div id="gradesList" class="grades-list">        
-                        <!-- Populated by JavaScript with badge-style layout -->    
-                    </div>    
-    
-                    <div class="add-grade-form">        
-                        <input type="text" id="newGrade" placeholder="Enter grade (e.g., 13)" maxlength="2">        
-                        <button class="btn btn-primary" onclick="addGrade()">            
-                            ➕ Add Grade        
-                        </button>    
+                <div class="card">
+                    <h3 class="card-title">Grades</h3>        
+                    <div id="gradesList"></div>       
+                    <div style="display: flex; gap: 12px; margin-top: 16px;">            
+                        <input type="text" id="newGrade" placeholder="e.g., 13" style="flex: 1;">            
+                        <button class="btn btn-primary" onclick="addGrade()">➕ Add</button>        
+                    </div>
+                    <h3 class="card-title">Classes</h3>
+                    <div id="classSettingsContainer" style="margin-top: 24px; padding-top: 24px; border-top: 2px solid #e5e7eb;">                 
                     </div>
                 </div>
-                <div id="classSettingsContainer" style="margin-top: 24px; padding-top: 24px; border-top: 2px solid #e5e7eb;">                        
-                    <!-- Class management UI will be loaded here by JavaScript -->                
-                </div>
-                
+
                 <!-- Subject Card -->    
                 <div class="card">        
                     <h3 class="card-title">Subject</h3>        
@@ -1240,14 +1226,7 @@
                     <div class="form-group">                
                         <label>Grade</label>                
                         <select id="timetableGrade"></select>            
-                    </div>
-                    <div class="form-group" id="timetableClassRow" style="display: none;">    
-                        <label>Class</label>    
-                        <select id="timetableClass">        
-                            <option value="">Select Class</option>        
-                            <!-- Populated by JavaScript -->    
-                        </select>
-                    </div>
+                    </div>           
                     <div class="form-group">                
                         <label>Notes</label>               
                         <input type="text" id="timetableNotes" placeholder="e.g., Room 101">           
@@ -1301,7 +1280,6 @@
     <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-auth-compat.js"></script>
     <script src="Js/firebase-config.js"></script>
     <script src="Js/core-functions.js"></script>
-    <script src="Js/ClassManagement.js"></script>    
     <script src="Js/admin-users.js"></script>
     <script src="Js/admin-analytics.js"></script>
     <script src="Js/admin-management.js"></script>
@@ -1309,15 +1287,16 @@
     <script src="Js/Save.js"></script>
     <script src="Js/Settings.js"></script>
     <script src="Js/Students.js"></script>
+    <script src="Js/Subscription.js"></script>
     <script src="Js/Attendance.js"></script>
-    <script src="Js/Timetable.js"></script>
+    <script src="Js/Excel Export.js"></script>
+    <script src="Js/Payhere.js"></script>
     <script src="Js/Payments.js"></script>
     <script src="Js/Reports.js"></script>
-    <script src="Js/Subscription.js"></script>
-    <script src="Js/Payhere.js"></script>
+    <script src="Js/Timetable.js"></script>
     <script src="Js/QR Codes.js"></script>
-    <script src="Js/Excel Export.js"></script>
-    <script src="Js/"></script>    
+    <script src="Js/"></script>
+    
     <script type="module">     
         import { initializeApp } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-app.js";
     </script>
@@ -1326,11 +1305,3 @@
     </script>
 </body>
 </html>
-
-
-
-
-
-
-
-
