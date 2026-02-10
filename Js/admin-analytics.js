@@ -24,35 +24,35 @@ function loadAdminAnalytics() {
     analyticsContainer.innerHTML = `
         <div class="analytics-grid" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 20px; margin-bottom: 30px;">
             <div class="stat-card">
-                <h4 style="margin: 0 0 10px 0; color: #6b7280; font-size: 14px;">Total Users</h4>
-                <p style="font-size: 32px; font-weight: 700; margin: 0; color: #2563EB;">${analytics.totalUsers}</p>
+                <h4 style="margin: 0 0 10px 0; color: #94a3b8; font-size: 12px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.8px;">Total Users</h4>
+                <p style="font-size: 36px; font-weight: 800; margin: 0; color: #2dd4bf; font-family: 'Sora', sans-serif; letter-spacing: -1px;">${analytics.totalUsers}</p>
             </div>
     
             <div class="stat-card">
-                <h4 style="margin: 0 0 10px 0; color: #6b7280; font-size: 14px;">Free Trial Users</h4>
-                <p style="font-size: 32px; font-weight: 700; margin: 0; color: #6b7280;">${analytics.freeTrialUsers}</p>
+                <h4 style="margin: 0 0 10px 0; color: #94a3b8; font-size: 12px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.8px;">Free Trial Users</h4>
+                <p style="font-size: 36px; font-weight: 800; margin: 0; color: #94a3b8; font-family: 'Sora', sans-serif; letter-spacing: -1px;">${analytics.freeTrialUsers}</p>
             </div>
     
             <div class="stat-card">
-                <h4 style="margin: 0 0 10px 0; color: #6b7280; font-size: 14px;">Paid Users</h4>
-                <p style="font-size: 32px; font-weight: 700; margin: 0; color: #10b981;">${analytics.paidUsers}</p>
+                <h4 style="margin: 0 0 10px 0; color: #94a3b8; font-size: 12px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.8px;">Paid Users</h4>
+                <p style="font-size: 36px; font-weight: 800; margin: 0; color: #10b981; font-family: 'Sora', sans-serif; letter-spacing: -1px;">${analytics.paidUsers}</p>
             </div>
     
             <div class="stat-card">
-                <h4 style="margin: 0 0 10px 0; color: #6b7280; font-size: 14px;">Total Students</h4>
-                <p style="font-size: 32px; font-weight: 700; margin: 0; color: #8b5cf6;">${analytics.totalStudents}</p>
+                <h4 style="margin: 0 0 10px 0; color: #94a3b8; font-size: 12px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.8px;">Total Students</h4>
+                <p style="font-size: 36px; font-weight: 800; margin: 0; color: #a78bfa; font-family: 'Sora', sans-serif; letter-spacing: -1px;">${analytics.totalStudents}</p>
             </div>
         </div>
 
         <div class="card" style="margin-bottom: 20px;">
-            <h3 style="margin-top: 0;">User Growth</h3>
-            <div id="userGrowthChart" style="height: 300px; display: flex; align-items: center; justify-content: center; background: #f9fafb; border-radius: 8px;">
-                <p style="color: #6b7280;">Chart visualization coming soon...</p>
+            <h3 style="margin-top: 0; color: #f1f5f9;">User Growth</h3>
+            <div id="userGrowthChart" style="height: 300px; display: flex; align-items: center; justify-content: center; background: rgba(255,255,255,0.02); border-radius: 8px; border: 1px dashed rgba(255,255,255,0.08);">
+                <p style="color: #64748b;">Chart visualization coming soon...</p>
             </div>
         </div>
 
         <div class="card">
-            <h3 style="margin-top: 0;">Subscription Breakdown</h3>
+            <h3 style="margin-top: 0; color: #f1f5f9;">Subscription Breakdown</h3>
             <table class="data-table" style="width: 100%;">
                 <thead>
                     <tr>
@@ -791,7 +791,7 @@ async function createAdminUserGrowthChart() {
                 legend: {           
                     display: true,          
                     labels: {                                                 
-                        color: '#000',  // Black text
+                        color: '#94a3b8',
                         font: {                    
                             size: 13,                    
                             weight: '600'               
@@ -818,11 +818,11 @@ async function createAdminUserGrowthChart() {
             scales: {
                 x: {
                     grid: {
-                        color: 'rgba(0, 0, 0, 0.1)',  // Black grid
+                        color: 'rgba(255, 255, 255, 0.06)',
                         drawBorder: false
                     },
                     ticks: {
-                        color: '#000',  // Black text
+                        color: '#64748b',
                         font: {
                             size: 11
                         },
@@ -833,11 +833,11 @@ async function createAdminUserGrowthChart() {
                 y: {
                     beginAtZero: true,
                     grid: {
-                        color: 'rgba(0, 0, 0, 0.1)',  // Black grid
+                        color: 'rgba(255, 255, 255, 0.06)',
                         drawBorder: false
                     },
                     ticks: {
-                        color: '#000',  // Black text
+                        color: '#64748b',
                         font: {
                             size: 11
                         },
