@@ -668,6 +668,18 @@ body {
     transition: all 0.2s var(--ease);
     appearance: none;
     -webkit-appearance: none;
+    color-scheme: dark;
+}
+
+/* ---- Dark native option list (Chrome/Edge) ---- */
+select option {
+    background-color: #1e293b;
+    color: #f1f5f9;
+}
+select option:checked,
+select option:hover {
+    background-color: #14b8a6;
+    color: #fff;
 }
 
 .form-group input::placeholder,
@@ -947,6 +959,69 @@ table tbody tr:last-child td { border-bottom: none; }
 .admin-tab-content { display: none; }
 .admin-tab-content.active { display: block; animation: screenIn 0.25s var(--ease) both; }
 
+/* ---- Admin panel: dark surface overrides ---- */
+.admin-tab-content [style*="background: white"],
+.admin-tab-content [style*="background: #fff"],
+.admin-tab-content [style*="background: #f9fafb"],
+.admin-tab-content [style*="background: #f3f4f6"],
+.admin-tab-content [style*="background: #f1f5f9"],
+.admin-tab-content [style*="background-color: white"],
+.admin-tab-content [style*="background-color: #fff"] {
+    background: var(--bg-card) !important;
+    background-color: var(--bg-card) !important;
+    border-color: var(--border) !important;
+}
+.admin-tab-content input,
+.admin-tab-content select,
+.admin-tab-content textarea {
+    background: var(--bg-input) !important;
+    color: var(--text-primary) !important;
+    border: 1.5px solid var(--border) !important;
+    color-scheme: dark;
+}
+.admin-tab-content input::placeholder { color: var(--text-muted) !important; }
+.admin-tab-content input:focus,
+.admin-tab-content select:focus {
+    border-color: var(--teal-500) !important;
+    box-shadow: 0 0 0 3px rgba(20,184,166,0.12) !important;
+}
+.admin-tab-content label,
+.admin-tab-content h4 { color: var(--text-primary) !important; }
+.admin-tab-content p  { color: var(--text-secondary); }
+
+/* ---- Admin panel: force dark on any injected light surfaces ---- */
+.admin-tab-content [style*="background: white"],
+.admin-tab-content [style*="background: #fff"],
+.admin-tab-content [style*="background: #f9fafb"],
+.admin-tab-content [style*="background: #f3f4f6"],
+.admin-tab-content [style*="background: #f1f5f9"],
+.admin-tab-content [style*="background-color: white"],
+.admin-tab-content [style*="background-color: #fff"],
+.admin-tab-content [style*="background-color: #f9"],
+.admin-tab-content [style*="background-color: #f3"],
+.admin-tab-content [style*="background-color: #f1"] {
+    background: var(--bg-card) !important;
+    background-color: var(--bg-card) !important;
+    border-color: var(--border) !important;
+}
+.admin-tab-content input,
+.admin-tab-content select,
+.admin-tab-content textarea {
+    background: var(--bg-input) !important;
+    color: var(--text-primary) !important;
+    border: 1.5px solid var(--border) !important;
+    color-scheme: dark;
+}
+.admin-tab-content input::placeholder { color: var(--text-muted) !important; }
+.admin-tab-content input:focus,
+.admin-tab-content select:focus {
+    border-color: var(--teal-500) !important;
+    box-shadow: 0 0 0 3px rgba(20,184,166,0.12) !important;
+}
+.admin-tab-content label { color: var(--text-secondary) !important; }
+.admin-tab-content h4 { color: var(--text-primary) !important; }
+.admin-tab-content p { color: var(--text-secondary); }
+
 .admin-card {
     background: var(--bg-elevated);
     border: 1px solid var(--border);
@@ -1011,6 +1086,80 @@ table tbody tr:last-child td { border-bottom: none; }
     overflow-y: auto;
     box-shadow: 0 24px 64px rgba(0,0,0,0.6), 0 0 0 1px rgba(255,255,255,0.04) inset;
     animation: modalIn 0.3s var(--ease) both;
+}
+
+/* ---- Modal / overlay form fields — always dark ---- */
+.modal-content input,
+.modal-content select,
+.modal-content textarea,
+.modal-overlay input,
+.modal-overlay select,
+.modal-overlay textarea {
+    background: var(--bg-input) !important;
+    background-color: var(--bg-input) !important;
+    color: var(--text-primary) !important;
+    border: 1.5px solid var(--border) !important;
+    border-radius: var(--r-md);
+    padding: 11px 14px;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 14px;
+    width: 100%;
+    color-scheme: dark;
+}
+.modal-content input::placeholder,
+.modal-overlay input::placeholder,
+.modal-content textarea::placeholder { color: var(--text-muted) !important; }
+.modal-content input:focus,
+.modal-content select:focus,
+.modal-content textarea:focus,
+.modal-overlay input:focus,
+.modal-overlay select:focus {
+    outline: none;
+    border-color: var(--teal-500) !important;
+    box-shadow: 0 0 0 3px rgba(20,184,166,0.12) !important;
+    background: rgba(20,184,166,0.04) !important;
+}
+.modal-content label { color: var(--text-secondary) !important; font-size: 12px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; }
+
+/* ---- Modal form fields — always dark ---- */
+.modal-content input,
+.modal-content select,
+.modal-content textarea,
+.modal-overlay input,
+.modal-overlay select,
+.modal-overlay textarea {
+    background: var(--bg-input) !important;
+    background-color: var(--bg-input) !important;
+    color: var(--text-primary) !important;
+    border: 1.5px solid var(--border) !important;
+    border-radius: var(--r-md);
+    padding: 11px 14px;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 14px;
+    width: 100%;
+    color-scheme: dark;
+}
+.modal-content input::placeholder,
+.modal-overlay input::placeholder,
+.modal-content textarea::placeholder {
+    color: var(--text-muted) !important;
+}
+.modal-content input:focus,
+.modal-content select:focus,
+.modal-content textarea:focus,
+.modal-overlay input:focus,
+.modal-overlay select:focus {
+    outline: none;
+    border-color: var(--teal-500) !important;
+    box-shadow: 0 0 0 3px rgba(20,184,166,0.12) !important;
+    background: rgba(20,184,166,0.04) !important;
+}
+.modal-content label {
+    color: var(--text-secondary) !important;
+    font-size: 12px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
 }
 
 @keyframes modalIn {
@@ -1359,6 +1508,335 @@ table tbody tr:last-child td { border-bottom: none; }
     .card, .glass-card { padding: 16px; }
     .btn             { padding: 10px 18px; font-size: 13px; }
     .grade-tab       { padding: 7px 14px; font-size: 12px; }
+}
+
+/* ============================================
+   FIX: GLOBAL INLINE BACKGROUND OVERRIDES
+   Catches any JS-injected or hardcoded light
+   backgrounds that break the dark theme
+   ============================================ */
+
+/* White / near-white → dark card */
+[style*="background: white"],
+[style*="background: #fff"],
+[style*="background: #ffffff"],
+[style*="background-color: white"],
+[style*="background-color: #fff"],
+[style*="background-color: #ffffff"] {
+    background: var(--bg-card) !important;
+    background-color: var(--bg-card) !important;
+    color: var(--text-primary) !important;
+}
+
+/* Light grays → elevated dark */
+[style*="background: #f9fafb"],
+[style*="background: #f3f4f6"],
+[style*="background: #f1f5f9"],
+[style*="background: #f8fafc"],
+[style*="background-color: #f9fafb"],
+[style*="background-color: #f3f4f6"],
+[style*="background-color: #f1f5f9"],
+[style*="background-color: #f8fafc"] {
+    background: var(--bg-elevated) !important;
+    background-color: var(--bg-elevated) !important;
+    color: var(--text-primary) !important;
+}
+
+/* Attendance present box (bright green → muted) */
+[style*="background: #D1FAE5"],
+[style*="background: #d1fae5"],
+[style*="background-color: #D1FAE5"],
+[style*="background-color: #d1fae5"] {
+    background: rgba(16,185,129,0.12) !important;
+    background-color: rgba(16,185,129,0.12) !important;
+    border: 1px solid rgba(16,185,129,0.25) !important;
+}
+
+/* Attendance absent box (bright red → muted) */
+[style*="background: #FEE2E2"],
+[style*="background: #fee2e2"],
+[style*="background-color: #FEE2E2"],
+[style*="background-color: #fee2e2"] {
+    background: rgba(244,63,94,0.1) !important;
+    background-color: rgba(244,63,94,0.1) !important;
+    border: 1px solid rgba(244,63,94,0.2) !important;
+}
+
+/* Light row backgrounds in tables/lists */
+[style*="background: rgba(0,0,0,0.05)"] {
+    background: rgba(255,255,255,0.04) !important;
+}
+
+/* Inline light borders → dark */
+[style*="border: 1px solid #e5e7eb"],
+[style*="border: 2px solid #e5e7eb"],
+[style*="border: 1px solid #d1d5db"],
+[style*="border: 2px solid #d1d5db"] {
+    border-color: var(--border) !important;
+}
+
+/* Dark text colors on dark bg — remap to light */
+[style*="color: #000"],
+[style*="color: #000000"],
+[style*="color: #111827"],
+[style*="color: #1f2937"],
+[style*="color: #1F2937"] {
+    color: var(--text-primary) !important;
+}
+[style*="color: #374151"],
+[style*="color: #4b5563"],
+[style*="color: #4B5563"] {
+    color: var(--text-secondary) !important;
+}
+[style*="color: #6b7280"],
+[style*="color: #6B7280"],
+[style*="color: #9ca3af"],
+[style*="color: #9CA3AF"] {
+    color: var(--text-muted) !important;
+}
+
+/* Keep intentional colored rgba boxes untouched */
+[style*="background: rgba(16,185,129,0"],
+[style*="background: rgba(20,184,166,0"],
+[style*="background: rgba(59,130,246,0"],
+[style*="background: rgba(139,92,246,0"],
+[style*="background: rgba(245,158,11,0"],
+[style*="background: rgba(244,63,94,0"],
+[style*="background: rgba(239,68,68,0"],
+[style*="background: linear-gradient"] {
+    /* intentional — leave alone */
+}
+
+/* Attendance student rows */
+#attendanceStudentsList > div[style*="background: #D1FAE5"],
+#attendanceStudentsList > div[style*="background: #d1fae5"] {
+    background: rgba(16,185,129,0.1) !important;
+    border-color: rgba(16,185,129,0.3) !important;
+}
+#attendanceStudentsList > div[style*="background: #F3F4F6"],
+#attendanceStudentsList > div[style*="background: #f3f4f6"] {
+    background: rgba(255,255,255,0.03) !important;
+    border-color: var(--border) !important;
+}
+#attendanceStudentsList [style*="font-weight: 700"] { color: var(--text-primary) !important; }
+#attendanceStudentsList [style*="color: #6b7280"]   { color: var(--text-muted)    !important; }
+
+/* Attendance count IDs */
+#attendanceTotalCount   { color: var(--text-primary)   !important; }
+#attendancePresentCount { color: var(--teal-400)        !important; }
+#attendanceAbsentCount  { color: var(--danger)          !important; }
+
+/* Subscription card light overrides */
+#subscription .card,
+#subscription .glass-card {
+    background: var(--bg-card) !important;
+    border-color: var(--border) !important;
+}
+
+/* Sidebar toggle FAB */
+#sidebarToggleBtn,
+.sidebar-toggle-fab {
+    background: var(--bg-card) !important;
+    border: 1px solid rgba(255,255,255,0.1) !important;
+    color: var(--text-secondary) !important;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.4) !important;
+}
+
+/* ============================================
+   FIX: × BUTTON ON GRADE/CLASS BADGES
+   Make subtle, only show red on hover
+   ============================================ */
+
+.grade-badge .btn-icon-small,
+.class-badge .btn-icon-small {
+    background: transparent !important;
+    color: var(--text-muted) !important;
+    border: none !important;
+    width: 20px !important;
+    height: 20px !important;
+    font-size: 15px !important;
+    font-weight: 400;
+    padding: 0;
+    line-height: 1;
+    transition: all 0.15s;
+}
+.grade-badge:hover .btn-icon-small,
+.class-badge:hover .btn-icon-small {
+    background: rgba(244,63,94,0.15) !important;
+    color: var(--danger) !important;
+}
+
+/* ============================================
+   GLOBAL INLINE BACKGROUND & COLOR OVERRIDES
+   Catches all hardcoded light surfaces / dark
+   text that break the dark theme
+   ============================================ */
+
+/* White / near-white → dark card */
+[style*="background: white"],
+[style*="background: #fff"],
+[style*="background: #ffffff"],
+[style*="background-color: white"],
+[style*="background-color: #fff"],
+[style*="background-color: #ffffff"] {
+    background: var(--bg-card) !important;
+    background-color: var(--bg-card) !important;
+    color: var(--text-primary) !important;
+}
+
+/* Light grays → elevated dark */
+[style*="background: #f9fafb"],
+[style*="background: #f3f4f6"],
+[style*="background: #f1f5f9"],
+[style*="background: #f8fafc"],
+[style*="background-color: #f9fafb"],
+[style*="background-color: #f3f4f6"],
+[style*="background-color: #f1f5f9"],
+[style*="background-color: #f8fafc"] {
+    background: var(--bg-elevated) !important;
+    background-color: var(--bg-elevated) !important;
+    color: var(--text-primary) !important;
+}
+
+/* Attendance: bright green box → muted */
+[style*="background: #D1FAE5"],
+[style*="background: #d1fae5"],
+[style*="background-color: #D1FAE5"],
+[style*="background-color: #d1fae5"] {
+    background: rgba(16,185,129,0.12) !important;
+    background-color: rgba(16,185,129,0.12) !important;
+    border: 1px solid rgba(16,185,129,0.25) !important;
+}
+
+/* Attendance: bright red box → muted */
+[style*="background: #FEE2E2"],
+[style*="background: #fee2e2"],
+[style*="background-color: #FEE2E2"],
+[style*="background-color: #fee2e2"] {
+    background: rgba(244,63,94,0.1) !important;
+    background-color: rgba(244,63,94,0.1) !important;
+    border: 1px solid rgba(244,63,94,0.2) !important;
+}
+
+/* Tiny dark row overlays */
+[style*="background: rgba(0,0,0,0.05)"] {
+    background: rgba(255,255,255,0.04) !important;
+}
+
+/* Light borders → dark theme border */
+[style*="border: 1px solid #e5e7eb"],
+[style*="border: 2px solid #e5e7eb"],
+[style*="border: 1px solid #d1d5db"],
+[style*="border: 2px solid #d1d5db"] {
+    border-color: var(--border) !important;
+}
+
+/* Black / dark text on dark bg → remap */
+[style*="color: #000"],
+[style*="color: #000000"],
+[style*="color: #111827"],
+[style*="color: #1f2937"],
+[style*="color: #1F2937"] {
+    color: var(--text-primary) !important;
+}
+[style*="color: #374151"],
+[style*="color: #4b5563"],
+[style*="color: #4B5563"] {
+    color: var(--text-secondary) !important;
+}
+[style*="color: #6b7280"],
+[style*="color: #6B7280"],
+[style*="color: #9ca3af"],
+[style*="color: #9CA3AF"] {
+    color: var(--text-muted) !important;
+}
+
+/* Cards & modals with injected dark text */
+.card [style*="color: #111"],
+.card [style*="color: #374"],
+.modal-content [style*="color: #111"],
+.modal-content [style*="color: #374"],
+.settings-section [style*="color: #111"],
+.settings-section [style*="color: #374"],
+.admin-card [style*="color: #111"],
+.admin-card [style*="color: #374"] {
+    color: var(--text-primary) !important;
+}
+.card [style*="color: #6b7280"],
+.modal-content [style*="color: #6b7280"],
+.settings-section [style*="color: #6b7280"] {
+    color: var(--text-secondary) !important;
+}
+
+/* Attendance student list rows */
+#attendanceStudentsList > div[style*="background: #D1FAE5"],
+#attendanceStudentsList > div[style*="background: #d1fae5"] {
+    background: rgba(16,185,129,0.1) !important;
+    border-color: rgba(16,185,129,0.3) !important;
+}
+#attendanceStudentsList > div[style*="background: #F3F4F6"],
+#attendanceStudentsList > div[style*="background: #f3f4f6"] {
+    background: rgba(255,255,255,0.03) !important;
+    border-color: var(--border) !important;
+}
+#attendanceStudentsList [style*="font-weight: 700"] { color: var(--text-primary) !important; }
+#attendanceStudentsList [style*="color: #6b7280"]   { color: var(--text-muted)    !important; }
+
+/* Attendance summary counters */
+#attendanceTotalCount   { color: var(--text-primary) !important; }
+#attendancePresentCount { color: var(--teal-400)     !important; }
+#attendanceAbsentCount  { color: var(--danger)       !important; }
+
+/* Subscription screen cards */
+#subscription .card,
+#subscription .glass-card {
+    background: var(--bg-card) !important;
+    border-color: var(--border) !important;
+}
+
+/* Sidebar toggle FAB */
+#sidebarToggleBtn,
+.sidebar-toggle-fab {
+    background: var(--bg-card) !important;
+    border: 1px solid rgba(255,255,255,0.1) !important;
+    color: var(--text-secondary) !important;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.4) !important;
+}
+
+/* Table rows light bg */
+table [style*="background: white"],
+.data-table [style*="background: white"] {
+    background: var(--bg-card) !important;
+}
+
+/* ---- × Button on Grade/Class badges ---- */
+.grade-badge .btn-icon-small,
+.class-badge .btn-icon-small {
+    background: transparent !important;
+    color: var(--text-muted) !important;
+    border: none !important;
+    width: 20px !important;
+    height: 20px !important;
+    font-size: 15px !important;
+    font-weight: 400;
+    padding: 0;
+    line-height: 1;
+    box-shadow: none !important;
+    transition: all 0.15s;
+}
+.grade-badge:hover .btn-icon-small,
+.class-badge:hover .btn-icon-small {
+    background: rgba(244,63,94,0.15) !important;
+    color: var(--danger) !important;
+}
+
+/* ---- Print safe restore ---- */
+@media print {
+    [style*="background: white"],
+    [style*="background: #fff"] {
+        background: white !important;
+        color: black !important;
+    }
 }
 
 /* ============================================
