@@ -373,6 +373,7 @@ body::after {
     font-family: 'DM Sans', sans-serif;
     color: var(--text);
     transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+    color-scheme: dark;
 }
 
 .input-group input::placeholder { color: var(--text-muted); }
@@ -484,12 +485,37 @@ body::after {
     align-items: center;
     justify-content: center;
     gap: 8px;
+    min-height: 48px;
+    overflow: hidden;
 }
 
 .btn-google:hover {
     background: rgba(255,255,255,0.07);
     border-color: rgba(255,255,255,0.15);
     color: var(--text);
+}
+
+/* Hide any broken image inside Google button or sign-in container */
+.btn-google img,
+.google-btn img,
+#googleSignInDiv img,
+#google-signin-btn img { display: none; }
+
+/* Google sign-in rendered container override */
+#googleSignInDiv,
+#google-signin-btn {
+    width: 100%;
+    margin-top: 12px;
+}
+#googleSignInDiv > div,
+#google-signin-btn > div {
+    background: rgba(255,255,255,0.04) !important;
+    border: 1.5px solid rgba(255,255,255,0.08) !important;
+    border-radius: 10px !important;
+    color: var(--text-sub) !important;
+    min-height: 48px !important;
+    overflow: hidden !important;
+    width: 100% !important;
 }
 
 /* Divider */
@@ -736,3 +762,77 @@ body::after {
         transition-duration: 0.01ms !important;
     }
 }
+
+
+/* ============================================
+   GLOBAL DARK THEME FIXES (Login Page)
+   ============================================ */
+
+/* Force all inputs in auth area dark */
+.auth-container input,
+.auth-form input {
+    background: var(--bg-input) !important;
+    background-color: var(--bg-input) !important;
+    color: var(--text) !important;
+    border: 1.5px solid var(--border) !important;
+    color-scheme: dark;
+}
+.auth-container input::placeholder,
+.auth-form input::placeholder { color: var(--text-muted) !important; }
+.auth-container input:focus,
+.auth-form input:focus {
+    border-color: var(--teal-500) !important;
+    background-color: rgba(20,184,166,0.04) !important;
+    box-shadow: 0 0 0 3px rgba(20,184,166,0.12) !important;
+}
+
+/* All selects dark */
+select,
+.auth-container select {
+    background: var(--bg-input) !important;
+    color: var(--text) !important;
+    border-color: var(--border) !important;
+    color-scheme: dark;
+}
+select option {
+    background-color: #1e293b !important;
+    color: #f1f5f9 !important;
+}
+select option:checked,
+select option:hover {
+    background-color: #14b8a6 !important;
+    color: #fff !important;
+}
+
+/* White/light inline backgrounds → dark */
+[style*="background: white"],
+[style*="background: #fff"],
+[style*="background: #ffffff"],
+[style*="background-color: white"],
+[style*="background-color: #fff"] {
+    background: var(--bg-card, #1e293b) !important;
+    background-color: var(--bg-card, #1e293b) !important;
+    color: var(--text, #f1f5f9) !important;
+}
+[style*="background: #f9fafb"],
+[style*="background: #f3f4f6"],
+[style*="background: #f1f5f9"],
+[style*="background-color: #f9fafb"],
+[style*="background-color: #f3f4f6"] {
+    background: rgba(255,255,255,0.04) !important;
+    background-color: rgba(255,255,255,0.04) !important;
+}
+
+/* Dark text → light text */
+[style*="color: #000"],
+[style*="color: #111827"],
+[style*="color: #1f2937"] { color: #f1f5f9 !important; }
+[style*="color: #374151"],
+[style*="color: #4b5563"] { color: #94a3b8 !important; }
+[style*="color: #6b7280"],
+[style*="color: #9ca3af"] { color: #64748b !important; }
+
+/* Light borders → dark */
+[style*="border: 1px solid #e5e7eb"],
+[style*="border: 2px solid #e5e7eb"],
+[style*="border: 1px solid #d1d5db"] { border-color: rgba(255,255,255,0.08) !important; }
