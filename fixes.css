@@ -1,0 +1,489 @@
+/* ============================================
+   CLASS MANAGER — BUG FIXES
+   Add this file AFTER appStyle.css in your HTML
+   ============================================ */
+
+/* ============================================
+   FIX 1: SELECT DROPDOWNS — White option list
+   (Images 5 & 6: grade filter and gender select
+    show a white native dropdown popup)
+   ============================================ */
+
+/* Style select elements themselves */
+select,
+.form-group select,
+.input-group select {
+    background-color: var(--bg-input, #162032) !important;
+    color: var(--text-primary, #f1f5f9) !important;
+    border-color: rgba(255,255,255,0.08) !important;
+    color-scheme: dark;
+}
+
+/* Force native option list to dark (works in Chrome/Edge) */
+select option {
+    background-color: #1e293b !important;
+    color: #f1f5f9 !important;
+}
+
+select option:hover,
+select option:focus,
+select option:checked {
+    background-color: #14b8a6 !important;
+    color: #fff !important;
+}
+
+/* ============================================
+   FIX 2: MODAL INPUTS — White/Light background
+   (Image 7: Add Class modal inputs appear white)
+   ============================================ */
+
+.modal input,
+.modal select,
+.modal textarea,
+.modal-content input,
+.modal-content select,
+.modal-content textarea,
+[id$="Modal"] input,
+[id$="Modal"] select,
+[id$="Modal"] textarea {
+    background-color: #162032 !important;
+    background: #162032 !important;
+    color: #f1f5f9 !important;
+    border: 1.5px solid rgba(255,255,255,0.08) !important;
+}
+
+.modal input::placeholder,
+.modal textarea::placeholder,
+.modal-content input::placeholder,
+.modal-content textarea::placeholder {
+    color: #64748b !important;
+}
+
+.modal input:focus,
+.modal select:focus,
+.modal textarea:focus,
+.modal-content input:focus,
+.modal-content select:focus,
+.modal-content textarea:focus {
+    border-color: #14b8a6 !important;
+    box-shadow: 0 0 0 3px rgba(20,184,166,0.12) !important;
+    background-color: rgba(20,184,166,0.04) !important;
+}
+
+/* ============================================
+   FIX 3: ADMIN MANAGEMENT FORM — White card
+   (Image 2: "Add New Admin" card is white/light)
+   ============================================ */
+
+/* Target any inline-styled white/light backgrounds in admin panel */
+#admin-panel [style*="background: white"],
+#admin-panel [style*="background: #fff"],
+#admin-panel [style*="background: rgb(255"],
+#admin-panel [style*="background-color: white"],
+#admin-panel [style*="background-color: #fff"],
+#admin-panel [style*="background-color: #f"],
+#admin-panel [style*="background: #f9"],
+#admin-panel [style*="background: #f3"],
+#admin-panel [style*="background: #f1"] {
+    background: #1e293b !important;
+    background-color: #1e293b !important;
+    color: #f1f5f9 !important;
+    border-color: rgba(255,255,255,0.08) !important;
+}
+
+/* Admin inputs */
+#admin-panel input,
+#admin-panel select,
+#admin-panel textarea {
+    background-color: #162032 !important;
+    color: #f1f5f9 !important;
+    border: 1.5px solid rgba(255,255,255,0.08) !important;
+}
+
+#admin-panel input::placeholder { color: #64748b !important; }
+
+#admin-panel input:focus,
+#admin-panel select:focus {
+    border-color: #14b8a6 !important;
+    box-shadow: 0 0 0 3px rgba(20,184,166,0.12) !important;
+}
+
+/* Admin labels */
+#admin-panel label,
+#admin-panel p,
+#admin-panel span:not(.badge):not(.status-active):not(.status-inactive),
+#admin-panel h3,
+#admin-panel h4 {
+    color: #94a3b8;
+}
+
+#admin-panel h2,
+#admin-panel h1 { color: #f1f5f9; }
+
+/* ============================================
+   FIX 4: ANALYTICS STAT CARDS — White/Light bg
+   (Image 3: TOTAL USERS, ACTIVE THIS MONTH,
+    NEW THIS MONTH cards appear white)
+   ============================================ */
+
+/* Nuke inline white/light backgrounds globally */
+[style*="background: white"],
+[style*="background: #fff"],
+[style*="background: #ffffff"],
+[style*="background-color: white"],
+[style*="background-color: #fff"],
+[style*="background-color: #ffffff"] {
+    background: #1e293b !important;
+    background-color: #1e293b !important;
+    color: #f1f5f9 !important;
+}
+
+/* Light gray backgrounds → dark card */
+[style*="background: #f9fafb"],
+[style*="background: #f3f4f6"],
+[style*="background: #f1f5f9"],
+[style*="background: #f8fafc"],
+[style*="background-color: #f9fafb"],
+[style*="background-color: #f3f4f6"],
+[style*="background-color: #f1f5f9"],
+[style*="background-color: #f8fafc"] {
+    background: #253347 !important;
+    background-color: #253347 !important;
+    color: #f1f5f9 !important;
+}
+
+/* ============================================
+   FIX 5: ATTENDANCE STAT BOXES — Too bright
+   (Image 8: Total/Present/Absent boxes use
+    bright green/red backgrounds)
+   ============================================ */
+
+/* Green "present" box */
+[style*="background: #D1FAE5"],
+[style*="background:#D1FAE5"],
+[style*="background-color: #D1FAE5"],
+[style*="background: #d1fae5"],
+[style*="background-color: #d1fae5"],
+[style*="background: rgba(16,185,129"] {
+    background: rgba(16,185,129,0.12) !important;
+    background-color: rgba(16,185,129,0.12) !important;
+    border: 1px solid rgba(16,185,129,0.25) !important;
+}
+
+/* Red "absent" box */
+[style*="background: #FEE2E2"],
+[style*="background:#FEE2E2"],
+[style*="background-color: #FEE2E2"],
+[style*="background: #fee2e2"],
+[style*="background-color: #fee2e2"],
+[style*="background: rgba(239,68,68"],
+[style*="background: rgba(244,63,94"] {
+    background: rgba(244,63,94,0.1) !important;
+    background-color: rgba(244,63,94,0.1) !important;
+    border: 1px solid rgba(244,63,94,0.2) !important;
+}
+
+/* White "total" stat box */
+[style*="background: white"]:has(p),
+[style*="background: #fff"]:has(p) {
+    background: rgba(255,255,255,0.04) !important;
+    border: 1px solid rgba(255,255,255,0.08) !important;
+}
+
+/* Fix attendance stat numbers and labels color */
+#attendanceStudentCard [style*="color: #"],
+#attendanceStudentCard p,
+#attendanceStudentCard span,
+#attendanceStudentCard div:not([class]) {
+    color: #f1f5f9 !important;
+}
+
+/* Override specific attendance count elements */
+#attendanceTotalCount,
+#attendancePresentCount,
+#attendanceAbsentCount {
+    color: #f1f5f9 !important;
+}
+
+/* Present count → teal */
+#attendancePresentCount { color: #2dd4bf !important; }
+/* Absent count → red */
+#attendanceAbsentCount  { color: #f43f5e !important; }
+
+/* ============================================
+   FIX 6: LOGIN PAGE — White inputs & broken
+   Google button image (Image 9)
+   ============================================ */
+
+/* Login / signup inputs */
+.auth-container input {
+    background-color: #162032 !important;
+    background: #162032 !important;
+    color: #f1f5f9 !important;
+    border: 1.5px solid rgba(255,255,255,0.08) !important;
+}
+
+.auth-container input::placeholder { color: #64748b !important; }
+
+.auth-container input:focus {
+    border-color: #14b8a6 !important;
+    background-color: rgba(20,184,166,0.04) !important;
+    box-shadow: 0 0 0 3px rgba(20,184,166,0.12) !important;
+}
+
+/* Google button — hide broken image, show styled button */
+.btn-google,
+[onclick*="google"],
+[onclick*="Google"],
+button[style*="google"],
+.google-btn {
+    background: rgba(255,255,255,0.05) !important;
+    border: 1.5px solid rgba(255,255,255,0.1) !important;
+    color: #94a3b8 !important;
+    border-radius: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    font-family: 'DM Sans', sans-serif;
+    font-weight: 600;
+    font-size: 14px;
+    width: 100%;
+    padding: 12px;
+    cursor: pointer;
+    transition: all 0.2s;
+    min-height: 48px;
+}
+
+.btn-google:hover { background: rgba(255,255,255,0.09) !important; color: #f1f5f9 !important; }
+
+/* Hide broken image inside any Google button area */
+.btn-google img,
+.google-btn img,
+#googleSignInDiv img,
+#google-signin-btn img {
+    display: none;
+}
+
+/* If using Google's rendered button container — hide raw render */
+#googleSignInDiv > div,
+#google-signin-btn > div {
+    min-height: 48px !important;
+    background: rgba(255,255,255,0.05) !important;
+    border: 1.5px solid rgba(255,255,255,0.1) !important;
+    border-radius: 10px !important;
+    color: #94a3b8 !important;
+    overflow: hidden;
+}
+
+/* ============================================
+   FIX 7: REMOVE × BUTTON RED BACKGROUND
+   from grade/class badges (Image 1)
+   Make × more subtle / on-theme
+   ============================================ */
+
+.grade-badge .btn-icon-small,
+.class-badge .btn-icon-small {
+    background: transparent !important;
+    color: #64748b !important;
+    border: none !important;
+    width: 20px !important;
+    height: 20px !important;
+    font-size: 15px !important;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 4px;
+    transition: all 0.15s;
+    padding: 0;
+    font-weight: 400;
+    line-height: 1;
+}
+
+.grade-badge:hover .btn-icon-small,
+.class-badge:hover .btn-icon-small {
+    background: rgba(244,63,94,0.12) !important;
+    color: #f43f5e !important;
+}
+
+/* ============================================
+   FIX 8: GLOBAL DARK TEXT OVERRIDE
+   Any element injected with inline dark text
+   on dark background
+   ============================================ */
+
+/* Catch inline color: #111827, #374151, #1f2937 on dark cards */
+.card [style*="color: #111"],
+.card [style*="color: #374"],
+.card [style*="color: #1f2"],
+.modal-content [style*="color: #111"],
+.modal-content [style*="color: #374"],
+.settings-section [style*="color: #111"],
+.settings-section [style*="color: #374"],
+.admin-card [style*="color: #111"],
+.admin-card [style*="color: #374"] {
+    color: #f1f5f9 !important;
+}
+
+/* Dark gray text that won't show on dark bg */
+.card [style*="color: #6b7280"],
+.modal-content [style*="color: #6b7280"],
+.settings-section [style*="color: #6b7280"] {
+    color: #94a3b8 !important;
+}
+
+/* ============================================
+   FIX 9: TABLE ROWS — Light backgrounds
+   ============================================ */
+
+table tbody tr:hover,
+.data-table tbody tr:hover {
+    background: rgba(255,255,255,0.03) !important;
+}
+
+table [style*="background: white"],
+table [style*="background: #f"],
+.data-table [style*="background: white"],
+.data-table [style*="background: #f"] {
+    background: var(--bg-card, #1e293b) !important;
+}
+
+/* ============================================
+   FIX 10: BORDER overrides (white borders on dark)
+   ============================================ */
+
+[style*="border: 2px solid #e5e7eb"],
+[style*="border: 1px solid #e5e7eb"],
+[style*="border: 2px solid #d1d5db"],
+[style*="border: 1px solid #d1d5db"] {
+    border-color: rgba(255,255,255,0.08) !important;
+}
+
+/* ============================================
+   FIX 11: ATTENDANCE STUDENT ROWS
+   (Image 8 — white student card background)
+   ============================================ */
+
+/* Present row */
+#attendanceStudentsList > div[style*="background: #D1FAE5"],
+#attendanceStudentsList > div[style*="background: #d1fae5"] {
+    background: rgba(16,185,129,0.1) !important;
+    border-color: rgba(16,185,129,0.3) !important;
+}
+
+/* Absent row */
+#attendanceStudentsList > div[style*="background: #F3F4F6"],
+#attendanceStudentsList > div[style*="background: #f3f4f6"],
+#attendanceStudentsList > div[style*="background: rgb(243"] {
+    background: rgba(255,255,255,0.03) !important;
+    border-color: rgba(255,255,255,0.08) !important;
+}
+
+/* Student names in attendance */
+#attendanceStudentsList [style*="font-weight: 700"],
+#attendanceStudentsList [style*="font-weight:700"] {
+    color: #f1f5f9 !important;
+}
+
+#attendanceStudentsList [style*="color: #6B7280"],
+#attendanceStudentsList [style*="color: #6b7280"] {
+    color: #64748b !important;
+}
+
+/* ============================================
+   FIX 12: FORM LABELS — Dark text on dark bg
+   ============================================ */
+
+.form-group label,
+.input-group label {
+    color: #94a3b8 !important;
+}
+
+/* Any label inside card or modal */
+.card label,
+.glass-card label,
+.modal-content label,
+.settings-section label {
+    color: #94a3b8 !important;
+}
+
+/* ============================================
+   FIX 13: SIDEBAR CLOSE BUTTON
+   (Floating round button in screenshots — 
+    the 👁 icon on the right edge)
+   ============================================ */
+
+#sidebarToggleBtn,
+.sidebar-toggle-fab {
+    background: #1e293b !important;
+    border: 1px solid rgba(255,255,255,0.1) !important;
+    color: #94a3b8 !important;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.4) !important;
+}
+
+/* ============================================
+   FIX 14: INLINE PADDED BOXES that use light bg
+   e.g. Warning/info notices
+   ============================================ */
+
+[style*="background: rgba(16,185,129"],
+[style*="background: rgba(59,130,246"],
+[style*="background: rgba(245,158,11"],
+[style*="background: rgba(139,92,246"],
+[style*="background: rgba(239,68,68"],
+[style*="background: rgba(20,184,166"] {
+    /* keep these - they're intentional colored boxes */
+}
+
+/* ============================================
+   FIX 15: SUBSCRIPTION & PLAN CARDS
+   Make sure plan cards don't render light
+   ============================================ */
+
+#subscription .card,
+#subscription .glass-card,
+#subscription [style*="background: white"],
+#subscription [style*="background: #fff"] {
+    background: #1e293b !important;
+    border: 1px solid rgba(255,255,255,0.08) !important;
+    color: #f1f5f9 !important;
+}
+
+/* ============================================
+   EXTRA: INLINE DARK STYLE CORRECTIONS
+   For elements using hardcoded dark colors 
+   expecting light bg
+   ============================================ */
+
+/* color: #1F2937 etc. are dark text — remap to light */
+[style*="color: #1F2937"],
+[style*="color: #1f2937"],
+[style*="color: #111827"],
+[style*="color: #1e293b"] {
+    color: #f1f5f9 !important;
+}
+
+[style*="color: #374151"],
+[style*="color: #4B5563"],
+[style*="color: #4b5563"] {
+    color: #94a3b8 !important;
+}
+
+[style*="color: #6B7280"],
+[style*="color: #6b7280"],
+[style*="color: #9CA3AF"],
+[style*="color: #9ca3af"] {
+    color: #64748b !important;
+}
+
+/* ============================================
+   FINAL: PRINT SAFE
+   ============================================ */
+
+@media print {
+    [style*="background: white"],
+    [style*="background: #fff"] {
+        background: white !important;
+        color: black !important;
+    }
+}
