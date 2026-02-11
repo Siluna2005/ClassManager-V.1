@@ -50,7 +50,7 @@ async function loadAdminList() {
         const adminDetails = adminDetailsSnapshot.val() || {};
 
         adminsList.innerHTML = `
-            <h3 style="margin-bottom: 20px;">Current Admins (${adminsArray.length})</h3>
+            <h3 style="margin-bottom: 20px; color: #f1f5f9; font-family: Sora, sans-serif; font-size: 18px; font-weight: 700;">Current Admins (${adminsArray.length})</h3>
             <div style="display: grid; gap: 15px;">
                 ${adminsArray.map(admin => {
                     // Find admin details
@@ -67,31 +67,31 @@ async function loadAdminList() {
                     const isCurrentUser = admin.email === currentUser.email;
             
                     return `
-                        <div class="admin-card" style="background: ${isCurrentUser ? '#f0f9ff' : 'white'}; border: 1px solid #e5e7eb; border-radius: 8px; padding: 15px; display: flex; justify-content: space-between; align-items: center;">
+                        <div class="admin-card" style="background: ${isCurrentUser ? 'rgba(20,184,166,0.06)' : '#1e293b'}; border: 1px solid ${isCurrentUser ? 'rgba(45,212,191,0.25)' : 'rgba(255,255,255,0.08)'}; border-radius: 12px; padding: 16px; display: flex; justify-content: space-between; align-items: center;">
                             <div class="admin-info" style="display: flex; gap: 12px; align-items: center; flex: 1;">
-                                <div style="width: 40px; height: 40px; border-radius: 50%; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); display: flex; align-items: center; justify-content: center; color: white; font-weight: 700;">
+                                <div style="width: 40px; height: 40px; border-radius: 50%; background: linear-gradient(135deg, #14b8a6 0%, #0f766e 100%); display: flex; align-items: center; justify-content: center; color: white; font-weight: 700; font-size: 16px; flex-shrink: 0;">
                                     ${admin.email.charAt(0).toUpperCase()}
                                 </div>
                                 <div>
-                                    <div style="font-weight: 600; color: #111827;">
+                                    <div style="font-weight: 600; color: #f1f5f9; font-size: 14px;">
                                         ${admin.email}
-                                        ${isCurrentUser ? '<span style="color: #3b82f6; font-size: 12px; margin-left: 8px;">(You)</span>' : ''}
+                                        ${isCurrentUser ? '<span style="color: #2dd4bf; font-size: 11px; font-weight: 700; margin-left: 8px; background: rgba(45,212,191,0.12); border: 1px solid rgba(45,212,191,0.2); padding: 2px 8px; border-radius: 99px;">(You)</span>' : ''}
                                     </div>
-                                    <div style="font-size: 12px; color: #6b7280; margin-top: 4px;">
+                                    <div style="font-size: 12px; color: #64748b; margin-top: 5px; display: flex; align-items: center; gap: 8px;">
                                         ${adminInfo ? `
-                                            <span class="badge badge-${adminInfo.role}" style="margin-right: 8px;">${adminInfo.role}</span>
-                                            <span>Added: ${new Date(adminInfo.createdAt).toLocaleDateString()}</span>
+                                            <span class="badge badge-${adminInfo.role}">${adminInfo.role}</span>
+                                            <span style="color: #64748b;">Added: ${new Date(adminInfo.createdAt).toLocaleDateString()}</span>
                                         ` : '<span style="color: #f59e0b;">⚠️ No profile data</span>'}
                                     </div>
                                 </div>
                             </div>
                             <div class="admin-actions">
                                 ${!isCurrentUser ? `
-                                    <button class="btn-small btn-danger" onclick="removeAdmin('${adminId || 'unknown'}', '${admin.email}', '${admin.emailKey}')" style="padding: 8px 16px;">
+                                    <button class="btn btn-small btn-danger" onclick="removeAdmin('${adminId || 'unknown'}', '${admin.email}', '${admin.emailKey}')">
                                         🗑️ Remove
                                     </button>
                                 ` : `
-                                    <span style="color: #6b7280; font-size: 12px;">Current user</span>
+                                    <span style="color: #64748b; font-size: 12px; font-weight: 500;">Current user</span>
                                 `}
                             </div>
                         </div>
