@@ -1023,22 +1023,43 @@ table tbody tr:last-child td { border-bottom: none; }
 .admin-tab-content p { color: var(--text-secondary); }
 
 .admin-card {
-    background: var(--bg-elevated);
-    border: 1px solid var(--border);
-    border-radius: var(--r-lg);
+    background: var(--bg-elevated) !important;
+    border: 1px solid var(--border) !important;
+    border-radius: var(--r-lg) !important;
     padding: 16px 20px;
     margin: 10px 0;
     display: flex;
     justify-content: space-between;
     align-items: center;
-    transition: all 0.2s;
+    transition: background 0.2s, border-color 0.2s, box-shadow 0.2s;
     gap: 12px;
 }
 
+/* Current-user card: teal tint */
+.admin-card[style*="rgba(20,184,166"] {
+    background: rgba(20,184,166,0.06) !important;
+    border-color: rgba(45,212,191,0.25) !important;
+}
+
 .admin-card:hover {
-    border-color: rgba(255,255,255,0.12);
+    border-color: rgba(255,255,255,0.14) !important;
     box-shadow: var(--shadow-sm);
 }
+
+/* Override any JS-injected light backgrounds on admin cards */
+.admin-card[style*="background: white"],
+.admin-card[style*="background: #fff"],
+.admin-card[style*="background: #f0f9ff"],
+.admin-card[style*="background: #f9fafb"] {
+    background: var(--bg-elevated) !important;
+    border-color: var(--border) !important;
+}
+
+/* Admin card text colors */
+.admin-card [style*="color: #111827"],
+.admin-card [style*="color: #1f2937"] { color: #f1f5f9 !important; }
+.admin-card [style*="color: #6b7280"] { color: #64748b !important; }
+.admin-card [style*="color: #3b82f6"] { color: var(--teal-400) !important; }
 
 .admin-info { display: flex; gap: 12px; align-items: center; flex: 1; }
 .admin-actions { display: flex; gap: 6px; flex-shrink: 0; }
